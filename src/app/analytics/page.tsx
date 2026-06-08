@@ -1,153 +1,242 @@
 "use client";
-import React, { useState } from "react";
-import { BarChart3, TrendingUp, TrendingDown, DollarSign, Calendar } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from "recharts";
+import React, { useMemo } from "react";
+import { 
+    AreaChart, 
+    Area, 
+    XAxis, 
+    YAxis, 
+    CartesianGrid, 
+    Tooltip, 
+    ResponsiveContainer,
+    BarChart,
+    Bar
+} from "recharts";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
-const salesByHour = [
-    { hour: "08:00", sales: 120 },
-    { hour: "10:00", sales: 340 },
-    { hour: "12:00", sales: 290 },
-    { hour: "14:00", sales: 180 },
-    { hour: "16:00", sales: 220 },
-    { hour: "18:00", sales: 150 },
-    { hour: "20:00", sales: 90 },
+// Mock data for line chart - Revenue Trend
+const revenueData = [
+    { name: "Jun 1", revenue: 1300 },
+    { name: "Jun 5", revenue: 1500 },
+    { name: "Jun 9", revenue: 1350 },
+    { name: "Jun 13", revenue: 1750 },
+    { name: "Jun 17", revenue: 1620 },
+    { name: "Jun 21", revenue: 1880 },
+    { name: "Jun 25", revenue: 1780 },
+    { name: "Jun 29", revenue: 2150 }
 ];
 
-const bestSellingProducts = [
-    { name: "Flat White", sales: 420, revenue: 1890.00 },
-    { name: "Cold Brew", sales: 310, revenue: 1240.00 },
-    { name: "Iced Latte", sales: 280, revenue: 1330.00 },
-    { name: "Cappuccino", sales: 210, revenue: 945.00 },
-    { name: "Croissant", sales: 180, revenue: 630.00 },
+// Mock data for bar chart - Orders per Day
+const ordersData = [
+    { name: "Mon", orders: 50 },
+    { name: "Tue", orders: 65 },
+    { name: "Wed", orders: 73 },
+    { name: "Thu", orders: 57 },
+    { name: "Fri", orders: 90 },
+    { name: "Sat", orders: 105 },
+    { name: "Sun", orders: 80 }
 ];
 
-export default function AnalyticsPage() {
-    const [timeframe, setTimeframe] = useState<"Today" | "Week" | "Month">("Week");
+interface TopItem {
+    rank: number;
+    name: string;
+    count: number;
+    maxCount: number;
+    image: string;
+}
 
+const topItems: TopItem[] = [
+    { rank: 1, name: "Espresso", count: 421, maxCount: 421, image: "https://images.unsplash.com/photo-1510972527921-ce03766a1cf1?auto=format&fit=crop&w=100&q=80" },
+    { rank: 2, name: "Flat White", count: 342, maxCount: 421, image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=100&q=80" },
+    { rank: 3, name: "Latte Art", count: 287, maxCount: 421, image: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=100&q=80" },
+    { rank: 4, name: "Cold Brew", count: 198, maxCount: 421, image: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=100&q=80" },
+    { rank: 5, name: "Iced Latte", count: 156, maxCount: 421, image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=100&q=80" },
+    { rank: 6, name: "Seasonal Special", count: 134, maxCount: 421, image: "https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=100&q=80" }
+];
+
+export default function Analytics() {
     return (
-        <div className="flex-1 p-4 md:p-8 space-y-6 bg-background min-h-screen text-foreground">
+        <div className="flex-1 p-4 md:p-8 space-y-6 bg-[#FAF6F0] dark:bg-background min-h-screen text-foreground transition-colors duration-300">
             {/* Header */}
             <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold tracking-tight">Analytics & Reports</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Deep-dive into coffee shop performance, peak hours, and product sales</p>
+                    <h1 className="font-serif text-3xl font-bold tracking-tight text-[#2C1A14] dark:text-white">Analytics</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Bean Fien Admin Panel</p>
                 </div>
 
-                <div className="flex bg-[#F3ECE3] dark:bg-[#2C1711] p-1 rounded-xl w-fit border border-border/40">
-                    {(["Today", "Week", "Month"] as const).map((time) => (
-                        <button
-                            key={time}
-                            onClick={() => setTimeframe(time)}
-                            className={`
-                                px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200
-                                ${timeframe === time 
-                                    ? "bg-white dark:bg-primary dark:text-[#1E0F0B] text-primary shadow-sm" 
-                                    : "text-muted-foreground hover:text-primary"
-                                }
-                            `}
-                        >
-                            {time}
-                        </button>
-                    ))}
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card">
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center">
+                            <span className="text-sm font-semibold text-primary">BF</span>
+                        </div>
+                        <div className="hidden sm:block text-left">
+                            <h4 className="text-xs font-bold leading-tight">Admin</h4>
+                            <p className="text-[10px] text-muted-foreground">Super Admin</p>
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            {/* Performance Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="bg-card p-6 rounded-2xl border border-border/80 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex justify-between items-start">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Avg. Ticket Value</span>
-                        <span className="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
-                            <TrendingUp className="w-3 h-3" /> +4.2%
-                        </span>
-                    </div>
-                    <div className="mt-4">
-                        <h2 className="font-serif text-3xl font-extrabold text-[#2C1A14] dark:text-white">$7.85</h2>
-                        <p className="text-[10px] text-muted-foreground mt-1">Average spent per transaction</p>
-                    </div>
-                </div>
-
-                <div className="bg-card p-6 rounded-2xl border border-border/80 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex justify-between items-start">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Conversion Rate</span>
-                        <span className="flex items-center gap-0.5 text-[11px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
-                            <TrendingUp className="w-3 h-3" /> +1.8%
-                        </span>
-                    </div>
-                    <div className="mt-4">
-                        <h2 className="font-serif text-3xl font-extrabold text-[#2C1A14] dark:text-white">82.4%</h2>
-                        <p className="text-[10px] text-muted-foreground mt-1">Cart-to-order success rate</p>
-                    </div>
-                </div>
-
-                <div className="bg-card p-6 rounded-2xl border border-border/80 shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex justify-between items-start">
-                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Loyalty Adoption</span>
-                        <span className="flex items-center gap-0.5 text-[11px] font-bold text-red-600 bg-red-50 dark:bg-red-950/30 px-2 py-0.5 rounded-full">
-                            <TrendingDown className="w-3 h-3" /> -0.5%
-                        </span>
-                    </div>
-                    <div className="mt-4">
-                        <h2 className="font-serif text-3xl font-extrabold text-[#2C1A14] dark:text-white">68.7%</h2>
-                        <p className="text-[10px] text-muted-foreground mt-1">Percentage of order transactions using loyalty stars</p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Peak Hours & Best Selling Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Peak Hours Area Chart */}
-                <div className="bg-card p-6 rounded-2xl border border-border/80 shadow-sm flex flex-col justify-between">
+            {/* Charts Row */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Revenue Trend Line Chart */}
+                <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-4">
                     <div>
-                        <h3 className="font-serif text-lg font-bold">Peak Business Hours</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">Average customer foot traffic/sales over time</p>
+                        <h3 className="font-serif text-base font-bold text-[#2C1A14] dark:text-white">Revenue Trend</h3>
+                        <p className="text-xs text-muted-foreground">Monthly comparison</p>
                     </div>
-
-                    <div className="h-64 w-full mt-4">
+                    <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={salesByHour} margin={{ left: -10, right: 10, top: 10, bottom: 0 }}>
+                            <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#8B4513" stopOpacity={0.2}/>
-                                        <stop offset="95%" stopColor="#8B4513" stopOpacity={0}/>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#8B4513" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#8B4513" stopOpacity={0.0} />
                                     </linearGradient>
                                 </defs>
-                                <XAxis dataKey="hour" stroke="#8E7E73" fontSize={11} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#8E7E73" fontSize={11} tickLine={false} axisLine={false} />
-                                <Tooltip formatter={(val) => [val, "Sales Volume"]} />
-                                <Area type="monotone" dataKey="sales" stroke="#8B4513" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E6DFD5" className="dark:stroke-zinc-800" />
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 10, fill: "#8E7E73" }}
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tickFormatter={(val) => `$${val}`}
+                                    domain={[0, 2800]}
+                                    ticks={[0, 700, 1400, 2100, 2800]}
+                                    tick={{ fontSize: 10, fill: "#8E7E73" }}
+                                />
+                                <Tooltip 
+                                    formatter={(value) => [`$${value}`, "Revenue"]}
+                                    contentStyle={{ borderRadius: 12, border: "1px solid #E6DFD5" }}
+                                />
+                                <Area 
+                                    type="monotone" 
+                                    dataKey="revenue" 
+                                    stroke="#8B4513" 
+                                    strokeWidth={2}
+                                    fillOpacity={1} 
+                                    fill="url(#colorRevenue)" 
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Best Selling Products List */}
-                <div className="bg-card p-6 rounded-2xl border border-border/80 shadow-sm flex flex-col justify-between">
+                {/* Orders per Day Bar Chart */}
+                <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-4">
                     <div>
-                        <h3 className="font-serif text-lg font-bold">Best Selling Products</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">Top-performing menu items by volume</p>
+                        <h3 className="font-serif text-base font-bold text-[#2C1A14] dark:text-white">Orders per Day</h3>
+                        <p className="text-xs text-muted-foreground">Peak hours insight</p>
                     </div>
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={ordersData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E6DFD5" className="dark:stroke-zinc-800" />
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 10, fill: "#8E7E73" }}
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    domain={[0, 120]}
+                                    ticks={[0, 30, 60, 90, 120]}
+                                    tick={{ fontSize: 10, fill: "#8E7E73" }}
+                                />
+                                <Tooltip 
+                                    formatter={(value) => [value, "Orders"]}
+                                    contentStyle={{ borderRadius: 12, border: "1px solid #E6DFD5" }}
+                                />
+                                <Bar 
+                                    dataKey="orders" 
+                                    fill="#8B4513" 
+                                    radius={[6, 6, 0, 0]} 
+                                    maxBarSize={36}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </section>
 
-                    <div className="overflow-x-auto mt-4 flex-1">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-border/60 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                    <th className="py-2.5">Menu Item</th>
-                                    <th className="py-2.5 text-center">Sales Qty</th>
-                                    <th className="py-2.5 text-right">Revenue</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/30 text-sm">
-                                {bestSellingProducts.map((prod) => (
-                                    <tr key={prod.name}>
-                                        <td className="py-3 font-semibold text-[#2C1A14] dark:text-white">{prod.name}</td>
-                                        <td className="py-3 text-center">{prod.sales}</td>
-                                        <td className="py-3 text-right font-bold text-[#8B4513] dark:text-[#C07C4A]">${prod.revenue.toFixed(2)}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            {/* Three Middle Stats Cards */}
+            <section className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                {/* Avg Order Value */}
+                <div className="bg-white dark:bg-card p-5 rounded-2xl border border-border/60 shadow-sm flex items-center justify-between min-h-[90px]">
+                    <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Avg Order Value</span>
+                        <h3 className="font-serif text-2xl font-bold text-[#2C1A14] dark:text-white">$7.43</h3>
                     </div>
+                    <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <TrendingUp className="w-3.5 h-3.5" /> +3.2%
+                    </span>
+                </div>
+
+                {/* Customer Return Rate */}
+                <div className="bg-white dark:bg-card p-5 rounded-2xl border border-border/60 shadow-sm flex items-center justify-between min-h-[90px]">
+                    <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Customer Return Rate</span>
+                        <h3 className="font-serif text-2xl font-bold text-[#2C1A14] dark:text-white">68%</h3>
+                    </div>
+                    <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <TrendingUp className="w-3.5 h-3.5" /> +5.1%
+                    </span>
+                </div>
+
+                {/* Rewards Redeemed */}
+                <div className="bg-white dark:bg-card p-5 rounded-2xl border border-border/60 shadow-sm flex items-center justify-between min-h-[90px]">
+                    <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Rewards Redeemed</span>
+                        <h3 className="font-serif text-2xl font-bold text-[#2C1A14] dark:text-white">147</h3>
+                    </div>
+                    <span className="inline-flex items-center gap-0.5 text-xs font-bold text-red-500">
+                        <TrendingDown className="w-3.5 h-3.5" /> -1.8%
+                    </span>
+                </div>
+            </section>
+
+            {/* Top Performing Items Section */}
+            <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-6">
+                <div>
+                    <h3 className="font-serif text-base font-bold text-[#2C1A14] dark:text-white">Top Performing Items</h3>
+                    <p className="text-xs text-muted-foreground">By total orders this month</p>
+                </div>
+
+                <div className="space-y-4">
+                    {topItems.map((item) => {
+                        const fillWidth = `${(item.count / item.maxCount) * 100}%`;
+                        return (
+                            <div key={item.rank} className="flex items-center gap-4 text-xs font-semibold">
+                                {/* Rank */}
+                                <span className="w-4 text-muted-foreground text-center font-normal">{item.rank}</span>
+                                
+                                {/* Image Thumbnail */}
+                                <div 
+                                    className="w-10 h-10 rounded-xl bg-cover bg-center border border-border flex-shrink-0"
+                                    style={{ backgroundImage: `url(${item.image})` }}
+                                />
+
+                                {/* Item Name */}
+                                <span className="w-28 text-[#2C1A14] dark:text-white truncate">{item.name}</span>
+
+                                {/* Progress Bar wrapper */}
+                                <div className="flex-1 bg-[#FAF6F0] dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden relative">
+                                    <div 
+                                        className="bg-[#8B4513] h-full rounded-full transition-all duration-500" 
+                                        style={{ width: fillWidth }} 
+                                    />
+                                </div>
+
+                                {/* Count */}
+                                <span className="w-10 text-right font-bold text-[#2C1A14] dark:text-white">{item.count}</span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
