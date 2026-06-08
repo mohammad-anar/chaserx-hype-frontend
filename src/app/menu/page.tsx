@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Plus, Edit2, Trash2, X, Star, Save, Image as ImageIcon, Trash } from "lucide-react";
 
 interface SizeOption {
@@ -194,6 +195,24 @@ export default function MenuManagement() {
     const [menuItems, setMenuItems] = useState<MenuItem[]>(initialMenuItems);
     const [modalOpen, setModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
+
+    const [displayName, setDisplayName] = useState("Admin");
+    const [roleTitle, setRoleTitle] = useState("Super Admin");
+
+    useEffect(() => {
+        const loadProfile = () => {
+            const savedName = localStorage.getItem("bf_admin_name");
+            const savedRole = localStorage.getItem("bf_admin_role");
+            if (savedName) setDisplayName(savedName);
+            if (savedRole) setRoleTitle(savedRole);
+        };
+
+        loadProfile();
+        window.addEventListener("adminProfileUpdated", loadProfile);
+        return () => {
+            window.removeEventListener("adminProfileUpdated", loadProfile);
+        };
+    }, []);
     
     // Form fields state
     const [currentItemId, setCurrentItemId] = useState("");
@@ -584,16 +603,28 @@ export default function MenuManagement() {
                                     />
                                     
                                     <div className="flex-1 flex gap-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const url = prompt("Enter Image URL:", image);
-                                                if (url !== null) setImage(url);
+                                        <input 
+                                            type="file"
+                                            id="menu-item-photo-upload"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setImage(reader.result as string);
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
                                             }}
-                                            className="flex-1 px-4 py-2.5 rounded-xl border border-dashed border-border hover:bg-[#F3ECE3]/30 dark:hover:bg-white/5 font-bold text-xs text-[#8B4513] dark:text-[#C07C4A] text-center flex items-center justify-center gap-1.5"
+                                        />
+                                        <label
+                                            htmlFor="menu-item-photo-upload"
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-dashed border-border hover:bg-[#F3ECE3]/30 dark:hover:bg-white/5 font-bold text-xs text-[#8B4513] dark:text-[#C07C4A] text-center flex items-center justify-center gap-1.5 cursor-pointer"
                                         >
                                             <ImageIcon className="w-4 h-4" /> Change Photo
-                                        </button>
+                                        </label>
                                         
                                         {image && (
                                             <button

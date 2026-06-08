@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { 
     Search, 
     Download, 
@@ -286,6 +287,27 @@ export default function OrderManagement() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<"All" | "Preparing" | "Completed" | "Cancelled">("All");
 
+    const [displayName, setDisplayName] = useState("Admin");
+    const [roleTitle, setRoleTitle] = useState("Super Admin");
+    const [adminPhoto, setAdminPhoto] = useState("");
+
+    useEffect(() => {
+        const loadProfile = () => {
+            const savedName = localStorage.getItem("bf_admin_name");
+            const savedRole = localStorage.getItem("bf_admin_role");
+            const savedPhoto = localStorage.getItem("bf_admin_photo");
+            if (savedName) setDisplayName(savedName);
+            if (savedRole) setRoleTitle(savedRole);
+            if (savedPhoto) setAdminPhoto(savedPhoto);
+        };
+
+        loadProfile();
+        window.addEventListener("adminProfileUpdated", loadProfile);
+        return () => {
+            window.removeEventListener("adminProfileUpdated", loadProfile);
+        };
+    }, []);
+
     // Modal state
     const [detailsModalOpen, setDetailsModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -386,15 +408,22 @@ export default function OrderManagement() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card">
-                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center">
-                            <span className="text-sm font-semibold text-primary">BF</span>
+                    <Link 
+                        href="/settings?profile=true"
+                        className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left"
+                    >
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative">
+                            {adminPhoto ? (
+                                <img src={adminPhoto} alt="Admin" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-sm font-semibold text-primary">BF</span>
+                            )}
                         </div>
                         <div className="hidden sm:block text-left">
-                            <h4 className="text-xs font-bold leading-tight">Admin</h4>
-                            <p className="text-[10px] text-muted-foreground">Super Admin</p>
+                            <h4 className="text-xs font-bold leading-tight">{displayName}</h4>
+                            <p className="text-[10px] text-muted-foreground">{roleTitle}</p>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </header>
 

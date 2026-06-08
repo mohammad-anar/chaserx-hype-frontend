@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { 
     Plus, 
     Edit2, 
@@ -64,6 +65,27 @@ export default function Rewards() {
     const [rewardModalOpen, setRewardModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedRewardId, setSelectedRewardId] = useState("");
+
+    const [displayName, setDisplayName] = useState("Admin");
+    const [roleTitle, setRoleTitle] = useState("Super Admin");
+    const [adminPhoto, setAdminPhoto] = useState("");
+
+    useEffect(() => {
+        const loadProfile = () => {
+            const savedName = localStorage.getItem("bf_admin_name");
+            const savedRole = localStorage.getItem("bf_admin_role");
+            const savedPhoto = localStorage.getItem("bf_admin_photo");
+            if (savedName) setDisplayName(savedName);
+            if (savedRole) setRoleTitle(savedRole);
+            if (savedPhoto) setAdminPhoto(savedPhoto);
+        };
+
+        loadProfile();
+        window.addEventListener("adminProfileUpdated", loadProfile);
+        return () => {
+            window.removeEventListener("adminProfileUpdated", loadProfile);
+        };
+    }, []);
     
     // Reward Modal Fields
     const [rewardName, setRewardName] = useState("Hot Coffee");
@@ -209,15 +231,22 @@ export default function Rewards() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card">
-                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center">
-                            <span className="text-sm font-semibold text-primary">BF</span>
+                    <Link 
+                        href="/settings?profile=true"
+                        className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left"
+                    >
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative">
+                            {adminPhoto ? (
+                                <img src={adminPhoto} alt="Admin" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-sm font-semibold text-primary">BF</span>
+                            )}
                         </div>
                         <div className="hidden sm:block text-left">
-                            <h4 className="text-xs font-bold leading-tight">Admin</h4>
-                            <p className="text-[10px] text-muted-foreground">Super Admin</p>
+                            <h4 className="text-xs font-bold leading-tight">{displayName}</h4>
+                            <p className="text-[10px] text-muted-foreground">{roleTitle}</p>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </header>
 
@@ -412,18 +441,30 @@ export default function Rewards() {
                             
                             <form onSubmit={handleAddDesign} className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Image URL</label>
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Design Image</label>
                                     <div className="flex gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                const url = prompt("Enter design image URL:", newDesignImage);
-                                                if (url !== null) setNewDesignImage(url);
+                                        <input 
+                                            type="file"
+                                            id="reward-design-photo-upload"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => {
+                                                        setNewDesignImage(reader.result as string);
+                                                    };
+                                                    reader.readAsDataURL(file);
+                                                }
                                             }}
-                                            className="px-4 py-2 rounded-xl border border-dashed border-border hover:bg-[#F3ECE3]/30 dark:hover:bg-white/5 font-bold text-xs text-[#8B4513] dark:text-[#C07C4A] flex items-center gap-1.5"
+                                        />
+                                        <label
+                                            htmlFor="reward-design-photo-upload"
+                                            className="px-4 py-2 rounded-xl border border-dashed border-border hover:bg-[#F3ECE3]/30 dark:hover:bg-white/5 font-bold text-xs text-[#8B4513] dark:text-[#C07C4A] flex items-center gap-1.5 cursor-pointer"
                                         >
-                                            <ImageIcon className="w-4 h-4" /> Change Photo
-                                        </button>
+                                            <ImageIcon className="w-4 h-4" /> Choose Photo
+                                        </label>
                                         
                                         {newDesignImage && (
                                             <div className="flex items-center gap-2">

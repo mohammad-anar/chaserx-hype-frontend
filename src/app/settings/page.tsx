@@ -25,6 +25,42 @@ export default function Settings() {
     const [tempEmail, setTempEmail] = useState("");
     const [tempPhone, setTempPhone] = useState("");
 
+    React.useEffect(() => {
+        const savedName = localStorage.getItem("bf_admin_name");
+        const savedRole = localStorage.getItem("bf_admin_role");
+        const savedEmail = localStorage.getItem("bf_admin_email");
+        const savedPhone = localStorage.getItem("bf_admin_phone");
+        const savedPhoto = localStorage.getItem("bf_admin_photo");
+
+        if (savedName) setDisplayName(savedName);
+        if (savedRole) setRoleTitle(savedRole);
+        if (savedEmail) setEmail(savedEmail);
+        if (savedPhone) setPhone(savedPhone);
+        if (savedPhoto) setAdminPhoto(savedPhoto);
+
+        const savedStars = localStorage.getItem("bf_stars_per_dollar");
+        const savedMinOrder = localStorage.getItem("bf_min_order_stars");
+        const savedAutoNotif = localStorage.getItem("bf_auto_notifications");
+        const savedMaintMode = localStorage.getItem("bf_maintenance_mode");
+
+        if (savedStars) setStarsPerDollar(Number(savedStars));
+        if (savedMinOrder) setMinOrderForStars(Number(savedMinOrder));
+        if (savedAutoNotif) setAutoNotifications(savedAutoNotif === "true");
+        if (savedMaintMode) setMaintenanceMode(savedMaintMode === "true");
+
+        // Check query param
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get("profile") === "true") {
+                setTempDisplayName(savedName || "Admin");
+                setTempRoleTitle(savedRole || "Super Admin");
+                setTempEmail(savedEmail || "admin@beanfien.com");
+                setTempPhone(savedPhone || "+1555-0100");
+                setProfileModalOpen(true);
+            }
+        }
+    }, []);
+
     const handleOpenProfile = () => {
         setTempDisplayName(displayName);
         setTempRoleTitle(roleTitle);
@@ -39,11 +75,24 @@ export default function Settings() {
         setRoleTitle(tempRoleTitle);
         setEmail(tempEmail);
         setPhone(tempPhone);
+
+        localStorage.setItem("bf_admin_name", tempDisplayName);
+        localStorage.setItem("bf_admin_role", tempRoleTitle);
+        localStorage.setItem("bf_admin_email", tempEmail);
+        localStorage.setItem("bf_admin_phone", tempPhone);
+        localStorage.setItem("bf_admin_photo", adminPhoto);
+
         setProfileModalOpen(false);
+        // Notify other windows/components that details updated
+        window.dispatchEvent(new Event("adminProfileUpdated"));
         alert("Admin Profile updated successfully!");
     };
 
     const handleSaveChanges = () => {
+        localStorage.setItem("bf_stars_per_dollar", String(starsPerDollar));
+        localStorage.setItem("bf_min_order_stars", String(minOrderForStars));
+        localStorage.setItem("bf_auto_notifications", String(autoNotifications));
+        localStorage.setItem("bf_maintenance_mode", String(maintenanceMode));
         alert("Settings saved successfully!");
     };
 
@@ -62,8 +111,11 @@ export default function Settings() {
                         className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 transition-colors text-left cursor-pointer"
                     >
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative">
-                            {/* Simple circle showing initials/logo */}
-                            <span className="text-xs font-bold text-primary">BF</span>
+                            {adminPhoto ? (
+                                <img src={adminPhoto} alt="Admin" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-xs font-bold text-primary">BF</span>
+                            )}
                         </div>
                         <div className="hidden sm:block text-left">
                             <h4 className="text-xs font-bold leading-tight">{displayName}</h4>
@@ -204,24 +256,39 @@ export default function Settings() {
                             {/* Avatar Photo Section */}
                             <div className="flex flex-col items-center gap-2 py-2">
                                 <div className="relative">
-                                    <div className="w-20 h-20 rounded-full bg-[#3D251E] flex items-center justify-center text-white text-2xl font-bold shadow-md border-2 border-primary/25 overflow-hidden">
-                                        {/* Logo simulation */}
-                                        <span className="font-serif text-xl">BF</span>
+                                    <div className="w-20 h-20 rounded-full bg-[#3D251E] flex items-center justify-center text-white text-2xl font-bold shadow-md border-2 border-primary/25 overflow-hidden relative">
+                                        {adminPhoto ? (
+                                            <img src={adminPhoto} alt="Admin Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="font-serif text-xl">BF</span>
+                                        )}
                                     </div>
-                                    <button 
-                                        type="button"
-                                        onClick={() => {
-                                            const url = prompt("Enter new photo URL:");
-                                            if (url) setAdminPhoto(url);
+                                    <input 
+                                        type="file"
+                                        id="admin-photo-upload"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                const reader = new FileReader();
+                                                reader.onloadend = () => {
+                                                    setAdminPhoto(reader.result as string);
+                                                };
+                                                reader.readAsDataURL(file);
+                                            }
                                         }}
-                                        className="absolute bottom-0 right-0 p-1.5 bg-[#2C1A14] text-white rounded-full shadow border border-white hover:opacity-90 cursor-pointer"
+                                    />
+                                    <label 
+                                        htmlFor="admin-photo-upload"
+                                        className="absolute bottom-0 right-0 p-1.5 bg-[#2C1A14] text-white rounded-full shadow border border-white hover:opacity-90 cursor-pointer flex items-center justify-center"
                                     >
                                         <Camera className="w-3.5 h-3.5" />
-                                    </button>
+                                    </label>
                                 </div>
                                 <button 
                                     type="button"
-                                    onClick={() => alert("Photo removed")}
+                                    onClick={() => setAdminPhoto("")}
                                     className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
                                 >
                                     Remove Photo

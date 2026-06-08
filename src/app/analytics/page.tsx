@@ -1,5 +1,6 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useState } from "react";
+import Link from "next/link";
 import { 
     AreaChart, 
     Area, 
@@ -54,6 +55,27 @@ const topItems: TopItem[] = [
 ];
 
 export default function Analytics() {
+    const [displayName, setDisplayName] = useState("Admin");
+    const [roleTitle, setRoleTitle] = useState("Super Admin");
+    const [adminPhoto, setAdminPhoto] = useState("");
+
+    useEffect(() => {
+        const loadProfile = () => {
+            const savedName = localStorage.getItem("bf_admin_name");
+            const savedRole = localStorage.getItem("bf_admin_role");
+            const savedPhoto = localStorage.getItem("bf_admin_photo");
+            if (savedName) setDisplayName(savedName);
+            if (savedRole) setRoleTitle(savedRole);
+            if (savedPhoto) setAdminPhoto(savedPhoto);
+        };
+
+        loadProfile();
+        window.addEventListener("adminProfileUpdated", loadProfile);
+        return () => {
+            window.removeEventListener("adminProfileUpdated", loadProfile);
+        };
+    }, []);
+
     return (
         <div className="flex-1 p-4 md:p-8 space-y-6 bg-[#FAF6F0] dark:bg-background min-h-screen text-foreground transition-colors duration-300">
             {/* Header */}
@@ -64,15 +86,22 @@ export default function Analytics() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card">
-                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center">
-                            <span className="text-sm font-semibold text-primary">BF</span>
+                    <Link 
+                        href="/settings?profile=true"
+                        className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left"
+                    >
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative">
+                            {adminPhoto ? (
+                                <img src={adminPhoto} alt="Admin" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-sm font-semibold text-primary">BF</span>
+                            )}
                         </div>
                         <div className="hidden sm:block text-left">
-                            <h4 className="text-xs font-bold leading-tight">Admin</h4>
-                            <p className="text-[10px] text-muted-foreground">Super Admin</p>
+                            <h4 className="text-xs font-bold leading-tight">{displayName}</h4>
+                            <p className="text-[10px] text-muted-foreground">{roleTitle}</p>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </header>
 
