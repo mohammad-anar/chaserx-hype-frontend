@@ -14,10 +14,13 @@ import {
     ArrowRight, 
     Star, 
     X,
-    Heart
+    Gauge,
+    Tag,
+    MapPin,
+    ArrowUpRight
 } from "lucide-react";
 
-// Mock Menu Items
+// Menu Items Interface
 interface MenuItem {
     id: string;
     name: string;
@@ -27,18 +30,27 @@ interface MenuItem {
     image: string;
 }
 
+// Full Menu Items List including "The Daily Grind" items
 const menuItems: MenuItem[] = [
+    // Daily Grind (Featured)
+    { id: "dg1", name: "Nitro Velvet", price: 6.50, description: "12-hour cold extraction infused with nitrogen for a creamy, stout-like finish.", category: "iced", image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=500" },
+    { id: "dg2", name: "Oat Silk Latte", price: 5.75, description: "Double ristretto shot paired with micro-foamed premium oat milk.", category: "hot", image: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=500" },
+    { id: "dg3", name: "Citrus Ember", price: 7.00, description: "A warming blend of spiced espresso and blood orange reduction.", category: "hot", image: "https://images.unsplash.com/photo-1513530534585-c7b1394c6d51?auto=format&fit=crop&q=80&w=500" },
+    
     // Hot Drinks
     { id: "h1", name: "Classic Flat White", price: 4.50, description: "Smooth ristretto espresso with silky steamed milk.", category: "hot", image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&q=80&w=500" },
     { id: "h2", name: "Caramel Macchiato", price: 5.20, description: "Freshly steamed milk with vanilla-flavored syrup, marked with espresso.", category: "hot", image: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&q=80&w=500" },
     { id: "h3", name: "Cortado", price: 4.00, description: "Equal parts espresso and warm milk to reduce the acidity.", category: "hot", image: "https://images.unsplash.com/photo-151097252790b-af4f90267300?auto=format&fit=crop&q=80&w=500" },
+    
     // Iced
     { id: "i1", name: "Swirled Iced Latte", price: 4.75, description: "Rich espresso over ice, swirled with organic whole milk and honey.", category: "iced", image: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500" },
     { id: "i2", name: "Cold Brew Tonic", price: 5.50, description: "Slow-steeped cold brew coffee topped with premium tonic and lime.", category: "iced", image: "https://images.unsplash.com/photo-1513530534585-c7b1394c6d51?auto=format&fit=crop&q=80&w=500" },
     { id: "i3", name: "Shakerato", price: 4.80, description: "Espresso shaken violently with ice and simple syrup, served frothy.", category: "iced", image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=500" },
+    
     // Blended
     { id: "b1", name: "Hazelnut Frappe", price: 5.75, description: "Blended coffee, milk, and hazelnut syrup, finished with whipped cream.", category: "blended", image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&q=80&w=500" },
     { id: "b2", name: "Matcha Mint Blend", price: 5.90, description: "Creamy Japanese matcha blended with fresh mint and ice.", category: "blended", image: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&q=80&w=500" },
+    
     // Bakery
     { id: "k1", name: "Butter Croissant", price: 3.75, description: "Flaky, golden-brown puff pastry baked fresh daily.", category: "bakery", image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&q=80&w=500" },
     { id: "k2", name: "Pistachio Almond Tart", price: 4.50, description: "Sweet crust filled with almond cream and chopped roasted pistachios.", category: "bakery", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=500" }
@@ -204,9 +216,9 @@ export default function WebsiteHome() {
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wider uppercase">
                         <Link href="#home" className="text-[#C07C4A] hover:text-[#C07C4A] transition-colors border-b-2 border-[#C07C4A] pb-1">Home</Link>
-                        <Link href="#menu" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Menu</Link>
-                        <Link href="#rewards" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
-                        <Link href="#gift-cards" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
+                        <Link href="#daily-grind" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Menu</Link>
+                        <Link href="#loyalty" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
+                        <Link href="#app-promo" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
                     </nav>
 
                     {/* Right utility buttons */}
@@ -283,7 +295,7 @@ export default function WebsiteHome() {
             </header>
 
             {/* Hero Section */}
-            <section id="home" className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24 flex flex-col lg:flex-row items-center gap-12 min-h-[calc(100vh-80px)] justify-center">
+            <section id="home" className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col lg:flex-row items-center gap-12 min-h-[calc(100vh-80px)] justify-center">
                 {/* Hero Content Left */}
                 <div className="flex-1 text-left space-y-6 max-w-xl">
                     <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#C07C4A]/10 border border-[#C07C4A]/20">
@@ -292,10 +304,10 @@ export default function WebsiteHome() {
                     </div>
 
                     <div className="space-y-2">
-                        <h1 className="font-serif text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-tight">
+                        <h1 className="font-serif text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-tight animate-fade-in">
                             Bean Fien.
                         </h1>
-                        <h2 className="font-serif text-4xl md:text-5xl font-normal italic text-[#D9531E] leading-tight font-serif">
+                        <h2 className="font-serif text-4xl md:text-5xl font-normal italic text-[#D9531E] leading-tight">
                             A vibe for the ride
                         </h2>
                     </div>
@@ -307,7 +319,7 @@ export default function WebsiteHome() {
 
                     <div className="flex flex-wrap gap-4 pt-2">
                         <Link 
-                            href="#menu" 
+                            href="#daily-grind" 
                             className="px-8 py-3.5 rounded-xl bg-[#5C2E16] hover:bg-[#8B4513] text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 shadow-lg shadow-[#5C2E16]/30 hover:scale-[1.02]"
                         >
                             Order Now
@@ -377,355 +389,354 @@ export default function WebsiteHome() {
                 </div>
             </section>
 
-            {/* Menu Section */}
-            <section id="menu" className="relative z-30 bg-[#1A0D09]/95 py-24 border-t border-b border-white/5">
+            {/* SECTION 1: Stats Bar */}
+            <section className="bg-[#2C1711] py-10 border-y border-white/5 relative z-30 shadow-inner">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="text-center space-y-4 max-w-2xl mx-auto mb-16">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-[#C07C4A]">Curated Menu</span>
-                        <h2 className="font-serif text-4xl md:text-5xl font-extrabold text-white">
-                            Discover the Art of Specialty Pour
-                        </h2>
-                        <div className="w-16 h-[2px] bg-[#C07C4A] mx-auto mt-4" />
-                    </div>
-
-                    {/* Category tabs */}
-                    <div className="flex justify-center flex-wrap gap-2 sm:gap-3 mb-12">
-                        {(["hot", "iced", "blended", "bakery"] as const).map((cat) => (
-                            <button
-                                key={cat}
-                                onClick={() => setMenuTab(cat)}
-                                className={`
-                                    px-6 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase transition-all duration-300
-                                    ${menuTab === cat 
-                                        ? "bg-[#C07C4A] text-[#140A07] shadow-lg shadow-[#C07C4A]/20" 
-                                        : "bg-white/5 border border-white/10 text-white/70 hover:text-white hover:bg-white/10"
-                                    }
-                                `}
-                            >
-                                {cat === "hot" && "Hot Drinks"}
-                                {cat === "iced" && "Iced Coffee"}
-                                {cat === "blended" && "Blended Frappes"}
-                                {cat === "bakery" && "Fresh Bakery"}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Menu items grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                        {menuItems.filter(item => item.category === menuTab).map((item) => (
-                            <div 
-                                key={item.id}
-                                className="bg-[#24130F] rounded-2xl overflow-hidden border border-white/5 shadow-md flex flex-col justify-between hover:border-[#C07C4A]/30 transition-all duration-300 hover:-translate-y-1 group"
-                            >
-                                <div className="h-52 w-full overflow-hidden relative">
-                                    <img 
-                                        src={item.image} 
-                                        alt={item.name} 
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                                    />
-                                    <div className="absolute top-4 right-4 bg-[#140A07]/80 backdrop-blur-md px-3.5 py-1 rounded-full border border-white/10">
-                                        <span className="text-sm font-bold text-[#C07C4A]">${item.price.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <div className="p-6 flex-1 flex flex-col justify-between space-y-4 text-left">
-                                    <div>
-                                        <h3 className="font-serif text-lg font-bold text-white group-hover:text-[#C07C4A] transition-colors">{item.name}</h3>
-                                        <p className="text-xs text-[#FAF6F0]/60 mt-2 line-clamp-2 leading-relaxed">{item.description}</p>
-                                    </div>
-                                    <button
-                                        onClick={() => addToCart(item)}
-                                        className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-[#C07C4A] border border-[#C07C4A]/30 hover:border-[#C07C4A] text-white hover:text-[#140A07] text-xs font-bold uppercase tracking-wider transition-all duration-300"
-                                    >
-                                        Add to Cart
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+                        <div className="space-y-1 flex flex-col items-center">
+                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">10x</h3>
+                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Points per purchase</p>
+                        </div>
+                        <div className="space-y-1 flex flex-col items-center">
+                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">500+</h3>
+                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Menu combinations</p>
+                        </div>
+                        <div className="space-y-1 flex flex-col items-center">
+                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Free</h3>
+                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Drink at 150 pts</p>
+                        </div>
+                        <div className="space-y-1 flex flex-col items-center">
+                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">5 min</h3>
+                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Avg. pickup time</p>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* Rewards Program Section */}
-            <section id="rewards" className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-                <div className="max-w-4xl mx-auto bg-gradient-to-br from-[#24130F] to-[#140A07] rounded-3xl p-8 md:p-12 border border-[#C07C4A]/20 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center gap-10">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#C07C4A]/5 rounded-full blur-3xl pointer-events-none" />
-                    
-                    {/* Left: Info */}
-                    <div className="flex-1 text-left space-y-6">
-                        <div className="inline-flex items-center gap-2 text-[#C07C4A] bg-[#C07C4A]/10 border border-[#C07C4A]/20 px-3 py-1 rounded-full">
-                            <Gift className="w-4 h-4" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Rewards Program</span>
-                        </div>
-                        <h2 className="font-serif text-3xl md:text-4xl font-extrabold text-white">
-                            Sip, Earn Stars & Redeem Rewards
-                        </h2>
-                        <p className="text-sm text-[#FAF6F0]/70 leading-relaxed font-light">
-                            Receive 2 Stars for every $1 spent in shop or online. Accumulate stars and redeem them 
-                            for handcrafted beverages, bakery selections, or signature blends.
-                        </p>
-
-                        <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
-                            <div>
-                                <span className="text-2xl font-bold text-[#C07C4A] block">200 ★</span>
-                                <span className="text-[10px] text-white/50 uppercase tracking-widest font-semibold">Free Coffee</span>
-                            </div>
-                            <div>
-                                <span className="text-2xl font-bold text-[#C07C4A] block">400 ★</span>
-                                <span className="text-[10px] text-white/50 uppercase tracking-widest font-semibold">Free Pastry + Bag</span>
-                            </div>
-                            <div>
-                                <span className="text-2xl font-bold text-[#C07C4A] block">150 ★</span>
-                                <span className="text-[10px] text-white/50 uppercase tracking-widest font-semibold">Current Balance</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right: Live Interactive Card */}
-                    <div className="w-full md:w-80 bg-[#1E0F0B] p-6 rounded-2xl border border-white/5 shadow-xl text-center space-y-5">
-                        <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold uppercase text-white/40 tracking-wider">Loyalty Club</span>
-                            <div className="flex items-center gap-1 text-[#C07C4A] font-bold text-xs bg-[#C07C4A]/10 px-2 py-0.5 rounded-full">
-                                <Star className="w-3.5 h-3.5 fill-[#C07C4A]" />
-                                <span>{userStars} Stars</span>
-                            </div>
-                        </div>
-
-                        {/* Visual Progress ring/bar */}
-                        <div className="space-y-2 text-left">
-                            <div className="flex justify-between text-xs font-semibold">
-                                <span className="text-white/70">Next Reward (Free Coffee)</span>
-                                <span className="text-[#C07C4A]">150 / 200</span>
-                            </div>
-                            <div className="w-full bg-[#FAF6F0]/10 h-3 rounded-full overflow-hidden p-[2px] border border-white/5">
-                                <div 
-                                    className="bg-gradient-to-r from-[#8B4513] to-[#C07C4A] h-full rounded-full transition-all duration-1000"
-                                    style={{ width: `${(userStars / 200) * 100}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="pt-2">
-                            {starsClaimed ? (
-                                <div className="py-2 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-center gap-2">
-                                    <Check className="w-4 h-4" /> Reward Claimed Successfully!
-                                </div>
-                            ) : (
-                                <button
-                                    onClick={claimReward}
-                                    disabled={userStars < 150}
-                                    className={`
-                                        w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300
-                                        ${userStars >= 150 
-                                            ? "bg-[#C07C4A] text-[#140A07] hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#C07C4A]/10" 
-                                            : "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
-                                        }
-                                    `}
-                                >
-                                    Claim Reward (150 ★)
-                                </button>
-                            )}
-                        </div>
-
-                        <p className="text-[9px] text-[#FAF6F0]/40 leading-normal">
-                            Stars never expire for loyalty card holders. Terms apply.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            {/* Gift Cards Section */}
-            <section id="gift-cards" className="relative z-30 bg-[#1A0D09]/95 py-24 border-t border-white/5">
+            {/* SECTION 2: The Daily Grind */}
+            <section id="daily-grind" className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="text-center space-y-4 max-w-2xl mx-auto mb-16">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-[#C07C4A]">Send Love</span>
-                        <h2 className="font-serif text-4xl md:text-5xl font-extrabold text-white">
-                            Bean Fien Gift Cards
-                        </h2>
-                        <p className="text-sm text-[#FAF6F0]/60 max-w-lg mx-auto">
-                            Design a custom e-gift card for friends and family. Delivered instantly to their email address.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                        {/* Interactive Design Preview */}
-                        <div className="flex flex-col items-center gap-6 justify-center">
-                            {/* Card Body */}
-                            <div 
-                                className={`
-                                    w-80 sm:w-96 h-48 sm:h-56 rounded-3xl p-6 flex flex-col justify-between border relative overflow-hidden shadow-2xl transition-all duration-500
-                                    ${gcDesign === "classic" && "bg-gradient-to-br from-[#2C1711] to-[#120604] border-[#C07C4A]/30 text-white"}
-                                    ${gcDesign === "birthday" && "bg-gradient-to-br from-[#5C2E16] to-[#A25F37] border-white/10 text-white"}
-                                    ${gcDesign === "holiday" && "bg-gradient-to-br from-[#1E0F0B] to-[#5C2E16] border-[#D9531E]/40 text-white"}
-                                `}
-                            >
-                                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-                                
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/20 flex items-center justify-center">
-                                            <img src="/logo.svg" alt="Logo" className="w-full h-full object-cover p-0.5" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-serif text-xs font-bold leading-none tracking-wide">Bean Fien</h4>
-                                            <span className="text-[8px] uppercase tracking-wider opacity-60">e-Gift Card</span>
-                                        </div>
-                                    </div>
-                                    <CreditCard className="w-6 h-6 opacity-40" />
-                                </div>
-
-                                <div className="text-left">
-                                    <span className="text-[9px] uppercase tracking-widest opacity-60">Card Value</span>
-                                    <div className="text-3xl sm:text-4xl font-serif font-bold mt-1">
-                                        ${gcCustomAmount ? gcCustomAmount : gcAmount}
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-between items-center text-[10px] opacity-75">
-                                    <span>TO: {gcRecipient || "Your Name"}</span>
-                                    <span>VALID FOREVER</span>
-                                </div>
-                            </div>
-
-                            {/* Card Themes Selector */}
-                            <div className="space-y-2">
-                                <span className="text-xs font-bold uppercase tracking-widest text-[#FAF6F0]/40">Choose Card Theme</span>
-                                <div className="flex gap-3">
-                                    {(["classic", "birthday", "holiday"] as const).map((style) => (
-                                        <button
-                                            key={style}
-                                            onClick={() => setGcDesign(style)}
-                                            className={`
-                                                px-4 py-2 rounded-xl text-xs font-bold capitalize transition-all border
-                                                ${gcDesign === style 
-                                                    ? "bg-[#C07C4A] text-[#140A07] border-[#C07C4A]" 
-                                                    : "bg-white/5 text-white/70 border-white/10 hover:text-white"
-                                                }
-                                            `}
-                                        >
-                                            {style}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
+                    {/* Section Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-16">
+                        <div className="text-left space-y-2">
+                            <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14]">
+                                The Daily Grind
+                            </h2>
+                            <p className="text-sm sm:text-base text-[#6B5E59] font-medium">
+                                Our most requested pours, crafted to perfection.
+                            </p>
                         </div>
-
-                        {/* Gift Card Builder Form */}
-                        <form onSubmit={handleGiftCardPurchase} className="bg-[#24130F] p-8 rounded-3xl border border-white/5 text-left space-y-6 shadow-xl max-w-lg mx-auto w-full">
-                            <h3 className="font-serif text-xl font-bold text-white">Customise Gift Amount</h3>
-                            
-                            {/* Standard Amounts */}
-                            <div className="space-y-3">
-                                <span className="text-xs font-semibold text-white/50 block">Select standard amount:</span>
-                                <div className="grid grid-cols-4 gap-3">
-                                    {[10, 25, 50, 100].map((amount) => (
-                                        <button
-                                            type="button"
-                                            key={amount}
-                                            onClick={() => {
-                                                setGcAmount(amount);
-                                                setGcCustomAmount("");
-                                            }}
-                                            className={`
-                                                py-2.5 rounded-xl text-sm font-bold transition-all border
-                                                ${gcAmount === amount && !gcCustomAmount
-                                                    ? "bg-[#C07C4A] text-[#140A07] border-[#C07C4A]" 
-                                                    : "bg-white/5 border-white/10 text-white/80 hover:text-white hover:bg-white/10"
-                                                }
-                                            `}
-                                        >
-                                            ${amount}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Custom Amount */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-white/50 block">Or enter custom amount ($):</label>
-                                <input
-                                    type="number"
-                                    min="5"
-                                    max="500"
-                                    placeholder="Enter custom card value"
-                                    value={gcCustomAmount}
-                                    onChange={(e) => setGcCustomAmount(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#140A07] text-white focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/50 focus:border-[#C07C4A] transition-all text-sm"
-                                />
-                            </div>
-
-                            {/* Recipient Details */}
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-white/50 block">Recipient Email / Name:</label>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="friend@email.com"
-                                    value={gcRecipient}
-                                    onChange={(e) => setGcRecipient(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-white/10 bg-[#140A07] text-white focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/50 focus:border-[#C07C4A] transition-all text-sm"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-4 rounded-xl bg-[#5C2E16] hover:bg-[#8B4513] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 shadow-md shadow-[#5C2E16]/30"
-                            >
-                                Purchase e-Gift Card
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </section>
-
-            {/* Footer Section */}
-            <footer className="relative z-30 bg-[#140A07] border-t border-white/10 py-16 text-left">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-10">
-                    <div className="space-y-4">
-                        <Link href="/" className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full overflow-hidden bg-[#2C1711] border border-[#C07C4A]/40 flex items-center justify-center">
-                                <img src="/logo.svg" alt="Bean Fien Logo" className="w-full h-full object-cover p-1" />
-                            </div>
-                            <span className="font-serif text-lg font-bold tracking-wider text-white">Bean Fien</span>
+                        <Link 
+                            href="#menu" 
+                            className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#2C1A14] hover:text-[#8B4513] transition-colors border-b border-[#2C1A14] pb-1 hover:border-[#8B4513] group w-fit"
+                        >
+                            <span>Full Menu</span>
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                         </Link>
-                        <p className="text-xs text-white/50 leading-relaxed font-light">
-                            Specialty coffee micro-roaster supplying high-grade roasted beans, cold brews, 
-                            and fine artisan bakery goods to the local community.
-                        </p>
                     </div>
 
-                    <div>
-                        <h4 className="font-serif text-sm font-bold text-white uppercase tracking-wider mb-4">Opening Hours</h4>
-                        <ul className="text-xs text-white/60 space-y-2">
-                            <li>Monday - Friday: 6:00 AM - 8:00 PM</li>
-                            <li>Saturday: 7:00 AM - 9:00 PM</li>
-                            <li>Sunday: 7:00 AM - 6:00 PM</li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-serif text-sm font-bold text-white uppercase tracking-wider mb-4">Location</h4>
-                        <p className="text-xs text-white/60 leading-relaxed">
-                            482 Espresso Boulevard,<br />
-                            Coffee Quarter, Suite 101<br />
-                            Portland, OR 97201
-                        </p>
-                    </div>
-
-                    <div>
-                        <h4 className="font-serif text-sm font-bold text-white uppercase tracking-wider mb-4">Connect</h4>
-                        <div className="flex items-center gap-4 text-xs text-white/60 mb-3">
-                            <Link href="#" className="hover:text-[#C07C4A] transition-colors">Instagram</Link>
-                            <Link href="#" className="hover:text-[#C07C4A] transition-colors">Twitter</Link>
-                            <Link href="#" className="hover:text-[#C07C4A] transition-colors">Facebook</Link>
+                    {/* Drink Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Nitro Velvet */}
+                        <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4">
+                            <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=500" 
+                                    alt="Nitro Velvet cold extraction" 
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                />
+                            </div>
+                            <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Nitro Velvet</h4>
+                                        <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg1")?.price.toFixed(2)}</span>
+                                    </div>
+                                    <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                        12-hour cold extraction infused with nitrogen for a creamy, stout-like finish.
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => addToCart(menuItems.find(i => i.id === "dg1")!)}
+                                    className="w-full py-3 rounded-xl bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300"
+                                >
+                                    Add to Cart
+                                </button>
+                            </div>
                         </div>
-                        <p className="text-[10px] text-white/30">
-                            &copy; 2026 Bean Fien Coffee. All rights reserved.
-                        </p>
+
+                        {/* Oat Silk Latte */}
+                        <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4">
+                            <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=500" 
+                                    alt="Oat Silk Latte" 
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                />
+                            </div>
+                            <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Oat Silk Latte</h4>
+                                        <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg2")?.price.toFixed(2)}</span>
+                                    </div>
+                                    <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                        Double ristretto shot paired with micro-foamed premium oat milk.
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => addToCart(menuItems.find(i => i.id === "dg2")!)}
+                                    className="w-full py-3 rounded-xl bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300"
+                                >
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Citrus Ember */}
+                        <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4">
+                            <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
+                                <img 
+                                    src="https://images.unsplash.com/photo-1513530534585-c7b1394c6d51?auto=format&fit=crop&q=80&w=500" 
+                                    alt="Citrus Ember espresso" 
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                />
+                            </div>
+                            <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
+                                <div className="space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Citrus Ember</h4>
+                                        <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg3")?.price.toFixed(2)}</span>
+                                    </div>
+                                    <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                        A warming blend of spiced espresso and blood orange reduction.
+                                    </p>
+                                </div>
+                                <button 
+                                    onClick={() => addToCart(menuItems.find(i => i.id === "dg3")!)}
+                                    className="w-full py-3 rounded-xl bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300"
+                                >
+                                    Add to Cart
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </footer>
+            </section>
+
+            {/* SECTION 3: Everything in one app */}
+            <section className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Section Header */}
+                    <div className="text-center space-y-3 max-w-2xl mx-auto mb-16">
+                        <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14]">
+                            Everything in one app
+                        </h2>
+                        <p className="text-sm sm:text-base text-[#6B5E59] font-medium">
+                            The ultimate coffee companion for your daily ritual.
+                        </p>
+                    </div>
+
+                    {/* Features cards grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {/* Express Checkout */}
+                        <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300">
+                            <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                                <Gauge className="w-6 h-6 stroke-1.5" />
+                            </div>
+                            <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Express Checkout</h3>
+                            <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                Save your favorites and skip the line with one-tap mobile ordering and payment.
+                            </p>
+                        </div>
+
+                        {/* Elite Rewards */}
+                        <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300">
+                            <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                                <Tag className="w-6 h-6 stroke-1.5" />
+                            </div>
+                            <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Elite Rewards</h3>
+                            <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                Track your points in real-time and unlock exclusive perks, early access, and free drinks.
+                            </p>
+                        </div>
+
+                        {/* Brew Tracker */}
+                        <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300">
+                            <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                                <MapPin className="w-6 h-6 stroke-1.5" />
+                            </div>
+                            <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Brew Tracker</h3>
+                            <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                Follow your delivery from the moment our baristas pull the shot to your doorstep.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* SECTION 4: Loyalty Program (Your next pour is on us) */}
+            <section id="loyalty" className="bg-[#0A0503] py-24 relative z-30 border-b border-white/5 text-left">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
+                    {/* Left details & progress indicator */}
+                    <div className="flex-1 space-y-8 max-w-xl w-full">
+                        <div className="space-y-4">
+                            <span className="text-xs font-bold uppercase tracking-widest text-[#C07C4A]">Loyalty Program</span>
+                            <h2 className="font-serif text-4xl sm:text-5xl font-extrabold text-white leading-tight">
+                                Your next pour is on us.
+                            </h2>
+                            <p className="text-sm text-[#FAF6F0]/70 leading-relaxed font-light">
+                                Join the Bean Fien circle. Earn beans with every purchase and unlock exclusive seasonal drops and members-only events.
+                            </p>
+                        </div>
+
+                        {/* Current Balance Box */}
+                        <div className="bg-[#180C08] p-6 rounded-2xl border border-white/5 space-y-6 shadow-xl w-full">
+                            <div className="flex justify-between items-center text-xs font-bold">
+                                <span className="text-white/80">Current Balance: 750 Beans</span>
+                                <span className="text-[#C07C4A]">Free Drink at 1000</span>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="space-y-3">
+                                <div className="w-full bg-white/5 h-2.5 rounded-full overflow-hidden p-[1px] border border-white/5">
+                                    <div 
+                                        className="bg-gradient-to-r from-[#8B4513] to-[#C07C4A] h-full rounded-full transition-all duration-1000"
+                                        style={{ width: "75%" }}
+                                    />
+                                </div>
+                                {/* Progress Ticks */}
+                                <div className="flex justify-between text-[10px] font-bold text-white/40 px-1">
+                                    <span>250</span>
+                                    <span>500</span>
+                                    <span className="text-[#C07C4A] font-extrabold">750</span>
+                                    <span>1000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right: Black marble tray with coffee cups */}
+                    <div className="flex-1 w-full flex justify-center relative">
+                        <div className="w-full max-w-[480px] h-[340px] sm:h-[400px] bg-gradient-to-br from-[#1E252C] to-[#0D1013] rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden flex items-center justify-center transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 group">
+                            {/* Coffee Cup Layout Collage Image */}
+                            <img 
+                                src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=800" 
+                                alt="Coffee cups tray view" 
+                                className="w-full h-full object-cover rounded-2xl shadow-inner border border-white/5 group-hover:scale-[1.02] transition-transform duration-700"
+                            />
+                            {/* Decorative badge overlay */}
+                            <div className="absolute bottom-10 right-10 z-20 bg-[#0A0503]/85 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-1.5 shadow-lg">
+                                <Star className="w-3.5 h-3.5 fill-[#C07C4A] text-[#C07C4A]" />
+                                <span className="text-[10px] uppercase tracking-wider text-white font-bold">Exclusive Drops</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* SECTION 5: App Promotion with Tilted iPhone mockup */}
+            <section id="app-promo" className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10 text-left">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
+                    {/* Left Column Description */}
+                    <div className="flex-1 space-y-6 max-w-xl">
+                        <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14] leading-tight">
+                            Your daily ritual,<br />now in your pocket.
+                        </h2>
+                        <p className="text-sm sm:text-base text-[#6B5E59] leading-relaxed font-light font-sans">
+                            Order ahead, skip the line, and customize your drink with surgical precision. The Bean Fien app is coffee at your fingertips.
+                        </p>
+
+                        {/* Store Badges */}
+                        <div className="flex flex-wrap gap-4 pt-4">
+                            {/* App Store Badge */}
+                            <Link 
+                                href="#" 
+                                className="inline-flex items-center gap-3 bg-[#2A120C] text-white px-5 py-3 rounded-2xl shadow hover:bg-[#4A241A] transition-all duration-300 w-fit"
+                            >
+                                <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.11.09 2.26-.57 2.95-1.39z"/>
+                                </svg>
+                                <div className="text-left leading-none">
+                                    <span className="text-[9px] uppercase tracking-wider block opacity-75">Download on the</span>
+                                    <span className="text-sm font-bold block font-sans">App Store</span>
+                                </div>
+                            </Link>
+
+                            {/* Google Play Badge */}
+                            <Link 
+                                href="#" 
+                                className="inline-flex items-center gap-3 bg-[#2A120C] text-white px-5 py-3 rounded-2xl shadow hover:bg-[#4A241A] transition-all duration-300 w-fit"
+                            >
+                                <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+                                    <path d="M5 3.25c-.28 0-.5.22-.5.5v16.5c0 .28.22.5.5.5h1.22l9.06-9.06L6.22 3.25H5zm2.84.5l8.13 8.13-1.63 1.63L6.44 5.61l1.4-1.86zm8.88 8.88l3.19-3.19c.28-.28.28-.72 0-1L12.56 1.13c-.28-.28-.72-.28-1 0L7.88 4.81l8.84 8.82zm.72.72l-8.84-8.84-3.19 3.19c-.28.28-.28.72 0 1l7.35 7.35c.28.28.72.28 1 0l3.68-3.7z"/>
+                                </svg>
+                                <div className="text-left leading-none">
+                                    <span className="text-[9px] uppercase tracking-wider block opacity-75">Get it on</span>
+                                    <span className="text-sm font-bold block font-sans">Google Play</span>
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+
+                    {/* Right Column Tilted iPhone Mockup */}
+                    <div className="flex-1 w-full flex justify-center items-center relative py-6">
+                        {/* CSS iPhone Frame */}
+                        <div className="relative border-zinc-800 bg-zinc-800 border-[12px] rounded-[3rem] h-[580px] w-[285px] shadow-2xl transform lg:rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden flex flex-col justify-between p-5 text-center relative border-b-[14px]">
+                            {/* Speaker notch */}
+                            <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-4 bg-black rounded-full z-40 flex items-center justify-center">
+                                <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 absolute left-4" />
+                                <span className="w-8 h-1 bg-zinc-800 rounded-full" />
+                            </div>
+
+                            {/* Mobile App Screen Content */}
+                            <div className="rounded-[2.2rem] overflow-hidden w-full h-full bg-[#F5EFEB] flex flex-col justify-between p-5 relative text-left">
+                                {/* Floating coffee beans decor */}
+                                <div className="absolute top-16 right-4 text-[10px] rotate-12 opacity-30 select-none">🍂</div>
+                                <div className="absolute bottom-32 left-3 text-[14px] -rotate-45 opacity-30 select-none">🍂</div>
+                                
+                                {/* App Header Logo area */}
+                                <div className="flex flex-col items-center text-center mt-8 space-y-3">
+                                    <div className="w-16 h-16 rounded-full bg-[#3E1F17] flex items-center justify-center border border-[#8B4513] shadow-md p-1.5">
+                                        <img src="/logo.svg" alt="Bean Fien character" className="w-full h-full object-contain" />
+                                    </div>
+                                    <span className="text-[9px] font-bold text-zinc-400 tracking-widest uppercase">Est 2024</span>
+                                </div>
+
+                                {/* App Promo Slogan */}
+                                <div className="space-y-2 text-center py-4">
+                                    <h3 className="font-serif text-lg font-black text-[#2C1A14] leading-tight tracking-tight">
+                                        AITA COFFEE,<br />
+                                        SOFE & YOU
+                                    </h3>
+                                    <p className="text-[9px] text-zinc-500 font-semibold italic">
+                                        Brewing comfort. Serving vibes.
+                                    </p>
+                                </div>
+
+                                {/* Small Coffee cup image */}
+                                <div className="h-28 w-full rounded-2xl overflow-hidden shadow-inner my-2">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=400" 
+                                        alt="Latte inside app" 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                </div>
+
+                                {/* Call to Action Start Button */}
+                                <button 
+                                    type="button" 
+                                    className="w-full py-2.5 rounded-xl bg-[#2A120C] text-white text-[11px] font-bold uppercase tracking-widest text-center shadow-md shadow-[#2A120C]/35 hover:bg-[#4A241A] transition-colors"
+                                >
+                                    Get Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
 
             {/* Shopping Cart Drawer */}
             {isCartOpen && (
