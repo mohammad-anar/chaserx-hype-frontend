@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Lora, Outfit } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/providers/ReduxProvider";
-import Sidebar from "@/components/Sidebar";
 
 const lora = Lora({
     subsets: ["latin"],
@@ -30,15 +29,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className="scroll-smooth">
             <body className={`${outfit.variable} ${lora.variable} font-sans antialiased bg-background text-foreground`}>
                 <ReduxProvider>
-                    <div className="flex flex-col lg:flex-row min-h-screen">
-                        <Sidebar />
-                        <main className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-                            {children}
-                        </main>
-                    </div>
+                    {children}
                 </ReduxProvider>
             </body>
         </html>

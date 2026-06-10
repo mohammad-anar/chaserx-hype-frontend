@@ -22,7 +22,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-    { title: "Dashboard", url: "/", icon: LayoutDashboard },
+    { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
     { title: "Orders", url: "/orders", icon: ShoppingBag },
     { title: "Menu", url: "/menu", icon: Coffee },
     { title: "Customers", url: "/customers", icon: Users },
@@ -113,13 +113,13 @@ export default function Sidebar() {
 
                 {/* Footer Section */}
                 <div className="p-4 border-t border-[#2C1711]">
-                    <button 
-                        onClick={() => alert("Exiting Admin Panel...")}
+                    <Link 
+                        href="/"
                         className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#2D1616] hover:bg-[#3E1F1F] text-[#FCA5A5] hover:text-white rounded-xl transition-all duration-200 border border-[#4A2020] text-sm font-medium"
                     >
                         <LogOut className="w-4 h-4" />
                         <span>Exit Admin</span>
-                    </button>
+                    </Link>
                 </div>
             </aside>
 
