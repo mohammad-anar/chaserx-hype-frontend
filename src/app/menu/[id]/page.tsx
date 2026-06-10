@@ -3,13 +3,13 @@
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-    ShoppingBag, 
-    ChevronDown, 
-    Plus, 
-    Minus, 
-    Trash2, 
-    Check, 
+import {
+    ShoppingBag,
+    ChevronDown,
+    Plus,
+    Minus,
+    Trash2,
+    Check,
     X,
     ArrowRight,
     Globe,
@@ -31,16 +31,16 @@ const menuItems: MenuItem[] = [
     { id: "e1", name: "Double Espresso", price: 3.50, description: "Two shots of our signature house blend with notes of dark chocolate and roasted nuts.", category: "espresso", image: "https://images.unsplash.com/photo-1510972527921-ce03766a1cf1?auto=format&fit=crop&w=500&q=80" },
     { id: "e2", name: "Oat Milk Latte", price: 5.25, description: "Silky steamed oat milk poured over a rich double shot of espresso.", category: "espresso", image: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=500&q=80" },
     { id: "e3", name: "Flat White", price: 4.75, description: "Micro-foam milk poured over ristretto shots for a velvety, intense flavor.", category: "espresso", image: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=500&q=80" },
-    
+
     // Cold Brew
     { id: "c1", name: "Nitro Cold Brew", price: 5.50, description: "Infused with nitrogen for a smooth, creamy finish and a natural sweetness.", category: "coldbrew", image: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=500&q=80" },
     { id: "c2", name: "Vanilla Sweet Cream", price: 6.00, description: "House-made cold brew topped with a float of vanilla-infused sweet cream.", category: "coldbrew", image: "https://images.unsplash.com/photo-1513530534585-c7b1394c6d51?auto=format&fit=crop&w=500&q=80" },
     { id: "c3", name: "Nitro Velvet", price: 6.50, description: "Steeped for 24 hours and nitrogen-infused for a creamy, silk-like finish that defines perfection.", category: "coldbrew", image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=500&q=80" },
-    
+
     // Seasonal Specials
     { id: "s1", name: "Citrus Ember", price: 7.00, description: "A warming blend of spiced espresso and blood orange reduction.", category: "seasonal", image: "https://images.unsplash.com/photo-1513530534585-c7b1394c6d51?auto=format&fit=crop&w=500&q=80" },
     { id: "s2", name: "Spiced Honey Cold Brew", price: 6.50, description: "Signature cold brew infused with organic local honey, cinnamon, and a dash of nutmeg.", category: "seasonal", image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=500&q=80" },
-    
+
     // Bakery
     { id: "k1", name: "Butter Croissant", price: 3.75, description: "Flaky, golden-brown puff pastry baked fresh daily.", category: "bakery", image: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=500&q=80" },
     { id: "k2", name: "Pistachio Almond Tart", price: 4.50, description: "Sweet crust filled with almond cream and chopped roasted pistachios.", category: "bakery", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=500&q=80" }
@@ -155,7 +155,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
     // Add Customized Item to Cart
     const handleAddCustomizedToCart = () => {
         const itemPrice = calculateCustomizerPrice();
-        
+
         const newCartItem: CustomCartItem = {
             id: `${selectedItem.id}-${Date.now()}`,
             item: selectedItem,
@@ -230,14 +230,14 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                     <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wider uppercase">
                         <Link href="/" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Home</Link>
                         <Link href="/menu" className="text-[#C07C4A] transition-colors border-b-2 border-[#C07C4A] pb-1">Menu</Link>
-                        <Link href="/#loyalty" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
-                        <Link href="/#app-promo" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
+                        <Link href="/rewards" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
+                        <Link href="/gift-cards" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
                     </nav>
 
                     {/* Right utility buttons */}
                     <div className="flex items-center gap-4">
                         {/* Cart Button */}
-                        <button 
+                        <button
                             onClick={() => setIsCartOpen(true)}
                             className="p-2.5 rounded-full hover:bg-[#2C1A14]/5 transition-colors relative group"
                         >
@@ -251,7 +251,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
 
                         {/* Profile Dropdown */}
                         <div className="relative">
-                            <button 
+                            <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#2C1A14]/15 bg-[#2C1A14]/5 hover:bg-[#2C1A14]/10 transition-all text-left"
                             >
@@ -274,15 +274,15 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                         <p className="text-sm font-semibold text-white truncate">{userName}</p>
                                     </div>
                                     <div className="py-1.5 space-y-1">
-                                        <Link 
-                                            href="/admin" 
+                                        <Link
+                                            href="/admin"
                                             onClick={() => setIsProfileOpen(false)}
                                             className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#C07C4A] transition-all font-semibold"
                                         >
                                             Dashboard
                                         </Link>
-                                        <Link 
-                                            href="/admin/settings" 
+                                        <Link
+                                            href="/admin/settings"
                                             onClick={() => setIsProfileOpen(false)}
                                             className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#C07C4A] transition-all font-semibold"
                                         >
@@ -290,7 +290,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                         </Link>
                                     </div>
                                     <div className="pt-1.5 border-t border-white/5">
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 setIsProfileOpen(false);
                                                 showNotification("Successfully logged out (mock)");
@@ -310,7 +310,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
             {/* CIRCULAR CATEGORY VISUALIZER SECTION (Screenshot 3 layout) */}
             <section className="w-full bg-[#FAF6F0] py-12 border-b border-[#2C1A14]/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-12">
-                    
+
                     {/* Left Column: Category title, line, all-caps description */}
                     <div className="w-full md:w-[28%] text-left space-y-4">
                         <h2 className="font-serif text-5xl md:text-6xl font-black text-[#2C1A14] leading-tight">
@@ -326,11 +326,11 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                     <div className="w-full md:w-[42%] flex flex-col items-center justify-center">
                         <div className="relative w-80 h-80 rounded-full overflow-hidden border-[6px] border-[#C07C4A]/30 shadow-2xl flex items-center justify-center bg-[#2C1A14]">
                             {/* Coffee Beans Background Overlay */}
-                            <div 
+                            <div
                                 className="absolute inset-0 bg-cover bg-center opacity-65 mix-blend-overlay"
                                 style={{ backgroundImage: "url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80')" }}
                             />
-                            
+
                             {/* Centered Circular drink cutout */}
                             <div className="w-48 h-48 rounded-full overflow-hidden border-4 border-[#FAF6F0] relative z-10 shadow-xl bg-white p-1 transition-transform duration-500 hover:scale-102">
                                 <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full rounded-full object-cover" />
@@ -358,21 +358,21 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                     onClick={() => router.push(`/menu/${item.id}`)}
                                     className={`
                                         w-full rounded-full p-2.5 pr-6 flex items-center gap-4 transition-all duration-300 border text-left shadow-sm
-                                        ${isActive 
-                                            ? "bg-[#2A120C] text-[#FAF6F0] border-[#C07C4A]/40" 
+                                        ${isActive
+                                            ? "bg-[#2A120C] text-[#FAF6F0] border-[#C07C4A]/40"
                                             : "bg-white text-[#2C1A14] border-[#2C1A14]/10 hover:bg-[#2C1A14]/5"
                                         }
                                     `}
                                 >
                                     {/* Thumbnail inside small circle */}
                                     <div className="w-14 h-14 rounded-full overflow-hidden bg-[#2C1A14] flex-shrink-0 flex items-center justify-center p-0.5 relative border border-[#C07C4A]/20">
-                                        <div 
+                                        <div
                                             className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
                                             style={{ backgroundImage: "url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=100&q=80')" }}
                                         />
                                         <img src={item.image} alt={item.name} className="w-full h-full rounded-full object-cover relative z-10" />
                                     </div>
-                                    
+
                                     {/* Item text */}
                                     <div className="flex-1 min-w-0 space-y-0.5">
                                         <h4 className="text-[11px] font-bold uppercase tracking-wider truncate">{item.name}</h4>
@@ -390,7 +390,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
             {/* CUSTOMIZATION PANEL SECTION (Screenshot 4 layout) */}
             <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-left">
                 <div className="space-y-12">
-                    
+
                     {/* Item title and description heading */}
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-[#2C1A14]/10 pb-8">
                         <div className="space-y-3 max-w-2xl">
@@ -416,8 +416,8 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                     onClick={() => setCustomSize(size)}
                                     className={`
                                         py-4.5 rounded-2xl text-xs font-bold transition-all border text-center flex flex-col justify-center gap-1 shadow-sm
-                                        ${customSize === size 
-                                            ? "bg-[#2A120C] text-white border-[#2A120C]" 
+                                        ${customSize === size
+                                            ? "bg-[#2A120C] text-white border-[#2A120C]"
                                             : "bg-white border-[#2C1A14]/15 hover:bg-[#2C1A14]/5 text-[#2C1A14]"
                                         }
                                     `}
@@ -443,8 +443,8 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                     onClick={() => setCustomMilk(milk)}
                                     className={`
                                         py-4 px-4 rounded-2xl text-xs font-bold transition-all border flex items-center justify-center gap-2 shadow-sm
-                                        ${customMilk === milk 
-                                            ? "bg-[#2A120C] text-white border-[#2A120C]" 
+                                        ${customMilk === milk
+                                            ? "bg-[#2A120C] text-white border-[#2A120C]"
                                             : "bg-white border-[#2C1A14]/15 hover:bg-[#2C1A14]/5 text-[#2C1A14]"
                                         }
                                     `}
@@ -470,8 +470,8 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                         onClick={() => handleAddAddon(addon)}
                                         className={`
                                             py-3 px-5 rounded-2xl text-xs font-bold transition-all border flex items-center gap-1.5 shadow-sm
-                                            ${isActive 
-                                                ? "bg-[#2A120C] text-white border-[#2A120C]" 
+                                            ${isActive
+                                                ? "bg-[#2A120C] text-white border-[#2A120C]"
                                                 : "bg-white border-[#2C1A14]/15 hover:bg-[#2C1A14]/5 text-[#2C1A14]"
                                             }
                                         `}
@@ -556,9 +556,9 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
             {isCartOpen && (
                 <div className="fixed inset-0 z-50 flex justify-end">
                     {/* Backdrop */}
-                    <div 
+                    <div
                         onClick={() => setIsCartOpen(false)}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
                     />
 
                     {/* Drawer Panel */}
@@ -569,7 +569,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                 <ShoppingBag className="w-5 h-5 text-[#C07C4A]" />
                                 <h3 className="font-serif text-lg font-bold text-white">Your Cart ({totalCartItems})</h3>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsCartOpen(false)}
                                 className="p-1.5 rounded-full hover:bg-white/5 text-white/70 hover:text-white transition-colors"
                             >
@@ -581,7 +581,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                         <div className="flex-1 overflow-y-auto py-5 space-y-4 pr-1">
                             {cart.length > 0 ? (
                                 cart.map((cartItem) => (
-                                    <div 
+                                    <div
                                         key={cartItem.id}
                                         className="flex gap-4 bg-[#140A07] p-3.5 rounded-2xl border border-white/5 text-left items-center justify-between"
                                     >
@@ -599,17 +599,17 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                                 </p>
                                             )}
                                             <p className="text-xs font-bold text-[#C07C4A]">${cartItem.finalPrice.toFixed(2)}</p>
-                                            
+
                                             {/* Quantity Adjuster */}
                                             <div className="flex items-center gap-2.5 pt-1">
-                                                <button 
+                                                <button
                                                     onClick={() => updateQuantity(cartItem.id, -1)}
                                                     className="w-5 h-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white"
                                                 >
                                                     <Minus className="w-3 h-3" />
                                                 </button>
                                                 <span className="text-xs font-bold text-white">{cartItem.quantity}</span>
-                                                <button 
+                                                <button
                                                     onClick={() => updateQuantity(cartItem.id, 1)}
                                                     className="w-5 h-5 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors text-white"
                                                 >
@@ -617,7 +617,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                                 </button>
                                             </div>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => removeFromCart(cartItem.id)}
                                             className="p-2 text-white/40 hover:text-red-400 transition-colors"
                                             title="Remove Item"
@@ -630,7 +630,7 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                 <div className="flex flex-col items-center justify-center h-60 text-white/40 space-y-3">
                                     <ShoppingBag className="w-10 h-10 stroke-1" />
                                     <p className="text-sm font-semibold">Your cart is empty.</p>
-                                    <button 
+                                    <button
                                         onClick={() => setIsCartOpen(false)}
                                         className="text-xs font-bold text-[#C07C4A] hover:underline"
                                     >
@@ -654,8 +654,8 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                                 disabled={cart.length === 0}
                                 className={`
                                     w-full py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300
-                                    ${cart.length > 0 
-                                        ? "bg-[#C07C4A] text-[#140A07] hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#C07C4A]/10" 
+                                    ${cart.length > 0
+                                        ? "bg-[#C07C4A] text-[#140A07] hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#C07C4A]/10"
                                         : "bg-white/5 text-white/30 cursor-not-allowed border border-white/5"
                                     }
                                 `}

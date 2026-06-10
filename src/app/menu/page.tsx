@@ -169,8 +169,8 @@ export default function CustomerMenu() {
                     <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wider uppercase">
                         <Link href="/" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Home</Link>
                         <Link href="/menu" className="text-[#C07C4A] transition-colors border-b-2 border-[#C07C4A] pb-1">Menu</Link>
-                        <Link href="/#loyalty" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
-                        <Link href="/#app-promo" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
+                        <Link href="/rewards" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
+                        <Link href="/gift-cards" className="text-[#2C1A14] hover:text-[#C07C4A] transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
                     </nav>
 
                     {/* Right utility buttons */}

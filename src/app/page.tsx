@@ -244,8 +244,8 @@ export default function WebsiteHome() {
                     <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wider uppercase">
                         <Link href="/" className="text-[#C07C4A] hover:text-[#C07C4A] transition-colors border-b-2 border-[#C07C4A] pb-1">Home</Link>
                         <Link href="/menu" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Menu</Link>
-                        <Link href="/#loyalty" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
-                        <Link href="/#app-promo" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
+                        <Link href="/rewards" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Rewards</Link>
+                        <Link href="/gift-cards" className="text-[#FAF6F0]/80 hover:text-white transition-colors pb-1 border-b-2 border-transparent hover:border-[#C07C4A]/40">Gift Cards</Link>
                     </nav>
 
                     {/* Right utility buttons */}
@@ -352,7 +352,7 @@ export default function WebsiteHome() {
                             Order Now
                         </Link>
                         <Link 
-                            href="#rewards" 
+                            href="/rewards" 
                             className="px-8 py-3.5 rounded-xl border border-white/20 hover:border-white/50 text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 hover:bg-white/5"
                         >
                             Join Rewards
