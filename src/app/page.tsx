@@ -296,7 +296,7 @@ export default function WebsiteHome() {
                                             Dashboard
                                         </Link>
                                         <Link 
-                                            href="/settings" 
+                                            href="/admin/settings" 
                                             onClick={() => setIsProfileOpen(false)}
                                             className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#C07C4A] transition-all font-semibold"
                                         >

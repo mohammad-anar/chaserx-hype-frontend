@@ -87,7 +87,7 @@ export default function Analytics() {
 
                 <div className="flex items-center gap-3">
                     <Link 
-                        href="/settings?profile=true"
+                        href="/admin/settings?profile=true"
                         className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left"
                     >
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative">
