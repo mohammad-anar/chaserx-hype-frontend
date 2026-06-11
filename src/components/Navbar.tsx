@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout, selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 import { ShoppingCart, ChevronDown } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import Logo from "@/components/Logo";
 
 interface NavbarProps {
     theme?: "dark" | "light";
@@ -81,17 +82,7 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-                    <div className={`w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative transition-transform duration-300 group-hover:scale-105 ${
-                        isDark 
-                            ? "bg-[#1E0E07] border-2 border-[#C07C4A]/60" 
-                            : "bg-[#2C1711] border border-[#C07C4A]/40"
-                    }`}>
-                        <img 
-                            src="/logo.png" 
-                            alt="Bean Fien Logo" 
-                            className="w-full h-full object-contain p-0.5" 
-                        />
-                    </div>
+                    <Logo className="w-11 h-11 transition-transform duration-300 group-hover:scale-105" />
                     {!isDark && (
                         <div className="hidden sm:block text-left">
                             <span className="font-serif text-lg font-bold tracking-wider block leading-none text-[#2C1A14]">Bean Fien</span>

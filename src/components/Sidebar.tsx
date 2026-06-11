@@ -17,6 +17,7 @@ import {
     Menu as MenuIcon, 
     X 
 } from "lucide-react";
+import Logo from "@/components/Logo";
 
 interface MenuItem {
     title: string;
@@ -53,9 +54,7 @@ export default function Sidebar() {
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-4 bg-[#1E0F0B] text-white sticky top-0 z-40 border-b border-[#2C1711]">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#3E1F17] flex items-center justify-center border border-[#8B4513]">
-                        <Coffee className="w-5 h-5 text-[#EAD8C7]" />
-                    </div>
+                    <Logo className="w-10 h-10" />
                     <div>
                         <h1 className="font-serif text-lg font-bold tracking-wide text-white">Bean Fien</h1>
                         <p className="text-[10px] text-[#C4B4A5] uppercase tracking-widest font-semibold">Admin</p>
@@ -82,9 +81,7 @@ export default function Sidebar() {
                 <div>
                     {/* Header Logo */}
                     <div className="p-6 flex items-center gap-3 border-b border-[#2C1711]">
-                        <div className="w-12 h-12 rounded-full bg-[#3E1F17] flex items-center justify-center border border-[#8B4513] shadow-inner">
-                            <Coffee className="w-6 h-6 text-[#EAD8C7]" />
-                        </div>
+                        <Logo className="w-12 h-12" />
                         <div>
                             <h1 className="font-serif text-xl font-bold tracking-wide text-white">Bean Fien</h1>
                             <p className="text-[10px] text-[#8B4513] uppercase tracking-widest font-black">Admin</p>

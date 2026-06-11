@@ -65,152 +65,139 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="w-full flex flex-col items-center">
-            {/* Mascot Character Logo */}
-            <div className="w-20 h-20 rounded-full bg-[#1E0F0B] border-2 border-[#C07C4A]/40 flex items-center justify-center p-2 mb-4 shadow-xl shadow-black/40 animate-fade-in">
-                <img src="/logo.png" alt="Bean Fien Logo" className="w-full h-full object-contain" />
+        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col">
+            <div className="text-left mb-6">
+                <h2 className="text-2xl font-bold text-white tracking-wide">Create Account</h2>
+                <p className="text-xs text-[#FAF6F0]/60 mt-1 leading-relaxed">
+                    Begin your journey into specialty coffee perfection.
+                </p>
             </div>
 
-            {/* Brand Title */}
-            <h1 className="font-serif text-4xl sm:text-5xl font-black text-white tracking-wide mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                Bean Fien
-            </h1>
-
-            {/* Frosted Glass Form Card */}
-            <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col">
-                <div className="text-left mb-6">
-                    <h2 className="text-2xl font-bold text-white tracking-wide">Create Account</h2>
-                    <p className="text-xs text-[#FAF6F0]/60 mt-1 leading-relaxed">
-                        Begin your journey into specialty coffee perfection.
-                    </p>
+            <form onSubmit={handleRegister} className="space-y-4">
+                {/* Full Name Input */}
+                <div className="space-y-1 text-left">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
+                        Full Name
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#FAF6F0]/40">
+                            <User className="w-4 h-4" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Elias Thorne"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className={`w-full pl-10 pr-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
+                                ${errors.name ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
+                        />
+                    </div>
+                    {errors.name && (
+                        <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.name}</p>
+                    )}
                 </div>
 
-                <form onSubmit={handleRegister} className="space-y-4">
-                    {/* Full Name Input */}
-                    <div className="space-y-1 text-left">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
-                            Full Name
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#FAF6F0]/40">
-                                <User className="w-4 h-4" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Elias Thorne"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
-                                    ${errors.name ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
-                            />
+                {/* Email Input */}
+                <div className="space-y-1 text-left">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
+                        Email Address
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#FAF6F0]/40">
+                            <Mail className="w-4 h-4" />
                         </div>
-                        {errors.name && (
-                            <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.name}</p>
-                        )}
+                        <input
+                            type="email"
+                            placeholder="elias@ritual.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className={`w-full pl-10 pr-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
+                                ${errors.email ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
+                        />
                     </div>
-
-                    {/* Email Input */}
-                    <div className="space-y-1 text-left">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
-                            Email Address
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#FAF6F0]/40">
-                                <Mail className="w-4 h-4" />
-                            </div>
-                            <input
-                                type="email"
-                                placeholder="elias@ritual.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
-                                    ${errors.email ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
-                            />
-                        </div>
-                        {errors.email && (
-                            <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.email}</p>
-                        )}
-                    </div>
-
-                    {/* Password & Confirm Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Password */}
-                        <div className="space-y-1 text-left">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className={`w-full px-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
-                                        ${errors.password ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#FAF6F0]/40 hover:text-white transition-colors"
-                                >
-                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                </button>
-                            </div>
-                            {errors.password && (
-                                <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.password}</p>
-                            )}
-                        </div>
-
-                        {/* Confirm */}
-                        <div className="space-y-1 text-left">
-                            <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
-                                Confirm
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    placeholder="••••••••"
-                                    value={confirm}
-                                    onChange={(e) => setConfirm(e.target.value)}
-                                    className={`w-full px-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
-                                        ${errors.confirm ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
-                                />
-                            </div>
-                            {errors.confirm && (
-                                <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.confirm}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Disclaimer Terms text */}
-                    <p className="text-[10px] text-[#FAF6F0]/50 leading-relaxed text-left py-2">
-                        By clicking &quot;Join the Ritual,&quot; you agree to our Terms of Service and Privacy Policy regarding your craft profile and loyalty rewards.
-                    </p>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>Steeping details...</span>
-                            </>
-                        ) : (
-                            <span>Sign Up</span>
-                        )}
-                    </button>
-                </form>
-
-                {/* Footer Link */}
-                <div className="text-center mt-6 text-xs text-[#FAF6F0]/60">
-                    Already have an account?{" "}
-                    <Link href="/auth/login" className="text-[#C07C4A] font-bold hover:underline transition-all">
-                        Sign In
-                    </Link>
+                    {errors.email && (
+                        <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.email}</p>
+                    )}
                 </div>
+
+                {/* Password & Confirm Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Password */}
+                    <div className="space-y-1 text-left">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
+                            Password
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className={`w-full px-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
+                                    ${errors.password ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#FAF6F0]/40 hover:text-white transition-colors"
+                            >
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                        {errors.password && (
+                            <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.password}</p>
+                        )}
+                    </div>
+
+                    {/* Confirm */}
+                    <div className="space-y-1 text-left">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
+                            Confirm
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••"
+                                value={confirm}
+                                onChange={(e) => setConfirm(e.target.value)}
+                                className={`w-full px-4 py-2.5 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
+                                    ${errors.confirm ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
+                            />
+                        </div>
+                        {errors.confirm && (
+                            <p className="text-[11px] text-red-400 font-semibold mt-0.5">{errors.confirm}</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Disclaimer Terms text */}
+                <p className="text-[10px] text-[#FAF6F0]/50 leading-relaxed text-left py-2">
+                    By clicking &quot;Join the Ritual,&quot; you agree to our Terms of Service and Privacy Policy regarding your craft profile and loyalty rewards.
+                </p>
+
+                {/* Submit Button */}
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Steeping details...</span>
+                        </>
+                    ) : (
+                        <span>Sign Up</span>
+                    )}
+                </button>
+            </form>
+
+            {/* Footer Link */}
+            <div className="text-center mt-6 text-xs text-[#FAF6F0]/60">
+                Already have an account?{" "}
+                <Link href="/auth/login" className="text-[#C07C4A] font-bold hover:underline transition-all">
+                    Sign In
+                </Link>
             </div>
         </div>
     );

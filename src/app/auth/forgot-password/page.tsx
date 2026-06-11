@@ -38,78 +38,65 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="w-full flex flex-col items-center">
-            {/* Mascot Character Logo */}
-            <div className="w-20 h-20 rounded-full bg-[#1E0F0B] border-2 border-[#C07C4A]/40 flex items-center justify-center p-2 mb-4 shadow-xl shadow-black/40 animate-fade-in">
-                <img src="/logo.png" alt="Bean Fien Logo" className="w-full h-full object-contain" />
+        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative">
+            {/* Back to Login */}
+            <div className="text-left mb-4">
+                <Link 
+                    href="/auth/login" 
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]/60 hover:text-white transition-colors"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Login</span>
+                </Link>
             </div>
 
-            {/* Brand Title */}
-            <h1 className="font-serif text-4xl sm:text-5xl font-black text-white tracking-wide mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                Bean Fien
-            </h1>
+            <div className="text-left mb-6">
+                <h2 className="text-2xl font-bold text-white tracking-wide">Forgot Password?</h2>
+                <p className="text-xs text-[#FAF6F0]/60 mt-2 leading-relaxed">
+                    Enter your email to receive a secure recovery key. We&apos;ll help you get back to your brew in no time.
+                </p>
+            </div>
 
-            {/* Frosted Glass Form Card */}
-            <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative">
-                {/* Back to Login */}
-                <div className="text-left mb-4">
-                    <Link 
-                        href="/auth/login" 
-                        className="inline-flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]/60 hover:text-white transition-colors"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Back to Login</span>
-                    </Link>
-                </div>
-
-                <div className="text-left mb-6">
-                    <h2 className="text-2xl font-bold text-white tracking-wide">Forgot Password?</h2>
-                    <p className="text-xs text-[#FAF6F0]/60 mt-2 leading-relaxed">
-                        Enter your email to receive a secure recovery key. We&apos;ll help you get back to your brew in no time.
-                    </p>
-                </div>
-
-                <form onSubmit={handleSendCode} className="space-y-5">
-                    {/* Email Input */}
-                    <div className="space-y-1.5 text-left">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
-                            Email Address
-                        </label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#FAF6F0]/40">
-                                <Mail className="w-4 h-4" />
-                            </div>
-                            <input
-                                type="email"
-                                placeholder="name@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
-                                    ${error ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
-                            />
+            <form onSubmit={handleSendCode} className="space-y-5">
+                {/* Email Input */}
+                <div className="space-y-1.5 text-left">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
+                        Email Address
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#FAF6F0]/40">
+                            <Mail className="w-4 h-4" />
                         </div>
-                        {error && (
-                            <p className="text-[11px] text-red-400 font-semibold mt-0.5">{error}</p>
-                        )}
+                        <input
+                            type="email"
+                            placeholder="name@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className={`w-full pl-10 pr-4 py-3 rounded-xl border bg-black/20 text-[#FAF6F0] placeholder:text-[#FAF6F0]/30 focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all text-sm
+                                ${error ? "border-red-500/50 focus:ring-red-500/20" : "border-[#C07C4A]/25"}`}
+                        />
                     </div>
+                    {error && (
+                        <p className="text-[11px] text-red-400 font-semibold mt-0.5">{error}</p>
+                    )}
+                </div>
 
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full mt-4 bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>Generating code...</span>
-                            </>
-                        ) : (
-                            <span>Send Code</span>
-                        )}
-                    </button>
-                </form>
-            </div>
+                {/* Submit Button */}
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full mt-4 bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Generating code...</span>
+                        </>
+                    ) : (
+                        <span>Send Code</span>
+                    )}
+                </button>
+            </form>
         </div>
     );
 }

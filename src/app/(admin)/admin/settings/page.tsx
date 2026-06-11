@@ -13,7 +13,7 @@ export default function Settings() {
 
     // Profile States
     const [profileModalOpen, setProfileModalOpen] = useState(false);
-    const [adminPhoto, setAdminPhoto] = useState("/bean-fien-logo.png"); // Default placeholder
+    const [adminPhoto, setAdminPhoto] = useState("/logo.png"); // Default placeholder
     const [displayName, setDisplayName] = useState("Admin");
     const [roleTitle, setRoleTitle] = useState("Super Admin");
     const [email, setEmail] = useState("admin@beanfien.com");

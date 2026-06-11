@@ -30,6 +30,7 @@ import { useCart } from "@/hooks/useCart";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import Logo from "@/components/Logo";
 
 export default function WebsiteHome() {
     const router = useRouter();
@@ -544,9 +545,7 @@ export default function WebsiteHome() {
                                 
                                 {/* App Header Logo area */}
                                 <div className="flex flex-col items-center text-center mt-8 space-y-3 relative z-10">
-                                    <div className="w-16 h-16 rounded-full bg-[#2C120C] flex items-center justify-center border border-[#C07C4A]/40 shadow-md p-1.5">
-                                        <img src="/logo.png" alt="Bean Fien Logo" className="w-full h-full object-contain" />
-                                    </div>
+                                    <Logo className="w-16 h-16" />
                                     <span className="text-[9px] font-bold text-[#C07C4A] tracking-widest uppercase">Est 2026</span>
                                 </div>
 

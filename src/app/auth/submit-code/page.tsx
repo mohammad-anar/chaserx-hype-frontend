@@ -98,85 +98,72 @@ function SubmitCodeContent() {
     };
 
     return (
-        <div className="w-full flex flex-col items-center">
-            {/* Mascot Character Logo */}
-            <div className="w-20 h-20 rounded-full bg-[#1E0F0B] border-2 border-[#C07C4A]/40 flex items-center justify-center p-2 mb-4 shadow-xl shadow-black/40 animate-fade-in">
-                <img src="/logo.png" alt="Bean Fien Logo" className="w-full h-full object-contain" />
+        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative">
+            {/* Back to Login */}
+            <div className="text-left mb-4">
+                <Link 
+                    href="/auth/login" 
+                    className="inline-flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]/60 hover:text-white transition-colors"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <span>Back to Login</span>
+                </Link>
             </div>
 
-            {/* Brand Title */}
-            <h1 className="font-serif text-4xl sm:text-5xl font-black text-white tracking-wide mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
-                Bean Fien
-            </h1>
+            <div className="text-left mb-6">
+                <h2 className="text-2xl font-bold text-white tracking-wide">Submit Code</h2>
+                <p className="text-xs text-[#FAF6F0]/60 mt-2 leading-relaxed">
+                    Enter the 6-digit code sent to your email to complete your access.
+                </p>
+            </div>
 
-            {/* Frosted Glass Form Card */}
-            <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative">
-                {/* Back to Login */}
-                <div className="text-left mb-4">
-                    <Link 
-                        href="/auth/login" 
-                        className="inline-flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]/60 hover:text-white transition-colors"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" />
-                        <span>Back to Login</span>
-                    </Link>
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* OTP Inputs Grid */}
+                <div className="grid grid-cols-6 gap-2 sm:gap-3 justify-center py-2">
+                    {code.map((num, idx) => (
+                        <input
+                            key={idx}
+                            ref={(el) => {
+                                if (el) inputRefs.current[idx] = el;
+                            }}
+                            type="text"
+                            maxLength={1}
+                            value={num}
+                            onKeyDown={(e) => handleKeyDown(e, idx)}
+                            onChange={(e) => handleChange(e.target.value, idx)}
+                            onPaste={handlePaste}
+                            className="w-full aspect-square text-center text-xl font-bold rounded-xl border border-[#C07C4A]/30 bg-black/20 text-[#FAF6F0] focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all"
+                        />
+                    ))}
                 </div>
 
-                <div className="text-left mb-6">
-                    <h2 className="text-2xl font-bold text-white tracking-wide">Submit Code</h2>
-                    <p className="text-xs text-[#FAF6F0]/60 mt-2 leading-relaxed">
-                        Enter the 6-digit code sent to your email to complete your access.
-                    </p>
-                </div>
+                {/* Submit Button */}
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
+                >
+                    {isLoading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>Verifying code...</span>
+                        </>
+                    ) : (
+                        <span>Submit Code</span>
+                    )}
+                </button>
+            </form>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* OTP Inputs Grid */}
-                    <div className="grid grid-cols-6 gap-2 sm:gap-3 justify-center py-2">
-                        {code.map((num, idx) => (
-                            <input
-                                key={idx}
-                                ref={(el) => {
-                                    if (el) inputRefs.current[idx] = el;
-                                }}
-                                type="text"
-                                maxLength={1}
-                                value={num}
-                                onKeyDown={(e) => handleKeyDown(e, idx)}
-                                onChange={(e) => handleChange(e.target.value, idx)}
-                                onPaste={handlePaste}
-                                className="w-full aspect-square text-center text-xl font-bold rounded-xl border border-[#C07C4A]/30 bg-black/20 text-[#FAF6F0] focus:outline-none focus:ring-2 focus:ring-[#C07C4A]/40 focus:border-[#C07C4A] transition-all"
-                            />
-                        ))}
-                    </div>
-
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                <span>Verifying code...</span>
-                            </>
-                        ) : (
-                            <span>Submit Code</span>
-                        )}
-                    </button>
-                </form>
-
-                {/* Footer Link */}
-                <div className="text-center mt-6 text-xs text-[#FAF6F0]/60">
-                    Didn&apos;t receive a code?{" "}
-                    <button 
-                        type="button" 
-                        onClick={handleResend}
-                        className="text-[#C07C4A] font-bold hover:underline transition-all cursor-pointer bg-transparent border-none p-0"
-                    >
-                        Resend
-                    </button>
-                </div>
+            {/* Footer Link */}
+            <div className="text-center mt-6 text-xs text-[#FAF6F0]/60">
+                Didn&apos;t receive a code?{" "}
+                <button 
+                    type="button" 
+                    onClick={handleResend}
+                    className="text-[#C07C4A] font-bold hover:underline transition-all cursor-pointer bg-transparent border-none p-0"
+                >
+                    Resend
+                </button>
             </div>
         </div>
     );
