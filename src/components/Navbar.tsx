@@ -10,9 +10,10 @@ import { useCart } from "@/hooks/useCart";
 
 interface NavbarProps {
     theme?: "dark" | "light";
+    transparent?: boolean;
 }
 
-export default function Navbar({ theme = "light" }: NavbarProps) {
+export default function Navbar({ theme = "light", transparent = false }: NavbarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const dispatch = useAppDispatch();
@@ -23,6 +24,7 @@ export default function Navbar({ theme = "light" }: NavbarProps) {
     const [userName, setUserName] = useState("Admin");
     const [userRole, setUserRole] = useState("Super Admin");
     const [userPhoto, setUserPhoto] = useState("");
+    const [isScrolled, setIsScrolled] = useState(false);
 
     // Load admin profile information on mount
     useEffect(() => {
@@ -32,6 +34,20 @@ export default function Navbar({ theme = "light" }: NavbarProps) {
         if (savedName) setUserName(savedName);
         if (savedRole) setUserRole(savedRole);
         if (savedPhoto) setUserPhoto(savedPhoto);
+    }, []);
+
+    // Handle scroll to add background and borders
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+        window.addEventListener("scroll", handleScroll);
+        handleScroll();
+        return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
     const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -55,9 +71,11 @@ export default function Navbar({ theme = "light" }: NavbarProps) {
     return (
         <header 
             className={`relative z-40 sticky top-0 transition-all duration-300 ${
-                isDark 
-                    ? "border-b border-white/[0.06] bg-[#080403]/60 backdrop-blur-xl" 
-                    : "border-b border-[#2C1A14]/10 bg-[#FAF6F0]/90 backdrop-blur-md"
+                transparent && !isScrolled
+                    ? "border-b border-transparent bg-transparent backdrop-blur-none"
+                    : isDark 
+                        ? "border-b border-white/[0.06] bg-[#080403]/80 backdrop-blur-xl shadow-lg shadow-black/10" 
+                        : "border-b border-[#2C1A14]/10 bg-[#FAF6F0]/95 backdrop-blur-md shadow-sm"
             }`}
         >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">

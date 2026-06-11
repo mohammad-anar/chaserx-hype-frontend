@@ -128,92 +128,115 @@ export default function WebsiteHome() {
             {/* Ambient Spotlight Radial Glow */}
             <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_35%_25%,_rgba(224,99,40,0.14)_0%,_rgba(8,4,3,0.99)_75%)]" />
 
-            {/* Header Navigation */}
-            <Navbar theme="dark" />
+            {/* Header + Hero Section Wrapper with Banner Background */}
+            <div className="relative w-full bg-[#080403]">
+                {/* Background Image Banner */}
+                <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none"
+                    style={{ 
+                        backgroundImage: "url('/banner.png')",
+                    }}
+                />
+                
+                {/* Custom Overlay for Banner background */}
+                <div className="absolute inset-0 bg-black/60 pointer-events-none" />
+                <div 
+                    className="absolute inset-0 pointer-events-none" 
+                    style={{
+                        background: "linear-gradient(to bottom, transparent 40%, rgba(8, 4, 3, 0.75) 80%, #080403 100%)"
+                    }}
+                />
 
-            {/* Hero Section */}
-            <section id="home" className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col lg:flex-row items-center gap-12 min-h-[calc(100vh-80px)] justify-center">
-                {/* Hero Content Left */}
-                <div className="flex-1 text-left space-y-6 max-w-xl">
-                    <div className="space-y-2">
-                        <h1 className="font-sans text-6xl md:text-7xl font-black tracking-tight text-white leading-tight animate-fade-in">
-                            Bean Fien.
-                        </h1>
-                        <h2 className="font-serif text-4xl md:text-5xl font-normal italic text-[#E05A2B] leading-tight">
-                            A vibe for the ride
-                        </h2>
-                    </div>
+                {/* Content */}
+                <div className="relative z-10">
+                    {/* Header Navigation */}
+                    <Navbar theme="dark" transparent={true} />
 
-                    <p className="text-base text-[#FAF6F0]/80 leading-relaxed font-sans font-light">
-                        Experience the precision of specialty roasting and the energy of a modern pulse. 
-                        Crafted for those who value the art of the pour.
-                    </p>
+                    {/* Hero Section */}
+                    <section id="home" className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 flex flex-col lg:flex-row items-center gap-12 min-h-[calc(100vh-72px)] justify-center">
+                        {/* Hero Content Left */}
+                        <div className="flex-1 text-left space-y-6 max-w-xl">
+                            <div className="space-y-2">
+                                <h1 className="font-sans text-6xl md:text-7xl font-black tracking-tight text-white leading-tight animate-fade-in">
+                                    Bean Fien.
+                                </h1>
+                                <h2 className="font-serif text-4xl md:text-5xl font-normal italic text-[#E05A2B] leading-tight">
+                                    A vibe for the ride
+                                </h2>
+                            </div>
 
-                    <div className="flex flex-wrap gap-4 pt-2">
-                        <Link 
-                            href="#daily-grind" 
-                            className="px-8 py-3.5 rounded-lg bg-[#2C120C] hover:bg-[#3E1A12] border border-[#E05A2B]/20 text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 shadow-lg shadow-black/30 hover:scale-[1.02]"
-                        >
-                            Order Now
-                        </Link>
-                        <Link 
-                            href="/rewards" 
-                            className="px-8 py-3.5 rounded-lg border border-white/40 hover:border-white/70 text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 hover:bg-white/5"
-                        >
-                            Join Rewards
-                        </Link>
-                    </div>
-                </div>
+                            <p className="text-base text-[#FAF6F0]/80 leading-relaxed font-sans font-light">
+                                Experience the precision of specialty roasting and the energy of a modern pulse. 
+                                Crafted for those who value the art of the pour.
+                            </p>
 
-                {/* Hero Images Collage Right */}
-                <div className="flex-1 w-full flex items-center justify-center relative min-h-[480px]">
-                    <div className="flex items-center gap-4">
-                        {/* Left Tall Image */}
-                        <div className="w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group">
-                            <img 
-                                src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=800" 
-                                alt="Coffee pouring splash" 
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                            />
+                            <div className="flex flex-wrap gap-4 pt-2">
+                                <Link 
+                                    href="#daily-grind" 
+                                    className="px-8 py-3.5 rounded-lg bg-[#2C120C] hover:bg-[#3E1A12] border border-[#E05A2B]/20 text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 shadow-lg shadow-black/30 hover:scale-[1.02]"
+                                >
+                                    Order Now
+                                </Link>
+                                <Link 
+                                    href="/rewards" 
+                                    className="px-8 py-3.5 rounded-lg border border-white/40 hover:border-white/70 text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 hover:bg-white/5"
+                                >
+                                    Join Rewards
+                                </Link>
+                            </div>
                         </div>
 
-                        {/* Right Column Grid */}
-                        <div className="flex flex-col gap-4 w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px]">
-                            {/* Top Row: Two Smaller Images */}
-                            <div className="flex gap-4 h-[190px] sm:h-[215px] md:h-[230px]">
-                                <div className="flex-1 rounded-xl overflow-hidden border border-white/10 shadow-2xl relative group">
+                        {/* Hero Images Collage Right */}
+                        <div className="flex-1 w-full flex items-center justify-center relative min-h-[480px]">
+                            <div className="flex items-center gap-4">
+                                {/* Left Tall Image */}
+                                <div className="w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px] rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group">
                                     <img 
-                                        src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=500" 
-                                        alt="Roasted coffee beans" 
+                                        src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=800" 
+                                        alt="Coffee pouring splash" 
                                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                                     />
                                 </div>
-                                <div className="flex-1 rounded-xl overflow-hidden border border-white/10 shadow-2xl relative group">
-                                    <img 
-                                        src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=500" 
-                                        alt="Espresso cup close up" 
-                                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                                    />
+
+                                {/* Right Column Grid */}
+                                <div className="flex flex-col gap-4 w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px]">
+                                    {/* Top Row: Two Smaller Images */}
+                                    <div className="flex gap-4 h-[190px] sm:h-[215px] md:h-[230px]">
+                                        <div className="flex-1 rounded-xl overflow-hidden border border-white/10 shadow-2xl relative group">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&q=80&w=500" 
+                                                alt="Roasted coffee beans" 
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                            />
+                                        </div>
+                                        <div className="flex-1 rounded-xl overflow-hidden border border-white/10 shadow-2xl relative group">
+                                            <img 
+                                                src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=500" 
+                                                alt="Espresso cup close up" 
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Row: Wide Image */}
+                                    <div className="flex-1 rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group">
+                                        <img 
+                                            src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=600" 
+                                            alt="Iced cream latte" 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                        />
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Bottom Row: Wide Image */}
-                            <div className="flex-1 rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative group">
-                                <img 
-                                    src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=600" 
-                                    alt="Iced cream latte" 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                                />
-                            </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Explore text centered at the bottom */}
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none">
-                    <span className="text-[10px] uppercase tracking-[0.25em] text-[#FAF6F0]/65 font-bold">Explore</span>
+                        {/* Explore text centered at the bottom */}
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none">
+                            <span className="text-[10px] uppercase tracking-[0.25em] text-[#FAF6F0]/65 font-bold">Explore</span>
+                        </div>
+                    </section>
                 </div>
-            </section>
+            </div>
 
             {/* SECTION 1: Stats Bar */}
             <section className="bg-[#2C1711] py-10 border-y border-white/5 relative z-30 shadow-inner">
