@@ -65,8 +65,8 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col">
-            <div className="text-left mb-6">
+        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col opacity-0 animate-scale-in">
+            <div className="text-left mb-6 opacity-0 animate-fade-in-up delay-100">
                 <h2 className="text-2xl font-bold text-white tracking-wide">Sign in</h2>
                 <p className="text-xs text-[#FAF6F0]/60 mt-1 leading-relaxed">
                     Begin your journey into specialty coffee perfection.
@@ -75,7 +75,7 @@ export default function LoginPage() {
 
             <form onSubmit={handleLogin} className="space-y-5">
                 {/* Email Input */}
-                <div className="space-y-1.5 text-left">
+                <div className="space-y-1.5 text-left opacity-0 animate-fade-in-up delay-200">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
                         Email Address
                     </label>
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Password Input */}
-                <div className="space-y-1.5 text-left">
+                <div className="space-y-1.5 text-left opacity-0 animate-fade-in-up delay-300">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
                         Password
                     </label>
@@ -128,7 +128,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Actions Row */}
-                <div className="flex items-center justify-between text-xs pt-1">
+                <div className="flex items-center justify-between text-xs pt-1 opacity-0 animate-fade-in-up delay-400">
                     <label className="flex items-center gap-2 cursor-pointer text-[#FAF6F0]/80 hover:text-white select-none">
                         <input
                             type="checkbox"
@@ -150,7 +150,7 @@ export default function LoginPage() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-4 bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-[#C07C4A] hover:bg-[#A66637] active:scale-[0.98] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2 opacity-0 animate-fade-in-up delay-500"
                 >
                     {isLoading ? (
                         <>
@@ -163,7 +163,7 @@ export default function LoginPage() {
                 </button>
 
                 {/* Divider */}
-                <div className="flex items-center gap-3 my-4">
+                <div className="flex items-center gap-3 my-4 opacity-0 animate-fade-in-up delay-700">
                     <div className="h-[1px] flex-1 bg-[#C07C4A]/20" />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]/60">Or</span>
                     <div className="h-[1px] flex-1 bg-[#C07C4A]/20" />
@@ -190,15 +190,15 @@ export default function LoginPage() {
                         }, 800);
                     }}
                     disabled={isLoading}
-                    className="w-full bg-[#2C120C] hover:bg-[#3E1A12] border border-[#C07C4A]/30 text-[#FAF6F0] font-bold py-3 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+                    className="w-full bg-[#2C120C] hover:bg-[#3E1A12] active:scale-[0.98] border border-[#C07C4A]/30 text-[#FAF6F0] font-bold py-3 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs flex items-center justify-center gap-2 opacity-0 animate-fade-in-up delay-700"
                 >
                     <span>Demo Login</span>
                 </button>
             </form>
 
             {/* Footer Link */}
-            <div className="text-center mt-8 text-xs text-[#FAF6F0]/60">
-                Don't have an account?{" "}
+            <div className="text-center mt-8 text-xs text-[#FAF6F0]/60 opacity-0 animate-fade-in-up delay-1000">
+                Don&apos;t have an account?{" "}
                 <Link href="/auth/register" className="text-[#C07C4A] font-bold hover:underline transition-all">
                     Create an account
                 </Link>

@@ -51,9 +51,9 @@ function ResetPasswordContent() {
     };
 
     return (
-        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative">
+        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative opacity-0 animate-scale-in">
             {/* Back to Login */}
-            <div className="text-left mb-4">
+            <div className="text-left mb-4 opacity-0 animate-fade-in-up delay-100">
                 <Link 
                     href="/auth/login" 
                     className="inline-flex items-center gap-2 text-xs font-semibold text-[#FAF6F0]/60 hover:text-white transition-colors"
@@ -63,7 +63,7 @@ function ResetPasswordContent() {
                 </Link>
             </div>
 
-            <div className="text-left mb-6">
+            <div className="text-left mb-6 opacity-0 animate-fade-in-up delay-200">
                 <h2 className="text-2xl font-bold text-white tracking-wide">Reset Password</h2>
                 <p className="text-xs text-[#FAF6F0]/60 mt-2 leading-relaxed">
                     Choose a strong new password to protect your account.
@@ -72,7 +72,7 @@ function ResetPasswordContent() {
 
             <form onSubmit={handleReset} className="space-y-5">
                 {/* Password Input */}
-                <div className="space-y-1.5 text-left">
+                <div className="space-y-1.5 text-left opacity-0 animate-fade-in-up delay-300">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
                         New Password
                     </label>
@@ -102,7 +102,7 @@ function ResetPasswordContent() {
                 </div>
 
                 {/* Confirm Input */}
-                <div className="space-y-1.5 text-left">
+                <div className="space-y-1.5 text-left opacity-0 animate-fade-in-up delay-400">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
                         Confirm Password
                     </label>
@@ -128,7 +128,7 @@ function ResetPasswordContent() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full mt-4 bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-[#C07C4A] hover:bg-[#A66637] active:scale-[0.98] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2 opacity-0 animate-fade-in-up delay-500"
                 >
                     {isLoading ? (
                         <>

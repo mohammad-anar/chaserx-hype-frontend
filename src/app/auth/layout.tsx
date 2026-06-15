@@ -28,10 +28,12 @@ export default function AuthLayout({
                 {/* Content wrapper */}
                 <div className="relative z-10 w-full max-w-md flex flex-col items-center">
                     {/* Mascot Character Logo */}
-                    <Logo className="w-20 h-20 mb-4 animate-fade-in" />
+                    <div className="animate-fade-in">
+                        <Logo className="w-20 h-20 mb-4 animate-float" />
+                    </div>
 
                     {/* Brand Title */}
-                    <h1 className="font-serif text-4xl sm:text-5xl font-black text-white tracking-wide mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                    <h1 className="font-serif text-4xl sm:text-5xl font-black text-white tracking-wide mb-8 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)] opacity-0 animate-fade-in-down delay-100">
                         Bean Fien
                     </h1>
                     {children}

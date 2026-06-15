@@ -32,9 +32,11 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
         const savedName = localStorage.getItem("bf_admin_name");
         const savedRole = localStorage.getItem("bf_admin_role");
         const savedPhoto = localStorage.getItem("bf_admin_photo");
-        if (savedName) setUserName(savedName);
-        if (savedRole) setUserRole(savedRole);
-        if (savedPhoto) setUserPhoto(savedPhoto);
+        setTimeout(() => {
+            if (savedName) setUserName(savedName);
+            if (savedRole) setUserRole(savedRole);
+            if (savedPhoto) setUserPhoto(savedPhoto);
+        }, 0);
     }, []);
 
     // Handle scroll to add background and borders
@@ -79,10 +81,12 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
                         : "border-b border-[#2C1A14]/10 bg-[#FAF6F0]/95 backdrop-blur-md shadow-sm"
             }`}
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+            <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${
+                isScrolled ? "h-[64px]" : "h-[76px]"
+            }`}>
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-3 group flex-shrink-0">
-                    <Logo className="w-16 h-16 transition-transform duration-300 group-hover:scale-105" />
+                    <Logo className="w-14 h-14 transition-transform duration-300 group-hover:scale-105" />
                     {!isDark && (
                         <div className="hidden sm:block text-left">
                             <span className="font-serif text-lg font-bold tracking-wider block leading-none text-[#2C1A14]">Bean Fien</span>
@@ -170,7 +174,7 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
 
                             {/* Dropdown Menu */}
                             {isProfileOpen && (
-                                <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-white/10 bg-[#1A0C08] shadow-2xl p-2 z-50">
+                                <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-white/10 bg-[#1A0C08] shadow-2xl p-2 z-50 origin-top-right animate-scale-in">
                                     <div className="px-4 py-3 border-b border-white/5 text-left">
                                         <p className="text-xs font-bold uppercase tracking-wider text-[#E05A2B]">{userRole}</p>
                                         <p className="text-sm font-semibold text-white truncate">{userName}</p>

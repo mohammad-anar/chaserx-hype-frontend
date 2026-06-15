@@ -31,6 +31,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import Logo from "@/components/Logo";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function WebsiteHome() {
     const router = useRouter();
@@ -58,14 +59,16 @@ export default function WebsiteHome() {
     const { cart, addToCart, updateQuantity, showNotification } = useCart();
 
     useEffect(() => {
-        setMounted(true);
         // Load admin profile information from localStorage if available
         const savedName = localStorage.getItem("bf_admin_name");
         const savedRole = localStorage.getItem("bf_admin_role");
         const savedPhoto = localStorage.getItem("bf_admin_photo");
-        if (savedName) setUserName(savedName);
-        if (savedRole) setUserRole(savedRole);
-        if (savedPhoto) setUserPhoto(savedPhoto);
+        setTimeout(() => {
+            setMounted(true);
+            if (savedName) setUserName(savedName);
+            if (savedRole) setUserRole(savedRole);
+            if (savedPhoto) setUserPhoto(savedPhoto);
+        }, 0);
     }, []);
 
     const handleAddToCart = (item: MenuItem) => {
@@ -158,20 +161,20 @@ export default function WebsiteHome() {
                         {/* Hero Content Left */}
                         <div className="flex-1 text-left space-y-6 max-w-xl">
                             <div className="space-y-2">
-                                <h1 className="font-sans text-6xl md:text-7xl font-black tracking-tight text-white leading-tight animate-fade-in">
+                                <h1 className="font-sans text-6xl md:text-7xl font-black tracking-tight text-white leading-tight opacity-0 animate-fade-in-down">
                                     Bean Fien.
                                 </h1>
-                                <h2 className="font-italic text-5xl md:text-6xl font-bold italic text-[#E05A2B] leading-tight font-bold">
+                                <h2 className="font-italic text-5xl md:text-6xl font-bold italic text-[#E05A2B] leading-tight font-bold opacity-0 animate-fade-in-up delay-100">
                                     A vibe for the ride
                                 </h2>
                             </div>
 
-                            <p className="text-base text-[#FAF6F0]/80 leading-relaxed font-sans font-light">
+                            <p className="text-base text-[#FAF6F0]/80 leading-relaxed font-sans font-light opacity-0 animate-fade-in-up delay-200">
                                 Experience the precision of specialty roasting and the energy of a modern pulse. 
                                 Crafted for those who value the art of the pour.
                             </p>
 
-                            <div className="flex flex-wrap gap-4 pt-2">
+                            <div className="flex flex-wrap gap-4 pt-2 opacity-0 animate-fade-in-up delay-300">
                                 <Link 
                                     href="#daily-grind" 
                                     className="px-8 py-3.5 rounded-lg bg-[#2C120C] hover:bg-[#3E1A12] border border-[#E05A2B]/20 text-white text-sm font-bold tracking-wider uppercase transition-all duration-300 shadow-lg shadow-black/30 hover:scale-[1.02]"
@@ -191,7 +194,7 @@ export default function WebsiteHome() {
                         <div className="flex-1 w-full flex items-center justify-center relative min-h-[480px]">
                             <div className="flex items-center gap-4">
                                 {/* Left Tall Image */}
-                                <div className="w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px] rounded-2xl overflow-hidden  shadow-2xl relative group">
+                                <div className="w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px] rounded-2xl overflow-hidden shadow-2xl relative group opacity-0 animate-fade-in-left delay-300">
                                     <img 
                                         src="/left-tall.jpg" 
                                         alt="Coffee pouring splash" 
@@ -203,14 +206,14 @@ export default function WebsiteHome() {
                                 <div className="flex flex-col gap-4 w-[260px] sm:w-[280px] md:w-[300px] h-[400px] sm:h-[450px] md:h-[480px]">
                                     {/* Top Row: Two Smaller Images */}
                                     <div className="flex gap-4 h-[190px] sm:h-[215px] md:h-[230px]">
-                                        <div className="flex-1 rounded-xl overflow-hidden  shadow-2xl relative group">
+                                        <div className="flex-1 rounded-xl overflow-hidden shadow-2xl relative group opacity-0 animate-fade-in-down delay-400">
                                             <img 
                                                 src="/r1.jpg" 
                                                 alt="Roasted coffee beans" 
                                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                                             />
                                         </div>
-                                        <div className="flex-1 rounded-xl overflow-hidden  shadow-2xl relative group">
+                                        <div className="flex-1 rounded-xl overflow-hidden shadow-2xl relative group opacity-0 animate-fade-in-up delay-500">
                                             <img 
                                                 src="/r2.jpg" 
                                                 alt="Espresso cup close up" 
@@ -220,7 +223,7 @@ export default function WebsiteHome() {
                                     </div>
 
                                     {/* Bottom Row: Wide Image */}
-                                    <div className="flex-1 rounded-2xl overflow-hidden  shadow-2xl relative group">
+                                    <div className="flex-1 rounded-2xl overflow-hidden shadow-2xl relative group opacity-0 animate-fade-in-right delay-400">
                                         <img 
                                             src="/r3.png" 
                                             alt="Iced cream latte" 
@@ -243,22 +246,30 @@ export default function WebsiteHome() {
             <section className="bg-[#2C1711] py-10 border-y border-white/5 relative z-30 shadow-inner">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-                        <div className="space-y-1 flex flex-col items-center">
-                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">10x</h3>
-                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Points per purchase</p>
-                        </div>
-                        <div className="space-y-1 flex flex-col items-center">
-                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">500+</h3>
-                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Menu combinations</p>
-                        </div>
-                        <div className="space-y-1 flex flex-col items-center">
-                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Free</h3>
-                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Drink at 150 pts</p>
-                        </div>
-                        <div className="space-y-1 flex flex-col items-center">
-                            <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">5 min</h3>
-                            <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Avg. pickup time</p>
-                        </div>
+                        <ScrollReveal delay={0} duration={0.5}>
+                            <div className="space-y-1 flex flex-col items-center">
+                                <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">10x</h3>
+                                <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Points per purchase</p>
+                            </div>
+                        </ScrollReveal>
+                        <ScrollReveal delay={0.1} duration={0.5}>
+                            <div className="space-y-1 flex flex-col items-center">
+                                <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">500+</h3>
+                                <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Menu combinations</p>
+                            </div>
+                        </ScrollReveal>
+                        <ScrollReveal delay={0.2} duration={0.5}>
+                            <div className="space-y-1 flex flex-col items-center">
+                                <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Free</h3>
+                                <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Drink at 150 pts</p>
+                            </div>
+                        </ScrollReveal>
+                        <ScrollReveal delay={0.3} duration={0.5}>
+                            <div className="space-y-1 flex flex-col items-center">
+                                <h3 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">5 min</h3>
+                                <p className="text-xs text-[#EAD8C7]/75 font-semibold tracking-wide">Avg. pickup time</p>
+                            </div>
+                        </ScrollReveal>
                     </div>
                 </div>
             </section>
@@ -267,109 +278,117 @@ export default function WebsiteHome() {
             <section id="daily-grind" className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Section Header */}
-                    <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-16">
-                        <div className="text-left space-y-2">
-                            <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14]">
-                                The Daily Grind
-                            </h2>
-                            <p className="text-sm sm:text-base text-[#6B5E59] font-medium">
-                                Our most requested pours, crafted to perfection.
-                            </p>
+                    <ScrollReveal>
+                        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-16">
+                            <div className="text-left space-y-2">
+                                <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14]">
+                                    The Daily Grind
+                                </h2>
+                                <p className="text-sm sm:text-base text-[#6B5E59] font-medium">
+                                    Our most requested pours, crafted to perfection.
+                                </p>
+                            </div>
+                            <Link 
+                                href="#menu" 
+                                className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#2C1A14] hover:text-[#8B4513] transition-colors border-b border-[#2C1A14] pb-1 hover:border-[#8B4513] group w-fit"
+                            >
+                                <span>Full Menu</span>
+                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </Link>
                         </div>
-                        <Link 
-                            href="#menu" 
-                            className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#2C1A14] hover:text-[#8B4513] transition-colors border-b border-[#2C1A14] pb-1 hover:border-[#8B4513] group w-fit"
-                        >
-                            <span>Full Menu</span>
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                        </Link>
-                    </div>
+                    </ScrollReveal>
 
                     {/* Drink Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Nitro Velvet */}
-                        <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4">
-                            <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
-                                <img 
-                                    src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=500" 
-                                    alt="Nitro Velvet cold extraction" 
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                                />
-                            </div>
-                            <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
-                                <div className="space-y-1">
-                                    <div className="flex justify-between items-center">
-                                        <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Nitro Velvet</h4>
-                                        <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg1")?.price.toFixed(2)}</span>
-                                    </div>
-                                    <p className="text-xs text-[#6B5E59] leading-relaxed">
-                                        12-hour cold extraction infused with nitrogen for a creamy, stout-like finish.
-                                    </p>
+                        <ScrollReveal delay={0} className="h-full">
+                            <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4 h-full">
+                                <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&q=80&w=500" 
+                                        alt="Nitro Velvet cold extraction" 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    />
                                 </div>
-                                <Link 
-                                    href="/menu/c3"
-                                    className="w-full py-3 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center block"
-                                >
-                                    Add to Cart
-                                </Link>
+                                <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Nitro Velvet</h4>
+                                            <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg1")?.price.toFixed(2)}</span>
+                                        </div>
+                                        <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                            12-hour cold extraction infused with nitrogen for a creamy, stout-like finish.
+                                        </p>
+                                    </div>
+                                    <Link 
+                                        href="/menu/c3"
+                                        className="w-full py-3 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center block"
+                                    >
+                                        Add to Cart
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
 
                         {/* Oat Silk Latte */}
-                        <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4">
-                            <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
-                                <img 
-                                    src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=500" 
-                                    alt="Oat Silk Latte" 
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                                />
-                            </div>
-                            <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
-                                <div className="space-y-1">
-                                    <div className="flex justify-between items-center">
-                                        <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Oat Silk Latte</h4>
-                                        <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg2")?.price.toFixed(2)}</span>
-                                    </div>
-                                    <p className="text-xs text-[#6B5E59] leading-relaxed">
-                                        Double ristretto shot paired with micro-foamed premium oat milk.
-                                    </p>
+                        <ScrollReveal delay={0.15} className="h-full">
+                            <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4 h-full">
+                                <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&q=80&w=500" 
+                                        alt="Oat Silk Latte" 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    />
                                 </div>
-                                <Link 
-                                    href="/menu/e2"
-                                    className="w-full py-3 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center block"
-                                >
-                                    Add to Cart
-                                </Link>
+                                <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Oat Silk Latte</h4>
+                                            <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg2")?.price.toFixed(2)}</span>
+                                        </div>
+                                        <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                            Double ristretto shot paired with micro-foamed premium oat milk.
+                                        </p>
+                                    </div>
+                                    <Link 
+                                        href="/menu/e2"
+                                        className="w-full py-3 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center block"
+                                    >
+                                        Add to Cart
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
 
                         {/* Citrus Ember */}
-                        <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4">
-                            <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
-                                <img 
-                                    src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500" 
-                                    alt="Citrus Ember espresso" 
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                                />
-                            </div>
-                            <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
-                                <div className="space-y-1">
-                                    <div className="flex justify-between items-center">
-                                        <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Citrus Ember</h4>
-                                        <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg3")?.price.toFixed(2)}</span>
-                                    </div>
-                                    <p className="text-xs text-[#6B5E59] leading-relaxed">
-                                        A warming blend of spiced espresso and blood orange reduction.
-                                    </p>
+                        <ScrollReveal delay={0.3} className="h-full">
+                            <div className="bg-[#FAF6F0] rounded-2xl overflow-hidden border border-[#2C1A14]/15 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1.5 p-4 h-full">
+                                <div className="h-64 sm:h-72 rounded-xl overflow-hidden relative">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500" 
+                                        alt="Citrus Ember espresso" 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                    />
                                 </div>
-                                <Link 
-                                    href="/menu/s1"
-                                    className="w-full py-3 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center block"
-                                >
-                                    Add to Cart
-                                </Link>
+                                <div className="pt-5 flex-1 flex flex-col justify-between text-left space-y-4">
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="font-serif text-xl font-bold text-[#2C1A14]">Citrus Ember</h4>
+                                            <span className="text-lg font-bold text-[#8B4513]">${menuItems.find(i => i.id === "dg3")?.price.toFixed(2)}</span>
+                                        </div>
+                                        <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                            A warming blend of spiced espresso and blood orange reduction.
+                                        </p>
+                                    </div>
+                                    <Link 
+                                        href="/menu/s1"
+                                        className="w-full py-3 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 text-center block"
+                                    >
+                                        Add to Cart
+                                    </Link>
+                                </div>
                             </div>
-                        </div>
+                        </ScrollReveal>
                     </div>
                 </div>
             </section>
@@ -378,49 +397,57 @@ export default function WebsiteHome() {
             <section className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Section Header */}
-                    <div className="text-center space-y-3 max-w-2xl mx-auto mb-16">
-                        <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14]">
-                            Everything in one app
-                        </h2>
-                        <p className="text-sm sm:text-base text-[#6B5E59] font-medium">
-                            The ultimate coffee companion for your daily ritual.
-                        </p>
-                    </div>
+                    <ScrollReveal>
+                        <div className="text-center space-y-3 max-w-2xl mx-auto mb-16">
+                            <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14]">
+                                Everything in one app
+                            </h2>
+                            <p className="text-sm sm:text-base text-[#6B5E59] font-medium">
+                                The ultimate coffee companion for your daily ritual.
+                            </p>
+                        </div>
+                    </ScrollReveal>
 
                     {/* Features cards grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {/* Express Checkout */}
-                        <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300">
-                            <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                                <CreditCard className="w-6 h-6 stroke-1.5" />
+                        <ScrollReveal delay={0} className="h-full">
+                            <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300 h-full">
+                                <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                                    <CreditCard className="w-6 h-6 stroke-1.5" />
+                                </div>
+                                <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Express Checkout</h3>
+                                <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                    Save your favorites and skip the line with one-tap mobile ordering and payment.
+                                </p>
                             </div>
-                            <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Express Checkout</h3>
-                            <p className="text-xs text-[#6B5E59] leading-relaxed">
-                                Save your favorites and skip the line with one-tap mobile ordering and payment.
-                            </p>
-                        </div>
+                        </ScrollReveal>
 
                         {/* Elite Rewards */}
-                        <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300">
-                            <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                                <Tag className="w-6 h-6 stroke-1.5" />
+                        <ScrollReveal delay={0.15} className="h-full">
+                            <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300 h-full">
+                                <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                                    <Tag className="w-6 h-6 stroke-1.5" />
+                                </div>
+                                <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Elite Rewards</h3>
+                                <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                    Track your points in real-time and unlock exclusive perks, early access, and free drinks.
+                                </p>
                             </div>
-                            <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Elite Rewards</h3>
-                            <p className="text-xs text-[#6B5E59] leading-relaxed">
-                                Track your points in real-time and unlock exclusive perks, early access, and free drinks.
-                            </p>
-                        </div>
+                        </ScrollReveal>
 
                         {/* Brew Tracker */}
-                        <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300">
-                            <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
-                                <MapPin className="w-6 h-6 stroke-1.5" />
+                        <ScrollReveal delay={0.3} className="h-full">
+                            <div className="bg-[#FAF6F0] p-8 rounded-2xl border border-[#2C1A14]/15 shadow-sm text-left space-y-4 hover:shadow-md transition-all duration-300 h-full">
+                                <div className="w-12 h-12 rounded-xl bg-[#8B4513]/5 border border-[#8B4513]/10 flex items-center justify-center text-[#8B4513]">
+                                    <MapPin className="w-6 h-6 stroke-1.5" />
+                                </div>
+                                <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Brew Tracker</h3>
+                                <p className="text-xs text-[#6B5E59] leading-relaxed">
+                                    Follow your delivery from the moment our baristas pull the shot to your doorstep.
+                                </p>
                             </div>
-                            <h3 className="font-serif text-xl font-bold text-[#2C1A14]">Brew Tracker</h3>
-                            <p className="text-xs text-[#6B5E59] leading-relaxed">
-                                Follow your delivery from the moment our baristas pull the shot to your doorstep.
-                            </p>
-                        </div>
+                        </ScrollReveal>
                     </div>
                 </div>
             </section>
@@ -429,45 +456,47 @@ export default function WebsiteHome() {
             <section id="loyalty" className="bg-[#080403] py-24 relative z-30 border-b border-white/5 text-left">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
                     {/* Left details & progress indicator */}
-                    <div className="flex-1 space-y-8 max-w-xl w-full">
-                        <div className="space-y-4">
-                            <span className="text-xs font-bold uppercase tracking-widest text-[#C07C4A]">Loyalty Program</span>
-                            <h2 className="font-sans text-4xl sm:text-5xl font-extrabold text-white leading-tight">
-                                Your next pour is<br />on us.
-                            </h2>
-                            <p className="text-sm text-[#FAF6F0]/70 leading-relaxed font-light">
-                                Join the Bean Fien circle. Earn beans with every purchase and unlock exclusive seasonal drops and members-only events.
-                            </p>
-                        </div>
-
-                        {/* Current Balance Box */}
-                        <div className="bg-[#141414] p-7 rounded-2xl border border-white/5 space-y-6 shadow-xl w-full">
-                            <div className="flex justify-between items-center text-xs font-bold">
-                                <span className="text-white/80">Current Balance: 750 Beans</span>
-                                <span className="text-[#C07C4A]">Free Drink at 1000</span>
+                    <ScrollReveal variant="fadeInLeft" className="flex-1 max-w-xl w-full">
+                        <div className="space-y-8">
+                            <div className="space-y-4">
+                                <span className="text-xs font-bold uppercase tracking-widest text-[#C07C4A]">Loyalty Program</span>
+                                <h2 className="font-sans text-4xl sm:text-5xl font-extrabold text-white leading-tight">
+                                    Your next pour is<br />on us.
+                                </h2>
+                                <p className="text-sm text-[#FAF6F0]/70 leading-relaxed font-light">
+                                    Join the Bean Fien circle. Earn beans with every purchase and unlock exclusive seasonal drops and members-only events.
+                                </p>
                             </div>
 
-                            {/* Progress bar */}
-                            <div className="space-y-3">
-                                <div className="w-full bg-[#FAF6F0] h-2.5 rounded-full overflow-hidden">
-                                    <div 
-                                        className="bg-[#C07C4A] h-full rounded-full transition-all duration-1000"
-                                        style={{ width: "75%" }}
-                                    />
+                            {/* Current Balance Box */}
+                            <div className="bg-[#141414] p-7 rounded-2xl border border-white/5 space-y-6 shadow-xl w-full">
+                                <div className="flex justify-between items-center text-xs font-bold">
+                                    <span className="text-white/80">Current Balance: 750 Beans</span>
+                                    <span className="text-[#C07C4A]">Free Drink at 1000</span>
                                 </div>
-                                {/* Progress Ticks */}
-                                <div className="relative h-4 text-[10px] font-bold text-white/40 mt-1">
-                                    <span className="absolute left-[25%] -translate-x-1/2">250</span>
-                                    <span className="absolute left-[50%] -translate-x-1/2">500</span>
-                                    <span className="absolute left-[75%] -translate-x-1/2 text-[#C07C4A] font-extrabold">750</span>
-                                    <span className="absolute left-[100%] -translate-x-full">1000</span>
+
+                                {/* Progress bar */}
+                                <div className="space-y-3">
+                                    <div className="w-full bg-[#FAF6F0] h-2.5 rounded-full overflow-hidden">
+                                        <div 
+                                            className="bg-[#C07C4A] h-full rounded-full transition-all duration-1000"
+                                            style={{ width: "75%" }}
+                                        />
+                                    </div>
+                                    {/* Progress Ticks */}
+                                    <div className="relative h-4 text-[10px] font-bold text-white/40 mt-1">
+                                        <span className="absolute left-[25%] -translate-x-1/2">250</span>
+                                        <span className="absolute left-[50%] -translate-x-1/2">500</span>
+                                        <span className="absolute left-[75%] -translate-x-1/2 text-[#C07C4A] font-extrabold">750</span>
+                                        <span className="absolute left-[100%] -translate-x-full">1000</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
 
                     {/* Right: Loyalty program image */}
-                    <div className="flex-1 w-full flex justify-center relative">
+                    <ScrollReveal variant="fadeInRight" className="flex-1 w-full flex justify-center relative">
                         <div className="w-full max-w-[480px] rounded-3xl overflow-hidden shadow-2xl transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500 group">
                             <img 
                                 src="/loyalty.png" 
@@ -475,7 +504,7 @@ export default function WebsiteHome() {
                                 className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
                             />
                         </div>
-                    </div>
+                    </ScrollReveal>
                 </div>
             </section>
 
@@ -483,48 +512,50 @@ export default function WebsiteHome() {
             <section id="app-promo" className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10 text-left">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
                     {/* Left Column Description */}
-                    <div className="flex-1 space-y-6 max-w-xl">
-                        <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14] leading-tight">
-                            Your daily ritual,<br />now in your pocket.
-                        </h2>
-                        <p className="text-sm sm:text-base text-[#6B5E59] leading-relaxed font-light font-sans">
-                            Order ahead, skip the line, and customize your drink with surgical precision. The Bean Fien app is coffee at your fingertips.
-                        </p>
+                    <ScrollReveal variant="fadeInLeft" className="flex-1 max-w-xl w-full">
+                        <div className="space-y-6">
+                            <h2 className="font-serif text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2C1A14] leading-tight">
+                                Your daily ritual,<br />now in your pocket.
+                            </h2>
+                            <p className="text-sm sm:text-base text-[#6B5E59] leading-relaxed font-light font-sans">
+                                Order ahead, skip the line, and customize your drink with surgical precision. The Bean Fien app is coffee at your fingertips.
+                            </p>
 
-                        {/* Store Badges */}
-                        <div className="flex flex-wrap gap-4 pt-4">
-                            {/* App Store Badge */}
-                            <Link 
-                                href="#" 
-                                className="inline-flex items-center gap-3 bg-[#2A120C] text-white px-5 py-3 rounded-2xl shadow hover:bg-[#4A241A] transition-all duration-300 w-fit"
-                            >
-                                <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
-                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.11.09 2.26-.57 2.95-1.39z"/>
-                                </svg>
-                                <div className="text-left leading-none">
-                                    <span className="text-[9px] uppercase tracking-wider block opacity-75">Download on the</span>
-                                    <span className="text-sm font-bold block font-sans">App Store</span>
-                                </div>
-                            </Link>
+                            {/* Store Badges */}
+                            <div className="flex flex-wrap gap-4 pt-4">
+                                {/* App Store Badge */}
+                                <Link 
+                                    href="#" 
+                                    className="inline-flex items-center gap-3 bg-[#2A120C] text-white px-5 py-3 rounded-2xl shadow hover:bg-[#4A241A] transition-all duration-300 w-fit"
+                                >
+                                    <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+                                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 4.17c.66-.81 1.11-1.93.99-3.06-1 .04-2.21.67-2.93 1.49-.62.69-1.16 1.84-1.01 2.96 1.11.09 2.26-.57 2.95-1.39z"/>
+                                    </svg>
+                                    <div className="text-left leading-none">
+                                        <span className="text-[9px] uppercase tracking-wider block opacity-75">Download on the</span>
+                                        <span className="text-sm font-bold block font-sans">App Store</span>
+                                    </div>
+                                </Link>
 
-                            {/* Google Play Badge */}
-                            <Link 
-                                href="#" 
-                                className="inline-flex items-center gap-3 bg-[#2A120C] text-white px-5 py-3 rounded-2xl shadow hover:bg-[#4A241A] transition-all duration-300 w-fit"
-                            >
-                                <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
-                                    <path d="M5 3.25c-.28 0-.5.22-.5.5v16.5c0 .28.22.5.5.5h1.22l9.06-9.06L6.22 3.25H5zm2.84.5l8.13 8.13-1.63 1.63L6.44 5.61l1.4-1.86zm8.88 8.88l3.19-3.19c.28-.28.28-.72 0-1L12.56 1.13c-.28-.28-.72-.28-1 0L7.88 4.81l8.84 8.82zm.72.72l-8.84-8.84-3.19 3.19c-.28.28-.28.72 0 1l7.35 7.35c.28.28.72.28 1 0l3.68-3.7z"/>
-                                </svg>
-                                <div className="text-left leading-none">
-                                    <span className="text-[9px] uppercase tracking-wider block opacity-75">Get it on</span>
-                                    <span className="text-sm font-bold block font-sans">Google Play</span>
-                                </div>
-                            </Link>
+                                {/* Google Play Badge */}
+                                <Link 
+                                    href="#" 
+                                    className="inline-flex items-center gap-3 bg-[#2A120C] text-white px-5 py-3 rounded-2xl shadow hover:bg-[#4A241A] transition-all duration-300 w-fit"
+                                >
+                                    <svg className="w-6 h-6 fill-current text-white" viewBox="0 0 24 24">
+                                        <path d="M5 3.25c-.28 0-.5.22-.5.5v16.5c0 .28.22.5.5.5h1.22l9.06-9.06L6.22 3.25H5zm2.84.5l8.13 8.13-1.63 1.63L6.44 5.61l1.4-1.86zm8.88 8.88l3.19-3.19c.28-.28.28-.72 0-1L12.56 1.13c-.28-.28-.72-.28-1 0L7.88 4.81l8.84 8.82zm.72.72l-8.84-8.84-3.19 3.19c-.28.28-.28.72 0 1l7.35 7.35c.28.28.72.28 1 0l3.68-3.7z"/>
+                                    </svg>
+                                    <div className="text-left leading-none">
+                                        <span className="text-[9px] uppercase tracking-wider block opacity-75">Get it on</span>
+                                        <span className="text-sm font-bold block font-sans">Google Play</span>
+                                    </div>
+                                </Link>
+                            </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
 
                     {/* Right Column Tilted iPhone Mockup */}
-                    <div className="flex-1 w-full flex justify-center items-center relative py-6">
+                    <ScrollReveal variant="fadeInRight" className="flex-1 w-full flex justify-center items-center relative py-6">
                         {/* CSS iPhone Frame */}
                         <div className="relative border-zinc-800 bg-zinc-800 border-[12px] rounded-[3rem] h-[580px] w-[285px] shadow-2xl transform lg:rotate-6 hover:rotate-0 transition-transform duration-500 overflow-hidden flex flex-col justify-between p-5 text-center relative border-b-[14px]">
                             {/* Speaker notch */}
@@ -577,7 +608,7 @@ export default function WebsiteHome() {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </ScrollReveal>
                 </div>
             </section>
 

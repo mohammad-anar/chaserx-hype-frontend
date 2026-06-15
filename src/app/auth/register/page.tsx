@@ -65,8 +65,8 @@ export default function RegisterPage() {
     };
 
     return (
-        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col">
-            <div className="text-left mb-6">
+        <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col opacity-0 animate-scale-in">
+            <div className="text-left mb-6 opacity-0 animate-fade-in-up delay-100">
                 <h2 className="text-2xl font-bold text-white tracking-wide">Create Account</h2>
                 <p className="text-xs text-[#FAF6F0]/60 mt-1 leading-relaxed">
                     Begin your journey into specialty coffee perfection.
@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
             <form onSubmit={handleRegister} className="space-y-4">
                 {/* Full Name Input */}
-                <div className="space-y-1 text-left">
+                <div className="space-y-1 text-left opacity-0 animate-fade-in-up delay-200">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
                         Full Name
                     </label>
@@ -98,7 +98,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Email Input */}
-                <div className="space-y-1 text-left">
+                <div className="space-y-1 text-left opacity-0 animate-fade-in-up delay-300">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
                         Email Address
                     </label>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Password & Confirm Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-0 animate-fade-in-up delay-400">
                     {/* Password */}
                     <div className="space-y-1 text-left">
                         <label className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]">
@@ -171,7 +171,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Disclaimer Terms text */}
-                <p className="text-[10px] text-[#FAF6F0]/50 leading-relaxed text-left py-2">
+                <p className="text-[10px] text-[#FAF6F0]/50 leading-relaxed text-left py-2 opacity-0 animate-fade-in-up delay-500">
                     By clicking &quot;Join the Ritual,&quot; you agree to our Terms of Service and Privacy Policy regarding your craft profile and loyalty rewards.
                 </p>
 
@@ -179,7 +179,7 @@ export default function RegisterPage() {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-[#C07C4A] hover:bg-[#A66637] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2"
+                    className="w-full bg-[#C07C4A] hover:bg-[#A66637] active:scale-[0.98] disabled:bg-[#C07C4A]/50 text-white font-bold py-3.5 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs shadow-lg shadow-[#C07C4A]/10 flex items-center justify-center gap-2 opacity-0 animate-fade-in-up delay-700"
                 >
                     {isLoading ? (
                         <>
@@ -193,7 +193,7 @@ export default function RegisterPage() {
             </form>
 
             {/* Footer Link */}
-            <div className="text-center mt-6 text-xs text-[#FAF6F0]/60">
+            <div className="text-center mt-6 text-xs text-[#FAF6F0]/60 opacity-0 animate-fade-in-up delay-1000">
                 Already have an account?{" "}
                 <Link href="/auth/login" className="text-[#C07C4A] font-bold hover:underline transition-all">
                     Sign In

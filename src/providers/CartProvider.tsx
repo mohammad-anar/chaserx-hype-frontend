@@ -25,19 +25,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [cart, setCart] = useState<CustomCartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
-    const [isLoaded, setIsLoaded] = useState(false);
 
     // Load cart from sessionStorage on mount
     useEffect(() => {
         const savedCart = sessionStorage.getItem("bf_cart_custom");
         if (savedCart) {
             try {
-                setCart(JSON.parse(savedCart));
+                const parsedCart = JSON.parse(savedCart);
+                setTimeout(() => {
+                    setCart(parsedCart);
+                }, 0);
             } catch (e) {
                 console.error("Failed to parse cart", e);
             }
         }
-        setIsLoaded(true);
     }, []);
 
     // Save cart to sessionStorage whenever it changes

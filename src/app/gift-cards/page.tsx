@@ -28,6 +28,7 @@ import { useCart } from "@/hooks/useCart";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const cardDesigns = [
     {
@@ -79,10 +80,12 @@ export default function GiftCardsPage() {
     // Redemption Code State
     const [redeemCode, setRedeemCode] = useState("");
 
-    const { cart, addToCart, showNotification } = useCart();
+    const { addToCart, showNotification } = useCart();
 
     useEffect(() => {
-        setMounted(true);
+        setTimeout(() => {
+            setMounted(true);
+        }, 0);
     }, []);
 
     // Add Gift Card to Cart
@@ -160,7 +163,7 @@ export default function GiftCardsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     
                     {/* Left Column Description or Balance Details */}
-                    <div className="lg:col-span-7 space-y-8">
+                    <div className="lg:col-span-7 space-y-8 opacity-0 animate-fade-in-left">
                         {viewMode === "purchase" ? (
                             // Purchase Mode Header
                             <div className="space-y-6">
@@ -171,7 +174,7 @@ export default function GiftCardsPage() {
                                     Share the craft of specialty coffee.
                                 </h1>
                                 <p className="text-[#6B5E59] text-sm sm:text-base leading-relaxed font-light max-w-xl">
-                                    Bean Fien gift cards are more than a token—they are an invitation to experience the world's finest roasts, delivered with precision and passion.
+                                    Bean Fien gift cards are more than a token—they are an invitation to experience the world&apos;s finest roasts, delivered with precision and passion.
                                 </p>
                             </div>
                         ) : (
@@ -243,7 +246,7 @@ export default function GiftCardsPage() {
                     </div>
 
                     {/* Right Column: 3D Tilted Card Preview */}
-                    <div className="lg:col-span-5 flex justify-center">
+                    <div className="lg:col-span-5 flex justify-center opacity-0 animate-fade-in-right delay-200">
                         <div className="relative transform rotate-6 skew-y-3 skew-x-3 w-80 h-48 sm:w-[380px] sm:h-[220px] rounded-2xl overflow-hidden shadow-2xl transition-transform duration-500 hover:rotate-0 hover:skew-x-0 hover:skew-y-0 cursor-pointer group border border-white/10">
                             
                             {/* Selected Card Art Background */}
@@ -312,95 +315,99 @@ export default function GiftCardsPage() {
                             <div className="lg:col-span-7 space-y-10">
                                 
                                 {/* Choose a Design */}
-                                <div className="space-y-4">
-                                    <h3 className="font-serif text-2xl font-black text-[#2C1A14]">
-                                        1. Choose a Design
-                                    </h3>
-                                    <p className="text-xs text-[#6B5E59] -mt-2">
-                                        Select the aesthetic that fits the occasion.
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {cardDesigns.map((design) => (
-                                            <button
-                                                key={design.id}
-                                                type="button"
-                                                onClick={() => setSelectedDesign(design.id)}
-                                                className={`relative h-28 rounded-lg overflow-hidden border-2 transition-all shadow-sm ${
-                                                    selectedDesign === design.id
-                                                        ? "border-[#C07C4A] ring-2 ring-[#C07C4A]/25 scale-102"
-                                                        : "border-[#2C1A14]/15 hover:border-[#2C1A14]/40"
-                                                }`}
-                                            >
-                                                <img src={design.url} alt={design.name} className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/35 hover:bg-black/10 transition-colors flex items-end p-2">
-                                                    <span className="text-[10px] text-white font-bold tracking-wide">
-                                                        {design.name}
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        ))}
+                                <ScrollReveal>
+                                    <div className="space-y-4">
+                                        <h3 className="font-serif text-2xl font-black text-[#2C1A14]">
+                                            1. Choose a Design
+                                        </h3>
+                                        <p className="text-xs text-[#6B5E59] -mt-2">
+                                            Select the aesthetic that fits the occasion.
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {cardDesigns.map((design) => (
+                                                <button
+                                                    key={design.id}
+                                                    type="button"
+                                                    onClick={() => setSelectedDesign(design.id)}
+                                                    className={`relative h-28 rounded-lg overflow-hidden border-2 transition-all shadow-sm ${
+                                                        selectedDesign === design.id
+                                                            ? "border-[#C07C4A] ring-2 ring-[#C07C4A]/25 scale-102"
+                                                            : "border-[#2C1A14]/15 hover:border-[#2C1A14]/40"
+                                                    }`}
+                                                >
+                                                    <img src={design.url} alt={design.name} className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/35 hover:bg-black/10 transition-colors flex items-end p-2">
+                                                        <span className="text-[10px] text-white font-bold tracking-wide">
+                                                            {design.name}
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
+                                </ScrollReveal>
 
                                 {/* Select Amount */}
-                                <div className="space-y-4">
-                                    <h3 className="font-serif text-2xl font-black text-[#2C1A14]">
-                                        2. Select Amount
-                                    </h3>
-                                    <p className="text-xs text-[#6B5E59] -mt-2">
-                                        Select a preset or enter a custom value.
-                                    </p>
-                                    
-                                    <div className="flex flex-wrap gap-4 items-center">
-                                        {[10, 25, 50, 100].map((val) => (
-                                            <button
-                                                key={val}
-                                                type="button"
-                                                onClick={() => {
-                                                    setAmountPreset(val);
-                                                    setCustomAmountVal("");
-                                                }}
-                                                className={`px-6 py-3.5 rounded-lg text-xs font-bold border transition-all shadow-sm ${
-                                                    amountPreset === val
-                                                        ? "bg-[#FAF0ED] text-[#C07C4A] border-[#C07C4A] font-black"
-                                                        : "bg-white border-[#2C1A14]/15 text-[#2C1A14] hover:bg-[#2C1A14]/5"
-                                                }`}
-                                            >
-                                                ${val}
-                                            </button>
-                                        ))}
+                                <ScrollReveal delay={0.15}>
+                                    <div className="space-y-4">
+                                        <h3 className="font-serif text-2xl font-black text-[#2C1A14]">
+                                            2. Select Amount
+                                        </h3>
+                                        <p className="text-xs text-[#6B5E59] -mt-2">
+                                            Select a preset or enter a custom value.
+                                        </p>
+                                        
+                                        <div className="flex flex-wrap gap-4 items-center">
+                                            {[10, 25, 50, 100].map((val) => (
+                                                <button
+                                                    key={val}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setAmountPreset(val);
+                                                        setCustomAmountVal("");
+                                                    }}
+                                                    className={`px-6 py-3.5 rounded-lg text-xs font-bold border transition-all shadow-sm ${
+                                                        amountPreset === val
+                                                            ? "bg-[#FAF0ED] text-[#C07C4A] border-[#C07C4A] font-black"
+                                                            : "bg-white border-[#2C1A14]/15 text-[#2C1A14] hover:bg-[#2C1A14]/5"
+                                                    }`}
+                                                >
+                                                    ${val}
+                                                </button>
+                                            ))}
 
-                                        {/* Custom Value input structured as same size pill */}
-                                        {amountPreset === "custom" ? (
-                                            <div className="flex items-center gap-1.5 px-4 py-2 border border-[#C07C4A] rounded-lg bg-[#FAF0ED] shadow-sm">
-                                                <span className="text-xs font-bold text-[#C07C4A]">$</span>
-                                                <input 
-                                                    type="number"
-                                                    placeholder="Enter"
-                                                    value={customAmountVal}
-                                                    onChange={(e) => setCustomAmountVal(e.target.value)}
-                                                    className="w-12 bg-transparent text-xs font-bold focus:outline-none text-[#C07C4A]"
-                                                />
-                                            </div>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setAmountPreset("custom");
-                                                    setCustomAmountVal("");
-                                                }}
-                                                className="px-6 py-3.5 rounded-lg text-xs font-bold border border-[#2C1A14]/15 text-[#2C1A14] bg-white hover:bg-[#2C1A14]/5 shadow-sm"
-                                            >
-                                                $Custom
-                                            </button>
-                                        )}
+                                            {/* Custom Value input structured as same size pill */}
+                                            {amountPreset === "custom" ? (
+                                                <div className="flex items-center gap-1.5 px-4 py-2 border border-[#C07C4A] rounded-lg bg-[#FAF0ED] shadow-sm">
+                                                    <span className="text-xs font-bold text-[#C07C4A]">$</span>
+                                                    <input 
+                                                        type="number"
+                                                        placeholder="Enter"
+                                                        value={customAmountVal}
+                                                        onChange={(e) => setCustomAmountVal(e.target.value)}
+                                                        className="w-12 bg-transparent text-xs font-bold focus:outline-none text-[#C07C4A]"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setAmountPreset("custom");
+                                                        setCustomAmountVal("");
+                                                    }}
+                                                    className="px-6 py-3.5 rounded-lg text-xs font-bold border border-[#2C1A14]/15 text-[#2C1A14] bg-white hover:bg-[#2C1A14]/5 shadow-sm"
+                                                >
+                                                    $Custom
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
+                                </ScrollReveal>
 
                             </div>
 
                              {/* Right Recipient Details details card */}
-                            <div className="lg:col-span-5">
+                            <ScrollReveal variant="fadeInRight" className="lg:col-span-5">
                                 <div className="bg-[#FAF0ED] rounded-2xl border border-[#C07C4A]/20 p-6 space-y-6 shadow-md">
                                     <h3 className="font-serif text-xl font-bold text-[#2C1A14]">
                                         Recipient Details
@@ -471,7 +478,7 @@ export default function GiftCardsPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </ScrollReveal>
 
                         </form>
                     </div>
@@ -483,70 +490,72 @@ export default function GiftCardsPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                             
                             {/* Transaction History log */}
-                            <div className="lg:col-span-7 space-y-8">
-                                <div className="flex justify-between items-center border-b border-[#2C1A14]/5 pb-3">
-                                    <h3 className="font-serif text-2xl font-black text-[#2C1A14]">
-                                        Transaction History
-                                    </h3>
-                                    <button onClick={() => showNotification("Refreshed latest log details.")} className="text-xs font-bold uppercase tracking-wider text-[#C07C4A] hover:underline flex items-center gap-1">
-                                        <RefreshCw className="w-3 h-3" />
-                                        <span>Refresh</span>
-                                    </button>
+                            <ScrollReveal variant="fadeInLeft" className="lg:col-span-7">
+                                <div className="space-y-8">
+                                    <div className="flex justify-between items-center border-b border-[#2C1A14]/5 pb-3">
+                                        <h3 className="font-serif text-2xl font-black text-[#2C1A14]">
+                                            Transaction History
+                                        </h3>
+                                        <button onClick={() => showNotification("Refreshed latest log details.")} className="text-xs font-bold uppercase tracking-wider text-[#C07C4A] hover:underline flex items-center gap-1">
+                                            <RefreshCw className="w-3 h-3" />
+                                            <span>Refresh</span>
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {/* Tx 1 */}
+                                        <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
+                                                    <Coffee className="w-5 h-5 stroke-[1.5]" />
+                                                </div>
+                                                <div className="text-left space-y-1">
+                                                    <h4 className="text-sm font-bold text-[#2C1A14]">Mobile Order</h4>
+                                                    <p className="text-xs text-[#6B5E59]">Downtown Soho • Oct 24, 2024</p>
+                                                </div>
+                                            </div>
+                                            <span className="font-bold text-[#2C1A14] text-xs">
+                                                - $6.50
+                                            </span>
+                                        </div>
+
+                                        {/* Tx 2 */}
+                                        <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
+                                                    <CreditCard className="w-5 h-5 stroke-[1.5]" />
+                                                </div>
+                                                <div className="text-left space-y-1">
+                                                    <h4 className="text-sm font-bold text-[#C07C4A]">Reload</h4>
+                                                    <p className="text-xs text-[#6B5E59]">Auto-Reload • Oct 20, 2024</p>
+                                                </div>
+                                            </div>
+                                            <span className="font-bold text-[#C07C4A] text-xs">
+                                                + $25.00
+                                            </span>
+                                        </div>
+
+                                        {/* Tx 3 */}
+                                        <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
+                                                    <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+                                                </div>
+                                                <div className="text-left space-y-1">
+                                                    <h4 className="text-sm font-bold text-[#2C1A14]">In-Store Purchase</h4>
+                                                    <p className="text-xs text-[#6B5E59]">Chelsea Market • Oct 15, 2024</p>
+                                                </div>
+                                            </div>
+                                            <span className="font-bold text-[#2C1A14] text-xs">
+                                                - $14.20
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div className="space-y-4">
-                                    {/* Tx 1 */}
-                                    <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
-                                                <Coffee className="w-5 h-5 stroke-[1.5]" />
-                                            </div>
-                                            <div className="text-left space-y-1">
-                                                <h4 className="text-sm font-bold text-[#2C1A14]">Mobile Order</h4>
-                                                <p className="text-xs text-[#6B5E59]">Downtown Soho • Oct 24, 2024</p>
-                                            </div>
-                                        </div>
-                                        <span className="font-bold text-[#2C1A14] text-xs">
-                                            - $6.50
-                                        </span>
-                                    </div>
-
-                                    {/* Tx 2 */}
-                                    <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
-                                                <CreditCard className="w-5 h-5 stroke-[1.5]" />
-                                            </div>
-                                            <div className="text-left space-y-1">
-                                                <h4 className="text-sm font-bold text-[#C07C4A]">Reload</h4>
-                                                <p className="text-xs text-[#6B5E59]">Auto-Reload • Oct 20, 2024</p>
-                                            </div>
-                                        </div>
-                                        <span className="font-bold text-[#C07C4A] text-xs">
-                                            + $25.00
-                                        </span>
-                                    </div>
-
-                                    {/* Tx 3 */}
-                                    <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
-                                                <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-                                            </div>
-                                            <div className="text-left space-y-1">
-                                                <h4 className="text-sm font-bold text-[#2C1A14]">In-Store Purchase</h4>
-                                                <p className="text-xs text-[#6B5E59]">Chelsea Market • Oct 15, 2024</p>
-                                            </div>
-                                        </div>
-                                        <span className="font-bold text-[#2C1A14] text-xs">
-                                            - $14.20
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            </ScrollReveal>
 
                             {/* Card Management Action Card */}
-                            <div className="lg:col-span-5">
+                            <ScrollReveal variant="fadeInRight" className="lg:col-span-5">
                                 <div className="bg-white rounded-2xl border border-[#2C1A14]/10 p-6 space-y-4 shadow-md">
                                     <h3 className="font-serif text-xl font-bold text-[#2C1A14] border-b border-[#2C1A14]/5 pb-3">
                                         Card Management
@@ -572,7 +581,7 @@ export default function GiftCardsPage() {
                                                 </div>
                                                 <div className="leading-tight">
                                                     <span className="text-xs font-black text-[#2C1A14] block">Rename Card</span>
-                                                    <span className="text-[9px] text-[#6B5E59]">Change your card's nickname</span>
+                                                    <span className="text-[9px] text-[#6B5E59]">Change your card&apos;s nickname</span>
                                                 </div>
                                             </div>
                                             <ArrowRight className="w-4 h-4 text-[#C07C4A]" />
@@ -610,50 +619,52 @@ export default function GiftCardsPage() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                            </ScrollReveal>
                         </div>
                     </div>
                 </section>
             )}
 
             {/* REDEEM A CODE SECTION (Reference Image 4 bottom black card) */}
-            <section className="bg-[#1E1B1A] text-white py-16 text-left border-t border-white/5 relative z-30 font-sans">
+            <section className="bg-[#1E1B1A] text-white py-16 text-left border-t border-white/5 relative z-30 font-sans overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-[#141212] p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative">
-                        
-                        {/* Ticket icon in header of section on far right */}
-                        <div className="absolute top-8 right-8 text-[#C07C4A] hidden md:block">
-                            <Ticket className="w-6 h-6 stroke-[1.5]" />
-                        </div>
-
-                        {/* Description */}
-                        <div className="space-y-3 max-w-lg text-left">
-                            <h3 className="font-serif text-2xl font-bold text-white">Redeem a Code</h3>
-                            <p className="text-xs text-white/50 leading-relaxed font-light">
-                                Add funds to your Bean Fien account by redeeming a digital or physical gift card. Enter your code below.
-                            </p>
-                        </div>
-
-                        {/* Input redemption form */}
-                        <form onSubmit={handleRedeemCode} className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-4 flex-1 max-w-md">
-                            <input 
-                                type="text"
-                                placeholder="Enter 16-digit Code"
-                                value={redeemCode}
-                                onChange={(e) => setRedeemCode(e.target.value)}
-                                className="w-full bg-white/5 border border-white/10 focus:border-[#C07C4A] rounded-lg px-5 py-4 text-xs font-semibold focus:outline-none text-white tracking-widest text-center"
-                            />
+                    <ScrollReveal>
+                        <div className="bg-[#141212] p-8 md:p-12 rounded-2xl border border-white/10 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative">
                             
-                            {/* Capsule Redeem Button */}
-                            <button
-                                type="submit"
-                                className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] border border-[#C07C4A]/30 text-white text-xs font-black tracking-widest transition-all duration-300 whitespace-nowrap shadow-lg hover:scale-102"
-                            >
-                                Redeem
-                            </button>
-                        </form>
+                            {/* Ticket icon in header of section on far right */}
+                            <div className="absolute top-8 right-8 text-[#C07C4A] hidden md:block">
+                                <Ticket className="w-6 h-6 stroke-[1.5]" />
+                            </div>
 
-                    </div>
+                            {/* Description */}
+                            <div className="space-y-3 max-w-lg text-left">
+                                <h3 className="font-serif text-2xl font-bold text-white">Redeem a Code</h3>
+                                <p className="text-xs text-white/50 leading-relaxed font-light">
+                                    Add funds to your Bean Fien account by redeeming a digital or physical gift card. Enter your code below.
+                                </p>
+                            </div>
+
+                            {/* Input redemption form */}
+                            <form onSubmit={handleRedeemCode} className="w-full md:w-auto flex flex-col sm:flex-row items-center gap-4 flex-1 max-w-md">
+                                <input 
+                                    type="text"
+                                    placeholder="Enter 16-digit Code"
+                                    value={redeemCode}
+                                    onChange={(e) => setRedeemCode(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 focus:border-[#C07C4A] rounded-lg px-5 py-4 text-xs font-semibold focus:outline-none text-white tracking-widest text-center"
+                                />
+                                
+                                {/* Capsule Redeem Button */}
+                                <button
+                                    type="submit"
+                                    className="w-full sm:w-auto px-8 py-4 rounded-lg bg-[#2A120C] hover:bg-[#4A241A] border border-[#C07C4A]/30 text-white text-xs font-black tracking-widest transition-all duration-300 whitespace-nowrap shadow-lg hover:scale-102"
+                                >
+                                    Redeem
+                                </button>
+                            </form>
+
+                        </div>
+                    </ScrollReveal>
                 </div>
             </section>
 

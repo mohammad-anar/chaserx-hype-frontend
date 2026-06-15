@@ -30,10 +30,10 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
         <div className="fixed inset-0 z-50 flex justify-end">
             <div 
                 onClick={() => setIsCartOpen(false)}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" 
             />
 
-            <div className="relative w-full max-w-md bg-[#1E0F0B] h-full shadow-2xl p-6 flex flex-col justify-between border-l border-white/10 animate-in slide-in-from-right duration-300">
+            <div className="relative w-full max-w-md bg-[#1E0F0B] h-full shadow-2xl p-6 flex flex-col justify-between border-l border-white/10 animate-slide-in-right">
                 {/* Header */}
                 <div className="flex justify-between items-center pb-5 border-b border-white/5">
                     <div className="flex items-center gap-2">
