@@ -426,14 +426,14 @@ export default function WebsiteHome() {
             </section>
 
             {/* SECTION 4: Loyalty Program (Your next pour is on us) */}
-            <section id="loyalty" className="bg-[#0A0503] py-24 relative z-30 border-b border-white/5 text-left">
+            <section id="loyalty" className="bg-[#080403] py-24 relative z-30 border-b border-white/5 text-left">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
                     {/* Left details & progress indicator */}
                     <div className="flex-1 space-y-8 max-w-xl w-full">
                         <div className="space-y-4">
                             <span className="text-xs font-bold uppercase tracking-widest text-[#C07C4A]">Loyalty Program</span>
-                            <h2 className="font-serif text-4xl sm:text-5xl font-extrabold text-white leading-tight">
-                                Your next pour is on us.
+                            <h2 className="font-sans text-4xl sm:text-5xl font-extrabold text-white leading-tight">
+                                Your next pour is<br />on us.
                             </h2>
                             <p className="text-sm text-[#FAF6F0]/70 leading-relaxed font-light">
                                 Join the Bean Fien circle. Earn beans with every purchase and unlock exclusive seasonal drops and members-only events.
@@ -441,7 +441,7 @@ export default function WebsiteHome() {
                         </div>
 
                         {/* Current Balance Box */}
-                        <div className="bg-[#180C08] p-6 rounded-2xl border border-white/5 space-y-6 shadow-xl w-full">
+                        <div className="bg-[#141414] p-7 rounded-2xl border border-white/5 space-y-6 shadow-xl w-full">
                             <div className="flex justify-between items-center text-xs font-bold">
                                 <span className="text-white/80">Current Balance: 750 Beans</span>
                                 <span className="text-[#C07C4A]">Free Drink at 1000</span>
@@ -449,31 +449,30 @@ export default function WebsiteHome() {
 
                             {/* Progress bar */}
                             <div className="space-y-3">
-                                <div className="w-full bg-white/5 h-2.5 rounded-full overflow-hidden p-[1px] border border-white/5">
+                                <div className="w-full bg-[#FAF6F0] h-2.5 rounded-full overflow-hidden">
                                     <div 
-                                        className="bg-gradient-to-r from-[#8B4513] to-[#C07C4A] h-full rounded-full transition-all duration-1000"
+                                        className="bg-[#C07C4A] h-full rounded-full transition-all duration-1000"
                                         style={{ width: "75%" }}
                                     />
                                 </div>
                                 {/* Progress Ticks */}
-                                <div className="flex justify-between text-[10px] font-bold text-white/40 px-1">
-                                    <span>250</span>
-                                    <span>500</span>
-                                    <span className="text-[#C07C4A] font-extrabold">750</span>
-                                    <span>1000</span>
+                                <div className="relative h-4 text-[10px] font-bold text-white/40 mt-1">
+                                    <span className="absolute left-[25%] -translate-x-1/2">250</span>
+                                    <span className="absolute left-[50%] -translate-x-1/2">500</span>
+                                    <span className="absolute left-[75%] -translate-x-1/2 text-[#C07C4A] font-extrabold">750</span>
+                                    <span className="absolute left-[100%] -translate-x-full">1000</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right: Black marble tray with coffee cups */}
+                    {/* Right: Loyalty program image */}
                     <div className="flex-1 w-full flex justify-center relative">
-                        <div className="w-full max-w-[480px] h-[340px] sm:h-[400px] bg-gradient-to-br from-[#1E252C] to-[#0D1013] rounded-3xl p-6 border border-white/10 shadow-2xl relative overflow-hidden flex items-center justify-center transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 group">
-                            {/* Coffee Cup Layout Collage Image */}
+                        <div className="w-full max-w-[480px] rounded-3xl overflow-hidden shadow-2xl transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500 group">
                             <img 
-                                src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&q=80&w=800" 
-                                alt="Coffee cups tray view" 
-                                className="w-full h-full object-cover rounded-2xl shadow-inner border border-white/5 group-hover:scale-[1.02] transition-transform duration-700"
+                                src="/loyalty.png" 
+                                alt="Loyalty Program Cups" 
+                                className="w-full h-auto object-cover group-hover:scale-[1.02] transition-transform duration-700"
                             />
                         </div>
                     </div>
