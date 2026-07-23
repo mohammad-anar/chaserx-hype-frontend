@@ -71,9 +71,9 @@ export default function Sidebar() {
             {/* Sidebar Shell */}
             <aside 
                 className={`
-                    fixed inset-y-0 left-0 z-50 lg:z-30 lg:static
+                    fixed inset-y-0 left-0 z-50 lg:z-30 lg:sticky lg:top-0 lg:h-screen
                     w-72 bg-[#1E0F0B] text-[#C4B4A5] flex flex-col justify-between
-                    transition-transform duration-300 ease-in-out border-r border-[#2C1711]
+                    transition-transform duration-300 ease-in-out border-r border-[#2C1711] overflow-y-auto
                     ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
                 `}
             >
@@ -119,8 +119,8 @@ export default function Sidebar() {
                     </nav>
                 </div>
 
-                {/* Footer Section */}
-                <div className="p-4 border-t border-[#2C1711] space-y-2">
+                {/* Footer Section - Sticky at Bottom */}
+                <div className="mt-auto sticky bottom-0 bg-[#1E0F0B] p-4 border-t border-[#2C1711] space-y-2 z-10">
                     <Link 
                         href="/"
                         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 hover:bg-[#251410] text-[#C4B4A5] hover:text-white rounded-xl transition-all duration-200 text-sm font-medium"
@@ -129,7 +129,7 @@ export default function Sidebar() {
                     </Link>
                     <button 
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#2D1616] hover:bg-[#3E1F1F] text-[#FCA5A5] hover:text-white rounded-xl transition-all duration-200 border border-[#4A2020] text-sm font-medium"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#2D1616] hover:bg-[#3E1F1F] text-[#FCA5A5] hover:text-white rounded-xl transition-all duration-200 border border-[#4A2020] text-sm font-medium cursor-pointer"
                     >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out</span>

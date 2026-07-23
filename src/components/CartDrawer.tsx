@@ -306,11 +306,12 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                         <div className="flex-1 overflow-y-auto space-y-3.5 pr-1">
                             <div className="space-y-1 text-left">
                                 <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                    Full Name (fullName)
+                                    Full Name <span className="text-red-400">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="fullName"
+                                    required
                                     value={addressForm.fullName}
                                     onChange={handleInputChange}
                                     placeholder="John Doe"
@@ -320,7 +321,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
 
                             <div className="space-y-1 text-left">
                                 <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                    Street Address (street1) <span className="text-red-400">*</span>
+                                    Street Address <span className="text-red-400">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -336,7 +337,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                             <div className="grid grid-cols-2 gap-3 text-left">
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                        City (city) <span className="text-red-400">*</span>
+                                        City <span className="text-red-400">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -350,7 +351,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                        State (state)
+                                        State
                                     </label>
                                     <input
                                         type="text"
@@ -366,7 +367,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                             <div className="grid grid-cols-2 gap-3 text-left">
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                        Country (country) <span className="text-red-400">*</span>
+                                        Country <span className="text-red-400">*</span>
                                     </label>
                                     <input
                                         type="text"
@@ -380,7 +381,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                        Postal Code (postalCode)
+                                        Postal Code
                                     </label>
                                     <input
                                         type="text"
@@ -395,11 +396,12 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
 
                             <div className="space-y-1 text-left">
                                 <label className="text-[11px] font-bold text-white/70 uppercase tracking-wider block">
-                                    Phone Number (phone)
+                                    Phone Number <span className="text-red-400">*</span>
                                 </label>
                                 <input
                                     type="tel"
                                     name="phone"
+                                    required
                                     value={addressForm.phone}
                                     onChange={handleInputChange}
                                     placeholder="+1 (555) 000-0000"

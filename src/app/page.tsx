@@ -356,7 +356,7 @@ export default function WebsiteHome() {
                                 </p>
                             </div>
                             <Link
-                                href="#menu"
+                                href="/menu"
                                 className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#2C1A14] hover:text-[#8B4513] transition-colors border-b border-[#2C1A14] pb-1 hover:border-[#8B4513] group w-fit"
                             >
                                 <span>Full Menu</span>

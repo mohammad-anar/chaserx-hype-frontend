@@ -1,6 +1,9 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
+import NotificationDropdown from "@/components/NotificationDropdown";
+import AdminProfileDropdown from "@/components/AdminProfileDropdown";
 import { 
     Plus, 
     Edit2, 
@@ -11,17 +14,17 @@ import {
     Send, 
     Trash2, 
     CreditCard, 
-    Image as ImageIcon 
+    Image as ImageIcon,
+    Loader2,
+    RefreshCw
 } from "lucide-react";
-
-interface Reward {
-    id: string;
-    title: string;
-    type: "DRINK" | "FOOD" | "DISCOUNT" | "PROMO";
-    starsRequired: number;
-    claimedCount: number;
-    active: boolean;
-}
+import { 
+    useGetCoinProductsQuery, 
+    useCreateCoinProductMutation, 
+    useUpdateCoinProductMutation, 
+    useDeleteCoinProductMutation 
+} from "@/redux/features/coinProduct/coinProductApi";
+import { useGetProductsQuery } from "@/redux/features/product/productApi";
 
 interface GiftCardRequest {
     id: string;
@@ -39,14 +42,6 @@ interface CardDesign {
     image: string;
 }
 
-const initialRewards: Reward[] = [
-    { id: "R-01", title: "Free Flat White", type: "DRINK", starsRequired: 1000, claimedCount: 24, active: true },
-    { id: "R-02", title: "Free Pastry", type: "FOOD", starsRequired: 600, claimedCount: 41, active: true },
-    { id: "R-03", title: "10% Off Order", type: "DISCOUNT", starsRequired: 400, claimedCount: 67, active: true },
-    { id: "R-04", title: "Double Stars Day", type: "PROMO", starsRequired: 0, claimedCount: 0, active: false },
-    { id: "R-05", title: "Birthday Free Drink", type: "PROMO", starsRequired: 0, claimedCount: 15, active: true }
-];
-
 const initialCardDesigns: CardDesign[] = [
     { id: "D-01", label: "Coffee Beans", image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80" },
     { id: "D-02", label: "Café Scene", image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80" },
@@ -59,13 +54,22 @@ const initialRequests: GiftCardRequest[] = [
     { id: "Q-02", customer: "James Park", email: "james.park@email.com", date: "Jun 3", amount: 50.00, status: "Pending" }
 ];
 
-export default function Rewards() {
-    // Rewards state
-    const [rewards, setRewards] = useState<Reward[]>(initialRewards);
-    const [rewardModalOpen, setRewardModalOpen] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [selectedRewardId, setSelectedRewardId] = useState("");
+const getProductImg = (item: any) => {
+    if (!item) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
+    let imgStr = "";
+    if (Array.isArray(item?.image) && item?.image?.length > 0) {
+        imgStr = item?.image?.[0] || "";
+    } else if (typeof item?.image === "string" && item?.image) {
+        imgStr = item?.image;
+    }
+    if (!imgStr) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
+    if (imgStr?.startsWith("http://") || imgStr?.startsWith("https://")) return imgStr;
+    const baseUrl = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
+    return `${baseUrl}${imgStr?.startsWith("/") ? "" : "/"}${imgStr}`;
+};
 
+export default function Rewards() {
+    // Admin Profile Header State
     const [displayName, setDisplayName] = useState("Admin");
     const [roleTitle, setRoleTitle] = useState("Super Admin");
     const [adminPhoto, setAdminPhoto] = useState("");
@@ -86,11 +90,31 @@ export default function Rewards() {
             window.removeEventListener("adminProfileUpdated", loadProfile);
         };
     }, []);
-    
-    // Reward Modal Fields
-    const [rewardName, setRewardName] = useState("Hot Coffee");
-    const [rewardStars, setRewardStars] = useState(0);
-    const [rewardActive, setRewardActive] = useState(true);
+
+    // RTK Query Hooks for CoinProducts and Products
+    const { data: coinProductsResponse, isLoading: isLoadingCoinProducts, isFetching, refetch } = useGetCoinProductsQuery(undefined);
+    const { data: productsResponse } = useGetProductsQuery({ limit: 100 });
+
+    const [createCoinProduct, { isLoading: isCreating }] = useCreateCoinProductMutation();
+    const [updateCoinProduct, { isLoading: isUpdating }] = useUpdateCoinProductMutation();
+    const [deleteCoinProduct] = useDeleteCoinProductMutation();
+
+    const coinProducts = useMemo(() => {
+        return coinProductsResponse?.data || [];
+    }, [coinProductsResponse]);
+
+    const menuProducts = useMemo(() => {
+        return productsResponse?.data || [];
+    }, [productsResponse]);
+
+    // Modal State
+    const [rewardModalOpen, setRewardModalOpen] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [selectedCoinProductId, setSelectedCoinProductId] = useState("");
+
+    // Modal Inputs
+    const [selectedProductId, setSelectedProductId] = useState("");
+    const [needPoint, setNeedPoint] = useState(100);
 
     // Gift Card Settings state
     const [settingsTab, setSettingsTab] = useState<"amounts" | "designs">("amounts");
@@ -107,10 +131,20 @@ export default function Rewards() {
     const [requestTab, setRequestTab] = useState<"Pending" | "All">("Pending");
     const [inputCodes, setInputCodes] = useState<{ [key: string]: string }>({});
 
-    // Summary calculations
-    const activeRewardsCount = useMemo(() => rewards.filter(r => r.active).length, [rewards]);
-    const totalClaimedCount = useMemo(() => rewards.reduce((sum, r) => sum + r.claimedCount, 0), [rewards]);
+    // Summary calculations from live API
+    const activeRewardsCount = useMemo(() => coinProducts.length, [coinProducts]);
     
+    const totalClaimedCount = useMemo(() => {
+        return coinProducts.reduce((sum: number, cp: any) => sum + (cp._count?.orderItems || 0), 0);
+    }, [coinProducts]);
+
+    const totalCoinsRedeemed = useMemo(() => {
+        return coinProducts.reduce((sum: number, cp: any) => {
+            const count = cp._count?.orderItems || 0;
+            return sum + (count * (cp.needPoint || 0));
+        }, 0);
+    }, [coinProducts]);
+
     const pendingRequestsCount = useMemo(() => requests.filter(r => r.status === "Pending").length, [requests]);
 
     const filteredRequests = useMemo(() => {
@@ -120,56 +154,67 @@ export default function Rewards() {
         return requests;
     }, [requests, requestTab]);
 
-    // Reward catalog actions
+    // Reward Catalog Handlers
     const handleOpenAddReward = () => {
         setEditMode(false);
-        setRewardName("Hot Coffee");
-        setRewardStars(0);
-        setRewardActive(true);
+        setSelectedCoinProductId("");
+        if (menuProducts.length > 0) {
+            setSelectedProductId(menuProducts[0].id);
+        } else {
+            setSelectedProductId("");
+        }
+        setNeedPoint(100);
         setRewardModalOpen(true);
     };
 
-    const handleOpenEditReward = (reward: Reward) => {
+    const handleOpenEditReward = (coinProduct: any) => {
         setEditMode(true);
-        setSelectedRewardId(reward.id);
-        setRewardName(reward.title);
-        setRewardStars(reward.starsRequired);
-        setRewardActive(reward.active);
+        setSelectedCoinProductId(coinProduct.id);
+        setSelectedProductId(coinProduct.productId || (menuProducts[0]?.id || ""));
+        setNeedPoint(coinProduct.needPoint || 0);
         setRewardModalOpen(true);
     };
 
-    const handleSaveReward = (e: React.FormEvent) => {
+    const handleDeleteReward = async (id: string, name: string) => {
+        if (confirm(`Are you sure you want to delete reward "${name}"?`)) {
+            try {
+                await deleteCoinProduct(id).unwrap();
+                toast.success(`Reward "${name}" deleted successfully.`);
+            } catch (err: any) {
+                toast.error(err?.data?.message || "Failed to delete reward.");
+            }
+        }
+    };
+
+    const handleSaveReward = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Infer type from title
-        let type: "DRINK" | "FOOD" | "DISCOUNT" | "PROMO" = "DRINK";
-        const titleLower = rewardName.toLowerCase();
-        if (titleLower.includes("pastry") || titleLower.includes("food") || titleLower.includes("muffin")) {
-            type = "FOOD";
-        } else if (titleLower.includes("%") || titleLower.includes("off") || titleLower.includes("discount")) {
-            type = "DISCOUNT";
-        } else if (titleLower.includes("double") || titleLower.includes("birthday") || titleLower.includes("promo")) {
-            type = "PROMO";
+        if (!selectedProductId) {
+            toast.error("Please select an associated product for this reward.");
+            return;
         }
 
-        if (editMode) {
-            setRewards(prev => prev.map(r => 
-                r.id === selectedRewardId 
-                    ? { ...r, title: rewardName, starsRequired: rewardStars, active: rewardActive, type }
-                    : r
-            ));
-        } else {
-            const newReward: Reward = {
-                id: `R-${Math.floor(Math.random() * 900 + 100)}`,
-                title: rewardName,
-                type,
-                starsRequired: rewardStars,
-                claimedCount: 0,
-                active: rewardActive
-            };
-            setRewards([...rewards, newReward]);
+        try {
+            if (editMode) {
+                await updateCoinProduct({
+                    id: selectedCoinProductId,
+                    data: {
+                        productId: selectedProductId,
+                        needPoint: Number(needPoint),
+                    },
+                }).unwrap();
+                toast.success("Reward updated successfully.");
+            } else {
+                await createCoinProduct({
+                    productId: selectedProductId,
+                    needPoint: Number(needPoint),
+                }).unwrap();
+                toast.success("Reward created successfully.");
+            }
+            setRewardModalOpen(false);
+        } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to save reward.");
         }
-        setRewardModalOpen(false);
     };
 
     // Gift amounts actions
@@ -211,14 +256,14 @@ export default function Rewards() {
     const handleSendCode = (id: string) => {
         const code = inputCodes[id];
         if (!code || code.trim() === "") {
-            alert("Please enter a valid gift card code first!");
+            toast.error("Please enter a valid gift card code first!");
             return;
         }
 
         setRequests(prev => prev.map(req => 
             req.id === id ? { ...req, status: "Sent", code: code.trim() } : req
         ));
-        alert(`Gift card code "${code}" sent to customer!`);
+        toast.success(`Gift card code "${code}" sent to customer!`);
     };
 
     return (
@@ -226,27 +271,23 @@ export default function Rewards() {
             {/* Header */}
             <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
                 <div>
-                    <h1 className="font-serif text-3xl font-bold tracking-tight text-[#2C1A14] dark:text-white">Rewards</h1>
+                    <h1 className="font-serif text-3xl font-bold tracking-tight text-[#2C1A14] dark:text-white">Rewards Management</h1>
                     <p className="text-sm text-muted-foreground mt-1">Bean Fien Admin Panel</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Manage coin reward products, points required, and gift cards.</p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Link 
-                        href="/admin/settings?profile=true"
-                        className="flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-left"
+                    <NotificationDropdown />
+                    <button
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        className="p-2.5 rounded-xl border border-border bg-white dark:bg-card hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
+                        title="Refresh Reward Products"
                     >
-                        <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 border border-primary/20 flex items-center justify-center relative">
-                            {adminPhoto ? (
-                                <img src={adminPhoto} alt="Admin" className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-sm font-semibold text-primary">BF</span>
-                            )}
-                        </div>
-                        <div className="hidden sm:block text-left">
-                            <h4 className="text-xs font-bold leading-tight">{displayName}</h4>
-                            <p className="text-[10px] text-muted-foreground">{roleTitle}</p>
-                        </div>
-                    </Link>
+                        <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin text-primary" : ""}`} />
+                    </button>
+
+                    <AdminProfileDropdown />
                 </div>
             </header>
 
@@ -274,14 +315,14 @@ export default function Rewards() {
                     </div>
                 </div>
 
-                {/* Stars Redeemed */}
+                {/* Coins Redeemed */}
                 <div className="bg-white dark:bg-card p-6 rounded-2xl border border-border/60 shadow-sm flex items-center gap-4 min-h-[100px]">
                     <div className="p-3 bg-amber-500/10 text-amber-500 rounded-2xl">
                         <Star className="w-6 h-6 fill-current" />
                     </div>
                     <div>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Stars Redeemed</span>
-                        <h2 className="font-serif text-3xl font-extrabold text-[#2C1A14] dark:text-white mt-1">12.4K</h2>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Coins Redeemed</span>
+                        <h2 className="font-serif text-3xl font-extrabold text-[#2C1A14] dark:text-white mt-1">🪙 {totalCoinsRedeemed}</h2>
                     </div>
                 </div>
             </section>
@@ -289,7 +330,10 @@ export default function Rewards() {
             {/* Reward Catalog Section */}
             <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-4">
                 <div className="flex justify-between items-center">
-                    <h3 className="font-serif text-lg font-bold text-[#2C1A14] dark:text-white">Reward Catalog</h3>
+                    <div>
+                        <h3 className="font-serif text-lg font-bold text-[#2C1A14] dark:text-white">Reward Catalog</h3>
+                        <p className="text-xs text-muted-foreground">Coin products available for customers to redeem with coins</p>
+                    </div>
                     <button
                         onClick={handleOpenAddReward}
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
@@ -300,52 +344,71 @@ export default function Rewards() {
                 </div>
 
                 {/* Rewards List */}
-                <div className="space-y-3">
-                    {rewards.map((reward) => (
-                        <div key={reward.id} className="p-4 bg-[#FAF6F0]/40 dark:bg-black/10 rounded-2xl border border-border/40 flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                {/* Gift Circle Icon */}
-                                <div className="w-12 h-12 rounded-2xl bg-[#8B4513] text-white flex items-center justify-center shadow-md flex-shrink-0">
-                                    <Gift className="w-5 h-5" />
-                                </div>
-                                <div className="space-y-0.5">
-                                    <div className="flex items-center gap-2">
-                                        <h4 className="font-serif font-bold text-sm text-[#2C1A14] dark:text-white leading-tight">{reward.title}</h4>
-                                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-md text-[9px] font-bold text-muted-foreground">
-                                            {reward.type}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">
-                                        {reward.starsRequired > 0 ? (
-                                            <span className="text-[#8B4513] dark:text-[#C07C4A] font-semibold">★ {reward.starsRequired} stars required</span>
-                                        ) : (
-                                            <span className="text-red-500 font-semibold">0 for promo</span>
-                                        )}
-                                        <span className="ml-2 font-normal">{reward.claimedCount} claimed</span>
-                                    </p>
-                                </div>
-                            </div>
+                {isLoadingCoinProducts ? (
+                    <div className="py-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        <span className="text-xs font-semibold">Loading reward catalog from database...</span>
+                    </div>
+                ) : coinProducts.length > 0 ? (
+                    <div className="space-y-3">
+                        {coinProducts.map((reward: any) => {
+                            const rewardTitle = reward.product?.name || reward.name || "Reward Product";
+                            const categoryName = reward.product?.category?.name || "Drink / Food";
+                            const imgUrl = getProductImg(reward.product);
+                            const claimedCount = reward._count?.orderItems || 0;
 
-                            <div className="flex items-center gap-3">
-                                <button 
-                                    onClick={() => handleOpenEditReward(reward)}
-                                    className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-xl text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
-                                >
-                                    <Edit2 className="w-3.5 h-3.5" />
-                                </button>
-                                <span className={`
-                                    px-3 py-1 rounded-full text-xs font-semibold
-                                    ${reward.active 
-                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
-                                        : "bg-red-500/10 text-red-600 dark:text-red-400"
-                                    }
-                                `}>
-                                    {reward.active ? "Active" : "Inactive"}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                            return (
+                                <div key={reward.id} className="p-4 bg-[#FAF6F0]/40 dark:bg-black/10 rounded-2xl border border-border/40 flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4">
+                                        {/* Product Image Thumbnail */}
+                                        <div 
+                                            className="w-14 h-14 rounded-2xl bg-cover bg-center border border-border/60 flex-shrink-0 shadow-sm"
+                                            style={{ backgroundImage: `url(${imgUrl})` }}
+                                        />
+                                        <div className="space-y-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-serif font-bold text-base text-[#2C1A14] dark:text-white leading-tight">{rewardTitle}</h4>
+                                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-white/5 rounded-md text-[9px] font-bold text-muted-foreground uppercase">
+                                                    {categoryName}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground flex items-center gap-3">
+                                                <span className="text-[#8B4513] dark:text-[#C07C4A] font-bold">
+                                                    🪙 {reward.needPoint} Coins required
+                                                </span>
+                                                <span className="font-normal text-muted-foreground">
+                                                    · {claimedCount} claimed
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            onClick={() => handleOpenEditReward(reward)}
+                                            className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 rounded-xl text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors cursor-pointer"
+                                            title="Edit Reward"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteReward(reward.id, rewardTitle)}
+                                            className="p-2 border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/20 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-100 transition-colors cursor-pointer"
+                                            title="Delete Reward"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="py-12 text-center text-muted-foreground bg-[#FAF6F0]/20 dark:bg-black/10 rounded-2xl p-6 border border-border/40">
+                        <p className="text-sm font-semibold">No reward products found in catalog.</p>
+                        <p className="text-xs text-muted-foreground mt-1">Click "New Reward" to create a coin product.</p>
+                    </div>
+                )}
             </div>
 
             {/* Gift Card Settings Section */}
@@ -384,7 +447,7 @@ export default function Rewards() {
                                     ${amt}
                                     <button 
                                         onClick={() => handleRemoveAmount(amt)}
-                                        className="p-0.5 rounded-full hover:bg-red-500/10 text-red-500 transition-colors"
+                                        className="p-0.5 rounded-full hover:bg-red-500/10 text-red-500 transition-colors cursor-pointer"
                                     >
                                         <X className="w-3.5 h-3.5" />
                                     </button>
@@ -426,7 +489,7 @@ export default function Rewards() {
                                         <span className="text-xs font-bold">{design.label}</span>
                                         <button 
                                             onClick={() => handleRemoveDesign(design.id)}
-                                            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg border border-red-500/20 transition-colors"
+                                            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg border border-red-500/20 transition-colors cursor-pointer"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                         </button>
@@ -469,7 +532,7 @@ export default function Rewards() {
                                         {newDesignImage && (
                                             <div className="flex items-center gap-2">
                                                 <div className="w-10 h-10 rounded-lg bg-cover bg-center border border-border" style={{ backgroundImage: `url(${newDesignImage})` }} />
-                                                <button type="button" onClick={() => setNewDesignImage("")} className="text-red-500"><X className="w-4 h-4" /></button>
+                                                <button type="button" onClick={() => setNewDesignImage("")} className="text-red-500 cursor-pointer"><X className="w-4 h-4" /></button>
                                             </div>
                                         )}
                                     </div>
@@ -496,7 +559,7 @@ export default function Rewards() {
                 )}
             </div>
 
-            {/* Gift Card Requests Section (Screenshot 2) */}
+            {/* Gift Card Requests Section */}
             <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-4">
                 <div className="flex justify-between items-center flex-wrap gap-4">
                     <div>
@@ -517,7 +580,7 @@ export default function Rewards() {
                             <button
                                 key={tab}
                                 onClick={() => setRequestTab(tab)}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${requestTab === tab ? "bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] shadow-sm font-bold" : "text-muted-foreground hover:text-[#2C1A14]"}`}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${requestTab === tab ? "bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] shadow-sm font-bold" : "text-muted-foreground hover:text-[#2C1A14]"}`}
                             >
                                 {tab}
                             </button>
@@ -583,7 +646,7 @@ export default function Rewards() {
                 </div>
             </div>
 
-            {/* NEW/EDIT REWARD MODAL (Screenshot 3) */}
+            {/* NEW/EDIT REWARD MODAL */}
             {rewardModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border/80 relative animate-in fade-in zoom-in-95 duration-200">
@@ -594,12 +657,12 @@ export default function Rewards() {
                                     {editMode ? "Edit Reward" : "New Reward"}
                                 </h2>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                    {editMode ? "Modify reward catalog item" : "Add a reward to the catalog"}
+                                    {editMode ? "Modify reward coin product" : "Link a product to the coin reward catalog"}
                                 </p>
                             </div>
                             <button 
                                 onClick={() => setRewardModalOpen(false)}
-                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-muted-foreground hover:text-foreground transition-all"
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-muted-foreground hover:text-foreground transition-all cursor-pointer"
                             >
                                 <X className="w-5 h-5" />
                             </button>
@@ -608,52 +671,31 @@ export default function Rewards() {
                         {/* Modal Body */}
                         <form onSubmit={handleSaveReward} className="p-6 space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Item name</label>
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Select Menu Product</label>
                                 <select
-                                    value={rewardName}
-                                    onChange={(e) => setRewardName(e.target.value)}
+                                    value={selectedProductId}
+                                    onChange={(e) => setSelectedProductId(e.target.value)}
                                     className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
                                 >
-                                    <option value="Free Flat White">Free Flat White</option>
-                                    <option value="Free Espresso">Free Espresso</option>
-                                    <option value="Free Pastry">Free Pastry</option>
-                                    <option value="10% Off Order">10% Off Order</option>
-                                    <option value="Double Stars Day">Double Stars Day</option>
-                                    <option value="Birthday Free Drink">Birthday Free Drink</option>
+                                    {menuProducts.map((p: any) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name} (${Number(p.basePrice || 0).toFixed(2)})
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Stars Required</label>
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Coins / Points Required</label>
                                 <input
                                     type="number"
-                                    value={rewardStars}
-                                    onChange={(e) => setRewardStars(Number(e.target.value))}
-                                    placeholder="0 for promo"
+                                    required
+                                    min={0}
+                                    value={needPoint}
+                                    onChange={(e) => setNeedPoint(Number(e.target.value))}
+                                    placeholder="100"
                                     className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
                                 />
-                            </div>
-
-                            {/* Active Switch Toggle */}
-                            <div className="flex items-center gap-3 py-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setRewardActive(!rewardActive)}
-                                    className={`
-                                        relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none
-                                        ${rewardActive ? "bg-primary" : "bg-zinc-300 dark:bg-zinc-700"}
-                                    `}
-                                >
-                                    <span
-                                        className={`
-                                            pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
-                                            ${rewardActive ? "translate-x-5" : "translate-x-0"}
-                                        `}
-                                    />
-                                </button>
-                                <span className={`text-xs font-semibold ${rewardActive ? "text-emerald-500" : "text-muted-foreground"}`}>
-                                    Active
-                                </span>
                             </div>
 
                             {/* Footer Buttons */}
@@ -661,15 +703,22 @@ export default function Rewards() {
                                 <button
                                     type="button"
                                     onClick={() => setRewardModalOpen(false)}
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE3]/60 text-[#2C1A14] font-bold text-xs uppercase tracking-wider transition-colors border border-border/40"
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE3]/60 text-[#2C1A14] font-bold text-xs uppercase tracking-wider transition-colors border border-border/40 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#C07C4A] hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-[#C07C4A]/15 cursor-pointer"
+                                    disabled={isCreating || isUpdating}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C07C4A] hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-[#C07C4A]/15 cursor-pointer disabled:opacity-50"
                                 >
-                                    {editMode ? "Save Reward" : "Create Reward"}
+                                    {isCreating || isUpdating ? (
+                                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                    ) : editMode ? (
+                                        "Save Reward"
+                                    ) : (
+                                        "Create Reward"
+                                    )}
                                 </button>
                             </div>
                         </form>

@@ -10,7 +10,7 @@ export function ReduxProvider({ children }: { children: React.ReactNode }) {
         <Provider store={store}>
             <PersistGate loading={<GlobalLoader />} persistor={persistor}>
                 {children}
-                <Toaster />
+                <Toaster richColors position="top-right" />
             </PersistGate>
         </Provider>
     );

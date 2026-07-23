@@ -8,6 +8,7 @@ import { logout, selectIsAuthenticated, selectUser } from "@/redux/features/auth
 import { ShoppingCart, ChevronDown } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import Logo from "@/components/Logo";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 interface NavbarProps {
     theme?: "dark" | "light";
@@ -140,6 +141,9 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
 
                 {/* Right utility buttons */}
                 <div className="flex items-center gap-3 md:gap-4">
+                    {/* Notification Dropdown for logged in user */}
+                    {isAuthenticated && <NotificationDropdown variant="storefront" isDark={isDark} />}
+
                     {/* Cart Button */}
                     <button 
                         onClick={() => setIsCartOpen(true)}

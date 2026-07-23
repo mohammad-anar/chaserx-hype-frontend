@@ -3,6 +3,8 @@ import { Inter, Montserrat, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/providers/ReduxProvider";
 import { CartProvider } from "@/providers/CartProvider";
+import SocketNotificationListener from "@/components/SocketNotificationListener";
+import MaintenanceGuard from "@/components/MaintenanceGuard";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -41,7 +43,10 @@ export default function RootLayout({
             <body className={`${inter.variable} ${montserrat.variable} ${playfairDisplay.variable} font-sans antialiased bg-background text-foreground`}>
                 <ReduxProvider>
                     <CartProvider>
-                        {children}
+                        <MaintenanceGuard>
+                            <SocketNotificationListener />
+                            {children}
+                        </MaintenanceGuard>
                     </CartProvider>
                 </ReduxProvider>
             </body>

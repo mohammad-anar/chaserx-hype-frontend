@@ -17,7 +17,28 @@ export const orderApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Order"],
         }),
+        getAllOrders: builder.query({
+            query: (params) => ({
+                url: "/order/all-orders",
+                method: "GET",
+                params,
+            }),
+            providesTags: ["Order"],
+        }),
+        updateOrderStatus: builder.mutation({
+            query: ({ orderId, status }) => ({
+                url: `/order/status/${orderId}`,
+                method: "PATCH",
+                body: { status },
+            }),
+            invalidatesTags: ["Order"],
+        }),
     }),
 });
 
-export const { useCheckoutMutation, useGetMyOrdersQuery } = orderApi;
+export const {
+    useCheckoutMutation,
+    useGetMyOrdersQuery,
+    useGetAllOrdersQuery,
+    useUpdateOrderStatusMutation,
+} = orderApi;
