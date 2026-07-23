@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { logout, selectIsAuthenticated } from "@/redux/features/auth/authSlice";
+import { logout, selectIsAuthenticated, selectUser } from "@/redux/features/auth/authSlice";
 import { ShoppingCart, ChevronDown } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import Logo from "@/components/Logo";
@@ -19,11 +19,12 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
     const router = useRouter();
     const dispatch = useAppDispatch();
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
+    const user = useAppSelector(selectUser);
     const { cart, setIsCartOpen, showNotification } = useCart();
 
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [userName, setUserName] = useState("Admin");
-    const [userRole, setUserRole] = useState("Super Admin");
+    const [userName, setUserName] = useState("User");
+    const [userRole, setUserRole] = useState("USER");
     const [userPhoto, setUserPhoto] = useState("");
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -56,6 +57,19 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
     const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
     const isDark = theme === "dark";
+
+    const displayName = user?.name || user?.fullName || userName || "User";
+    const displayRole = user?.role || userRole || "USER";
+    const rawPhoto = user?.profileImg || user?.avatar || userPhoto || "";
+
+    const getPhotoUrl = (photoUrl?: string) => {
+        if (!photoUrl) return "";
+        if (photoUrl.startsWith("http://") || photoUrl.startsWith("https://")) return photoUrl;
+        const baseUrl = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
+        return `${baseUrl}${photoUrl.startsWith("/") ? "" : "/"}${photoUrl}`;
+    };
+
+    const displayPhoto = getPhotoUrl(rawPhoto);
 
     const navLinks = [
         { href: "/", label: "Home" },
@@ -155,55 +169,75 @@ export default function Navbar({ theme = "light", transparent = false }: NavbarP
                         <div className="relative">
                             <button 
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 cursor-pointer ${
                                     isDark
                                         ? "bg-[#7B1E0E] hover:bg-[#9C2910] text-white shadow-md shadow-black/30"
                                         : "bg-[#2C120C] hover:bg-[#4A241A] text-[#FAF6F0]"
                                 }`}
                             >
-                                <div className="w-6 h-6 rounded-full overflow-hidden bg-[#C07C4A]/30 border border-[#C07C4A]/40 flex items-center justify-center">
-                                    {userPhoto ? (
-                                        <img src={userPhoto} alt="Admin" className="w-full h-full object-cover" />
+                                <div className="w-6 h-6 rounded-full overflow-hidden bg-[#C07C4A]/30 border border-[#C07C4A]/40 flex items-center justify-center flex-shrink-0">
+                                    {displayPhoto ? (
+                                        <img src={displayPhoto} alt={displayName} className="w-full h-full object-cover" />
                                     ) : (
-                                        <span className="text-[9px] font-bold text-white">BF</span>
+                                        <span className="text-[9px] font-bold text-white uppercase">
+                                            {displayName.slice(0, 2)}
+                                        </span>
                                     )}
                                 </div>
-                                <span className="hidden md:inline-block">{userName}</span>
-                                <ChevronDown className="w-3.5 h-3.5 hidden md:block opacity-70" />
+                                <span className="hidden md:inline-block max-w-[120px] truncate">{displayName}</span>
+                                <ChevronDown className={`w-3.5 h-3.5 hidden md:block opacity-70 transition-transform duration-200 ${isProfileOpen ? "rotate-180" : ""}`} />
                             </button>
 
                             {/* Dropdown Menu */}
                             {isProfileOpen && (
-                                <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-white/10 bg-[#1A0C08] shadow-2xl p-2 z-50 origin-top-right animate-scale-in">
-                                    <div className="px-4 py-3 border-b border-white/5 text-left">
-                                        <p className="text-xs font-bold uppercase tracking-wider text-[#E05A2B]">{userRole}</p>
-                                        <p className="text-sm font-semibold text-white truncate">{userName}</p>
+                                <>
+                                    <div 
+                                        onClick={() => setIsProfileOpen(false)}
+                                        className="fixed inset-0 z-40 bg-transparent" 
+                                    />
+                                    <div className="absolute right-0 mt-3 w-60 rounded-2xl border border-white/10 bg-[#1A0C08] shadow-2xl p-2 z-50 origin-top-right animate-scale-in">
+                                        <div className="px-4 py-3 border-b border-white/5 text-left">
+                                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#E05A2B]">{displayRole}</p>
+                                            <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+                                            {user?.email && (
+                                                <p className="text-[11px] text-white/50 truncate pt-0.5">{user.email}</p>
+                                            )}
+                                        </div>
+                                        <div className="py-1.5 space-y-1">
+                                            {(displayRole === "ADMIN" || displayRole === "SUPER_ADMIN" || displayRole === "Super Admin") && (
+                                                <Link 
+                                                    href="/admin" 
+                                                    onClick={() => setIsProfileOpen(false)}
+                                                    className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#E05A2B] transition-all font-semibold"
+                                                >
+                                                    Admin Dashboard
+                                                </Link>
+                                            )}
+                                            <Link 
+                                                href="/rewards" 
+                                                onClick={() => setIsProfileOpen(false)}
+                                                className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#E05A2B] transition-all font-semibold"
+                                            >
+                                                My Rewards
+                                            </Link>
+                                            <Link 
+                                                href="/menu" 
+                                                onClick={() => setIsProfileOpen(false)}
+                                                className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#E05A2B] transition-all font-semibold"
+                                            >
+                                                Order Menu
+                                            </Link>
+                                        </div>
+                                        <div className="pt-1.5 border-t border-white/5">
+                                            <button 
+                                                onClick={handleSignOut}
+                                                className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-red-500/10 text-red-400 font-semibold text-left transition-colors cursor-pointer"
+                                            >
+                                                Sign Out
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div className="py-1.5 space-y-1">
-                                        <Link 
-                                            href="/admin" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#E05A2B] transition-all font-semibold"
-                                        >
-                                            Dashboard
-                                        </Link>
-                                        <Link 
-                                            href="/admin/settings" 
-                                            onClick={() => setIsProfileOpen(false)}
-                                            className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-white/5 text-white hover:text-[#E05A2B] transition-all font-semibold"
-                                        >
-                                            Settings
-                                        </Link>
-                                    </div>
-                                    <div className="pt-1.5 border-t border-white/5">
-                                        <button 
-                                            onClick={handleSignOut}
-                                            className="flex items-center w-full px-4 py-2.5 text-sm rounded-xl hover:bg-red-500/10 text-red-400 font-semibold text-left transition-colors"
-                                        >
-                                            Sign Out
-                                        </button>
-                                    </div>
-                                </div>
+                                </>
                             )}
                         </div>
                     ) : (

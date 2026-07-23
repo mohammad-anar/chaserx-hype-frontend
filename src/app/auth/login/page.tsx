@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setCredentials } from "@/redux/features/auth/authSlice";
+import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LoginPage() {
     const router = useRouter();
     const dispatch = useDispatch();
+    const [loginMutation] = useLoginMutation();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -19,7 +21,7 @@ export default function LoginPage() {
 
     const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         
         // Basic Client Validation
@@ -44,25 +46,37 @@ export default function LoginPage() {
         setErrors({});
         setIsLoading(true);
 
-        // Simulate login timeout
-        setTimeout(() => {
+        try {
+            const res = await loginMutation({ email, password }).unwrap();
             setIsLoading(false);
-            
-            // Set mock localStorage variables matching the profile details
-            localStorage.setItem("bf_admin_name", "Elias Thorne");
-            localStorage.setItem("bf_admin_role", "Super Admin");
-            localStorage.setItem("bf_admin_photo", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250");
-            
-            // Dispatch credentials to authenticate the app guard
+
+            const loginData = res.data || res;
+            const userObj = loginData.user || {
+                name: "User",
+                email: email,
+                role: "USER"
+            };
+
             dispatch(setCredentials({
-                accessToken: "mock-bean-fien-access-token",
-                role: "ADMIN"
+                accessToken: loginData.accessToken,
+                refreshToken: loginData.refreshToken,
+                user: userObj,
             }));
 
-            toast.success("Welcome back! Signed in successfully.");
-            router.push("/admin");
-        }, 1200);
+            toast.success(res.message || "Signed in successfully.");
+            const role = userObj.role?.toUpperCase();
+            if (role === "ADMIN") {
+                router.push("/admin");
+            } else {
+                router.push("/");
+            }
+        } catch (err: any) {
+            setIsLoading(false);
+            const errorMessage = err?.data?.message || err?.message || "Failed to sign in. Please check your credentials.";
+            toast.error(errorMessage);
+        }
     };
+
 
     return (
         <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col opacity-0 animate-scale-in">
@@ -160,39 +174,6 @@ export default function LoginPage() {
                     ) : (
                         <span>Sign In</span>
                     )}
-                </button>
-
-                {/* Divider */}
-                <div className="flex items-center gap-3 my-4 opacity-0 animate-fade-in-up delay-700">
-                    <div className="h-[1px] flex-1 bg-[#C07C4A]/20" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#C07C4A]/60">Or</span>
-                    <div className="h-[1px] flex-1 bg-[#C07C4A]/20" />
-                </div>
-
-                {/* Demo Login Button */}
-                <button
-                    type="button"
-                    onClick={() => {
-                        setEmail("admin@beanfien.com");
-                        setPassword("password123");
-                        setIsLoading(true);
-                        setTimeout(() => {
-                            setIsLoading(false);
-                            localStorage.setItem("bf_admin_name", "Elias Thorne");
-                            localStorage.setItem("bf_admin_role", "Super Admin");
-                            localStorage.setItem("bf_admin_photo", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250");
-                            dispatch(setCredentials({
-                                accessToken: "mock-bean-fien-access-token",
-                                role: "ADMIN"
-                            }));
-                            toast.success("Welcome back! Signed in with Demo Account.");
-                            router.push("/admin");
-                        }, 800);
-                    }}
-                    disabled={isLoading}
-                    className="w-full bg-[#2C120C] hover:bg-[#3E1A12] active:scale-[0.98] border border-[#C07C4A]/30 text-[#FAF6F0] font-bold py-3 px-4 rounded-xl transition-all duration-300 uppercase tracking-widest text-xs flex items-center justify-center gap-2 opacity-0 animate-fade-in-up delay-700"
-                >
-                    <span>Demo Login</span>
                 </button>
             </form>
 

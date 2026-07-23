@@ -18,12 +18,16 @@ import {
 import { MenuItem, CustomCartItem } from "@/types/menu";
 import { menuItems } from "@/constants/menu";
 import { useCart } from "@/hooks/useCart";
+import { useGetProductByIdQuery, useGetProductsQuery } from "@/redux/features/product/productApi";
+import { useAddToCartMutation } from "@/redux/features/cart/cartApi";
+import { useAppSelector } from "@/redux/hooks";
+import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const categoryDescriptions = {
+const categoryDescriptions: Record<string, string> = {
     espresso: "TWO SHOTS OF OUR SIGNATURE HOUSE BLEND WITH NOTES OF DARK CHOCOLATE AND ROASTED",
     coldbrew: "12-HOUR COLD EXTRACTION INFUSED WITH NITROGEN FOR A SMOOTH STOUT-LIKE FINISH",
     seasonal: "TEMPORARY SPECIAL SELECTIONS CREATED FOR SEASONAL HARVEST SENSATIONS",
@@ -33,7 +37,7 @@ const categoryDescriptions = {
     blended: "CREAMY CRUSHED BLENDS BALANCED WITH SWEET SYRUPS AND DELECTABLE WHIP"
 };
 
-const categoryTitles = {
+const categoryTitles: Record<string, string> = {
     espresso: "Espresso Classics",
     coldbrew: "Cold Brew",
     seasonal: "Seasonal Specials",
@@ -46,6 +50,7 @@ const categoryTitles = {
 export default function MenuDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const router = useRouter();
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
     const [mounted, setMounted] = useState(false);
 
@@ -56,10 +61,53 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
     const [customInstructions, setCustomInstructions] = useState("");
 
     const { cart, addToCart, updateQuantity } = useCart();
+    const { data: productDetailRes } = useGetProductByIdQuery(id, { skip: !id });
+    const { data: allProductsRes } = useGetProductsQuery(undefined);
+    const [addToCartApi] = useAddToCartMutation();
 
-    // Find current selected item
-    const selectedItem = menuItems.find(item => item.id === id) || menuItems[0];
-    const categoryItems = menuItems.filter(item => item.category === selectedItem.category);
+    const parsePrice = (val: any): number => {
+        const num = parseFloat(val);
+        return isNaN(num) ? 5.50 : num;
+    };
+
+    const getImg = (item: any) => {
+        if (!item) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
+        let imgStr = "";
+        if (Array.isArray(item?.image) && item?.image?.length > 0) {
+            imgStr = item?.image?.[0] || "";
+        } else if (typeof item?.image === "string" && item?.image) {
+            imgStr = item?.image;
+        }
+        if (!imgStr) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
+        if (imgStr?.startsWith("http://") || imgStr?.startsWith("https://")) return imgStr;
+        const baseUrl = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
+        return `${baseUrl}${imgStr?.startsWith("/") ? "" : "/"}${imgStr}`;
+    };
+
+    const apiProduct = productDetailRes?.data;
+    const allApiProducts = allProductsRes?.data || [];
+
+    const localFallback = menuItems.find(item => item?.id === id) || menuItems[0];
+
+    const selectedItem: MenuItem = apiProduct ? {
+        id: apiProduct?.id,
+        name: apiProduct?.name,
+        category: (typeof apiProduct?.category === "object" ? apiProduct?.category?.name?.toLowerCase() : apiProduct?.category) || "espresso",
+        price: parsePrice(apiProduct?.basePrice),
+        description: apiProduct?.description || "",
+        image: getImg(apiProduct),
+    } : localFallback;
+
+    // Filter 2 other products for the hero right column
+    const rawOthers = (allApiProducts?.length > 0 ? allApiProducts : menuItems)
+        .filter((item: any) => item?.id !== selectedItem?.id);
+    const otherProducts = rawOthers?.slice(0, 2)?.map((item: any) => ({
+        id: item?.id,
+        name: item?.name,
+        description: item?.description || "",
+        price: parsePrice(item?.basePrice ?? item?.price),
+        image: getImg(item),
+    }));
 
     useEffect(() => {
         setTimeout(() => {
@@ -68,16 +116,13 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
     }, [id]);
 
     // Calculate customization price
-    const calculateCustomizerPrice = () => {
-        let base = selectedItem.price;
-        // Size modifier
+    const calculateCustomizerPrice = (): number => {
+        let base = parsePrice(selectedItem.price);
         if (customSize === "medium") base += 0.50;
         if (customSize === "large") base += 1.00;
-        // Milk modifier
         if (customMilk !== "whole") base += 0.80;
-        // Add-ons modifier
         base += customAddons.length * 0.75;
-        return base;
+        return Number(base);
     };
 
     const handleAddAddon = (addon: string) => {
@@ -89,14 +134,26 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
     };
 
     // Add Customized Item to Cart
-    const handleAddCustomizedToCart = () => {
+    const handleAddCustomizedToCart = async () => {
         const itemPrice = calculateCustomizerPrice();
 
-        const existing = cart.find(i => 
-            i.item.id === selectedItem.id && 
-            i.size === customSize && 
-            i.milk === customMilk && 
-            JSON.stringify(i.addons.slice().sort()) === JSON.stringify(customAddons.slice().sort()) && 
+        if (isAuthenticated) {
+            try {
+                await addToCartApi({
+                    productId: selectedItem.id,
+                    quantity: 1,
+                    isCoinProduct: false,
+                }).unwrap();
+            } catch (err) {
+                console.log("Cart API error:", err);
+            }
+        }
+
+        const existing = cart.find(i =>
+            i.item.id === selectedItem.id &&
+            i.size === customSize &&
+            i.milk === customMilk &&
+            JSON.stringify(i.addons.slice().sort()) === JSON.stringify(customAddons.slice().sort()) &&
             i.instructions === customInstructions
         );
 
@@ -130,15 +187,15 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
             <section className="w-full bg-[#FAF6F0] py-12 border-b border-[#2C1A14]/10 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-12">
 
-                    {/* Left Column: Category title, line, all-caps description */}
+                    {/* Left Column: Product name, line, product description */}
                     <ScrollReveal variant="fadeInLeft" className="w-full md:w-[28%]">
                         <div className="text-left space-y-4">
-                            <h2 className="font-serif text-5xl md:text-6xl font-black text-[#2C1A14] leading-tight">
-                                {categoryTitles[selectedItem.category]}
+                            <h2 className="font-serif text-4xl md:text-5xl font-black text-[#2C1A14] leading-tight">
+                                {selectedItem?.name}
                             </h2>
                             <div className="w-12 h-[2px] bg-[#2C1A14]/30" />
-                            <p className="text-xs tracking-widest text-[#6B5E59] font-bold leading-relaxed max-w-xs">
-                                {categoryDescriptions[selectedItem.category]}
+                            <p className="text-xs tracking-widest text-[#6B5E59] font-bold leading-relaxed max-w-xs uppercase">
+                                {selectedItem?.description}
                             </p>
                         </div>
                     </ScrollReveal>
@@ -169,36 +226,29 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
                         </button>
                     </ScrollReveal>
 
-                    {/* Right Column: List of items in the same category (rendered as rounded tiles) */}
+                    {/* Right Column: Other two products in the right side card column */}
                     <ScrollReveal variant="fadeInRight" delay={0.1} className="w-full md:w-[30%]">
-                        <div className="flex flex-col gap-3.5 pr-1">
-                            {categoryItems.map((item) => {
-                                const isActive = item.id === selectedItem.id;
+                        <div className="flex flex-col gap-4 pr-1">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[#6B5E59] block text-left">More Specialty Drinks</span>
+                            {otherProducts.map((item: any) => {
                                 return (
                                     <button
                                         key={item.id}
                                         onClick={() => router.push(`/menu/${item.id}`)}
-                                        className={`
-                                            w-full rounded-xl p-3 flex items-center gap-4 transition-all duration-300 border text-left shadow-sm
-                                            ${isActive
-                                                ? "bg-[#2A120C] text-[#FAF6F0] border-[#C07C4A] border-2 scale-102 ring-2 ring-[#C07C4A]/20"
-                                                : "bg-white text-[#2C1A14] border-[#2C1A14]/10 hover:bg-[#2C1A14]/5"
-                                            }
-                                        `}
+                                        className="w-full rounded-xl p-3.5 flex items-center gap-4 transition-all duration-300 border text-left shadow-sm bg-white text-[#2C1A14] border-[#2C1A14]/10 hover:bg-[#2C1A14]/5 hover:scale-[1.02] group cursor-pointer"
                                     >
                                         {/* Thumbnail inside small rounded box */}
-                                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-[#2C1A14] flex-shrink-0 flex items-center justify-center p-0.5 relative border border-[#C07C4A]/20">
-                                            <div
-                                                className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
-                                                style={{ backgroundImage: "url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=100&q=80')" }}
-                                            />
-                                            <img src={item.image} alt={item.name} className="w-full h-full rounded-lg object-cover relative z-10" />
+                                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#2C1A14] flex-shrink-0 flex items-center justify-center p-0.5 relative border border-[#C07C4A]/20">
+                                            <img src={item.image} alt={item.name} className="w-full h-full rounded-lg object-cover relative z-10 transition-transform group-hover:scale-105" />
                                         </div>
 
                                         {/* Item text */}
-                                        <div className="flex-1 min-w-0 space-y-0.5">
-                                            <h4 className="text-[11px] font-bold uppercase tracking-wider truncate">{item.name}</h4>
-                                            <p className={`text-[9px] line-clamp-2 leading-relaxed ${isActive ? "text-[#FAF6F0]/70" : "text-[#6B5E59]"}`}>
+                                        <div className="flex-1 min-w-0 space-y-1">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="text-[12px] font-bold uppercase tracking-wider truncate group-hover:text-[#C07C4A] transition-colors">{item.name}</h4>
+                                                <span className="text-[11px] font-extrabold text-[#8B4513]">${item.price.toFixed(2)}</span>
+                                            </div>
+                                            <p className="text-[9px] text-[#6B5E59] line-clamp-2 leading-relaxed">
                                                 {item.description}
                                             </p>
                                         </div>

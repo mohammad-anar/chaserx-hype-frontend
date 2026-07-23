@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useVerifyEmailMutation, useVerifyOtpMutation, useResendOtpMutation } from "@/redux/features/auth/authApi";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -11,8 +12,13 @@ function SubmitCodeContent() {
     const email = searchParams.get("email") || "your email";
     const type = searchParams.get("type") || "createAccount"; // createAccount or resetPassword
 
+    const [verifyEmailMutation] = useVerifyEmailMutation();
+    const [verifyOtpMutation] = useVerifyOtpMutation();
+    const [resendOtpMutation] = useResendOtpMutation();
+
     const [code, setCode] = useState<string[]>(Array(6).fill(""));
     const [isLoading, setIsLoading] = useState(false);
+    const [isResending, setIsResending] = useState(false);
     const inputRefs = useRef<HTMLInputElement[]>([]);
 
     useEffect(() => {
@@ -63,13 +69,12 @@ function SubmitCodeContent() {
                 }
             }
             setCode(newCode);
-            // Focus last input or length of paste
             const focusIndex = Math.min(pasteData.length, 5);
             inputRefs.current[focusIndex].focus();
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const fullCode = code.join("");
 
@@ -80,22 +85,44 @@ function SubmitCodeContent() {
 
         setIsLoading(true);
 
-        // Simulate OTP verification
-        setTimeout(() => {
-            setIsLoading(false);
+        try {
             if (type === "resetPassword") {
-                toast.success("Code verified successfully! Please choose a new password.");
-                router.push(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+                const res = await verifyOtpMutation({ email, otp: fullCode }).unwrap();
+                setIsLoading(false);
+                const resetToken = res?.data?.resetToken || res?.resetToken || "";
+                toast.success(res?.message || "Code verified successfully! Please choose a new password.");
+                router.push(`/auth/reset-password?email=${encodeURIComponent(email)}&resetToken=${encodeURIComponent(resetToken)}`);
             } else {
-                toast.success("Account verified successfully! You can now log in.");
+                const res = await verifyEmailMutation({ email, otp: fullCode }).unwrap();
+                setIsLoading(false);
+                toast.success(res?.message || "Account verified successfully! You can now log in.");
                 router.push("/auth/login");
             }
-        }, 1200);
+        } catch (err: any) {
+            setIsLoading(false);
+            const errorMessage = err?.data?.message || err?.message || "Invalid or expired code. Please try again.";
+            toast.error(errorMessage);
+        }
     };
 
-    const handleResend = () => {
-        toast.success(`A new verification code has been sent to ${email}`);
+    const handleResend = async () => {
+        if (!email || email === "your email") {
+            toast.error("Email address is missing.");
+            return;
+        }
+
+        setIsResending(true);
+        try {
+            const res = await resendOtpMutation({ email }).unwrap();
+            setIsResending(false);
+            toast.success(res?.message || `A new verification code has been sent to ${email}`);
+        } catch (err: any) {
+            setIsResending(false);
+            const errorMessage = err?.data?.message || err?.message || "Failed to resend verification code.";
+            toast.error(errorMessage);
+        }
     };
+
 
     return (
         <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative opacity-0 animate-scale-in">
@@ -160,9 +187,10 @@ function SubmitCodeContent() {
                 <button 
                     type="button" 
                     onClick={handleResend}
-                    className="text-[#C07C4A] font-bold hover:underline transition-all cursor-pointer bg-transparent border-none p-0"
+                    disabled={isResending}
+                    className="text-[#C07C4A] font-bold hover:underline transition-all cursor-pointer bg-transparent border-none p-0 disabled:opacity-50"
                 >
-                    Resend
+                    {isResending ? "Resending..." : "Resend"}
                 </button>
             </div>
         </div>

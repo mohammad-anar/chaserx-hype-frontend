@@ -2,6 +2,7 @@
 import React, { useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useResetPasswordMutation } from "@/redux/features/auth/authApi";
 import { Lock, Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -9,6 +10,9 @@ function ResetPasswordContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const email = searchParams.get("email") || "";
+    const resetToken = searchParams.get("resetToken") || "";
+
+    const [resetPasswordMutation] = useResetPasswordMutation();
 
     const [password, setPassword] = useState("");
     const [confirm, setConfirm] = useState("");
@@ -17,15 +21,15 @@ function ResetPasswordContent() {
 
     const [errors, setErrors] = useState<{ password?: string; confirm?: string }>({});
 
-    const handleReset = (e: React.FormEvent) => {
+    const handleReset = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Basic Client Validation
         const newErrors: typeof errors = {};
         if (!password) {
             newErrors.password = "New password is required";
-        } else if (password.length < 8) {
-            newErrors.password = "Password must be at least 8 characters";
+        } else if (password.length < 6) {
+            newErrors.password = "Password must be at least 6 characters";
         }
         if (!confirm) {
             newErrors.confirm = "Please confirm your password";
@@ -42,13 +46,18 @@ function ResetPasswordContent() {
         setErrors({});
         setIsLoading(true);
 
-        // Simulate password reset
-        setTimeout(() => {
+        try {
+            const res = await resetPasswordMutation({ email, password, resetToken }).unwrap();
             setIsLoading(false);
-            toast.success("Password reset successfully! Please login with your new password.");
+            toast.success(res?.message || "Password reset successfully! Please login with your new password.");
             router.push("/auth/login");
-        }, 1200);
+        } catch (err: any) {
+            setIsLoading(false);
+            const errorMessage = err?.data?.message || err?.message || "Failed to reset password. Token may be invalid or expired.";
+            toast.error(errorMessage);
+        }
     };
+
 
     return (
         <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative opacity-0 animate-scale-in">

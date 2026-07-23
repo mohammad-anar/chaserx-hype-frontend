@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useRegisterMutation } from "@/redux/features/auth/authApi";
 import { User, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
     const router = useRouter();
+    const [registerMutation] = useRegisterMutation();
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -22,7 +24,7 @@ export default function RegisterPage() {
         confirm?: string;
     }>({});
 
-    const handleRegister = (e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Basic Client Validation
@@ -55,14 +57,18 @@ export default function RegisterPage() {
         setErrors({});
         setIsLoading(true);
 
-        // Simulate signup timeout
-        setTimeout(() => {
+        try {
+            const res = await registerMutation({ name, email, password }).unwrap();
             setIsLoading(false);
-            toast.success(`Account created! OTP code sent to ${email}`);
-            // Redirect to verify account screen
+            toast.success(res?.message || `Account created! Verification code sent to ${email}`);
             router.push(`/auth/submit-code?email=${encodeURIComponent(email)}&type=createAccount`);
-        }, 1200);
+        } catch (err: any) {
+            setIsLoading(false);
+            const errorMessage = err?.data?.message || err?.message || "Failed to create account. Please try again.";
+            toast.error(errorMessage);
+        }
     };
+
 
     return (
         <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col opacity-0 animate-scale-in">

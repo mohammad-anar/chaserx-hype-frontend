@@ -1,9 +1,13 @@
 import { createApi, fetchBaseQuery, BaseQueryFn, FetchArgs, FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../store";
-import { logout, setToken } from "../features/auth/authSlice";
+import { logout, setTokens } from "../features/auth/authSlice";
 import { TAG_TYPES_LIST } from "@/constants/api";
 
-const baseURL = process.env.NEXT_PUBLIC_BASEURL as string;
+let rawBaseURL = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
+if (rawBaseURL && !rawBaseURL.startsWith("http://") && !rawBaseURL.startsWith("https://")) {
+    rawBaseURL = `http://${rawBaseURL}`;
+}
+const baseURL = rawBaseURL;
 
 const baseQuery = fetchBaseQuery({
     baseUrl: `${baseURL}/api/v1`,
@@ -20,16 +24,46 @@ const baseQuery = fetchBaseQuery({
 
 const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
-    console.log(result);
 
     if (result.error?.status === 401) {
-        const refreshResult = await baseQuery("/auth/access-token", api, extraOptions);
+        const state = api.getState() as RootState;
+        const refreshToken = state.auth.refreshToken;
+
+        if (!refreshToken) {
+            api.dispatch(logout());
+            return result;
+        }
+
+        const refreshResult = await baseQuery(
+            {
+                url: "/auth/refresh-token",
+                method: "POST",
+                body: { refreshToken },
+            },
+            api,
+            extraOptions
+        );
 
         if (refreshResult.data) {
             const data = refreshResult.data as any;
-            if (data.success) {
-                api.dispatch(setToken(data.data.accessToken));
+            const newAccessToken = data.data?.accessToken || data.accessToken;
+            const newRefreshToken = data.data?.refreshToken || data.refreshToken;
+
+            if ((data.success || newAccessToken) && newAccessToken) {
+                api.dispatch(
+                    setTokens({
+                        accessToken: newAccessToken,
+                        refreshToken: newRefreshToken || refreshToken,
+                    })
+                );
+
+                // Re-hit original request
                 result = await baseQuery(args, api, extraOptions);
+
+                // If again get 401, logout user
+                if (result.error?.status === 401) {
+                    api.dispatch(logout());
+                }
             } else {
                 api.dispatch(logout());
             }
@@ -47,3 +81,4 @@ export const baseApi = createApi({
     tagTypes: TAG_TYPES_LIST,
     endpoints: () => ({}),
 });
+

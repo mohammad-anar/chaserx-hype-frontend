@@ -2,17 +2,19 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForgotPasswordMutation } from "@/redux/features/auth/authApi";
 import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
     const router = useRouter();
+    const [forgotPasswordMutation] = useForgotPasswordMutation();
 
     const [email, setEmail] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const handleSendCode = (e: React.FormEvent) => {
+    const handleSendCode = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Basic Client Validation
@@ -29,13 +31,18 @@ export default function ForgotPasswordPage() {
         setError("");
         setIsLoading(true);
 
-        // Simulate OTP send
-        setTimeout(() => {
+        try {
+            const res = await forgotPasswordMutation({ email }).unwrap();
             setIsLoading(false);
-            toast.success(`Recovery code sent to ${email}`);
+            toast.success(res?.message || `Recovery code sent to ${email}`);
             router.push(`/auth/submit-code?email=${encodeURIComponent(email)}&type=resetPassword`);
-        }, 1200);
+        } catch (err: any) {
+            setIsLoading(false);
+            const errorMessage = err?.data?.message || err?.message || "Failed to send reset code. Please try again.";
+            toast.error(errorMessage);
+        }
     };
+
 
     return (
         <div className="w-full bg-[#140A07]/50 backdrop-blur-xl border border-[#C07C4A]/15 rounded-3xl p-8 sm:p-10 shadow-2xl shadow-black/80 flex flex-col relative opacity-0 animate-scale-in">

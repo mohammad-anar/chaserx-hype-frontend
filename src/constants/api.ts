@@ -17,6 +17,14 @@ export const TAG_TYPES = {
     CHAT_PARTICIPANTS: "ChatParticipants",
     CHAT: "Chat",
     MESSAGE: "Message",
+    PRODUCT: "Product",
+    CART: "Cart",
+    CATEGORY: "Category",
+    ORDER: "Order",
+    COIN_PRODUCT: "CoinProduct",
+    ADDRESS: "Address",
+    PAYMENT: "Payment",
+    WALLET: "Wallet",
 } as const;
 
 export const TAG_TYPES_LIST = Object.values(TAG_TYPES);

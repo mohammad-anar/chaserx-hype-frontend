@@ -4,6 +4,9 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Check } from "lucide-react";
 import { CustomCartItem } from "@/types/menu";
+import { useGetCartQuery } from "@/redux/features/cart/cartApi";
+import { useAppSelector } from "@/redux/hooks";
+import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 
 interface CartContextType {
     cart: CustomCartItem[];
@@ -22,24 +25,61 @@ export const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const isAuthenticated = useAppSelector(selectIsAuthenticated);
+    const { data: serverCartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
+
     const [cart, setCart] = useState<CustomCartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
 
-    // Load cart from sessionStorage on mount
+    // Sync server cart data if user is logged in
     useEffect(() => {
-        const savedCart = sessionStorage.getItem("bf_cart_custom");
-        if (savedCart) {
-            try {
-                const parsedCart = JSON.parse(savedCart);
-                setTimeout(() => {
-                    setCart(parsedCart);
-                }, 0);
-            } catch (e) {
-                console.error("Failed to parse cart", e);
+        if (isAuthenticated && serverCartData?.data?.cartItems) {
+            const mappedItems: CustomCartItem[] = serverCartData.data.cartItems.map((ci: any) => {
+                const rawImg = ci?.coinProduct?.product?.image || ci?.product?.image || "";
+                const baseUrl = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
+                const image = `${baseUrl}${rawImg}`
+
+                return {
+                    id: ci?.id,
+                    item: {
+                        id: ci?.productId || ci?.coinProductId || ci?.id,
+                        name: ci?.coinProduct?.product?.name || ci?.product?.name || "Product",
+                        image: image,
+                        category: "Coffee",
+                        price: ci?.isCoinProduct ? 0 : Number(ci?.product?.basePrice || 0),
+                        description: ci?.product?.description || ""
+                    },
+                    quantity: ci?.quantity || 1,
+                    size: "medium",
+                    milk: "whole",
+                    addons: [],
+                    instructions: ci?.isCoinProduct ? "Redeemed with Points" : "",
+                    finalPrice: ci?.isCoinProduct ? 0 : Number(ci?.totalPrice || 0),
+                    isReward: Boolean(ci?.isCoinProduct),
+                    rewardPointsCost: ci?.coinProduct?.needPoint || 0
+                };
+            });
+            setCart(mappedItems);
+        }
+    }, [isAuthenticated, serverCartData]);
+
+    // Load cart from sessionStorage on mount if unauthenticated
+    useEffect(() => {
+        if (!isAuthenticated) {
+            const savedCart = sessionStorage.getItem("bf_cart_custom");
+            if (savedCart) {
+                try {
+                    const parsedCart = JSON.parse(savedCart);
+                    setTimeout(() => {
+                        setCart(parsedCart);
+                    }, 0);
+                } catch (e) {
+                    console.error("Failed to parse cart", e);
+                }
             }
         }
-    }, []);
+    }, [isAuthenticated]);
 
     // Save cart to sessionStorage whenever it changes
     const saveCart = (newCart: CustomCartItem[]) => {
@@ -58,7 +98,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addToCart = (newItem: CustomCartItem) => {
         const existingIndex = cart.findIndex(i => i.id === newItem.id);
-        
+
         if (existingIndex > -1) {
             const updated = [...cart];
             updated[existingIndex].quantity += newItem.quantity;
@@ -115,15 +155,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             handleCheckout
         }}>
             {children}
-            
+
             {/* Global Notification Toast */}
             {notification && (
-                <div 
-                    className={`fixed bottom-5 right-5 z-50 font-bold px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce border border-white/20 transition-all duration-300 ${
-                        isHomepage 
-                            ? "bg-[#E05A2B] text-[#080403]" 
-                            : "bg-[#C07C4A] text-[#140A07]"
-                    }`}
+                <div
+                    className={`fixed bottom-5 right-5 z-50 font-bold px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-bounce border border-white/20 transition-all duration-300 ${isHomepage
+                        ? "bg-[#E05A2B] text-[#080403]"
+                        : "bg-[#C07C4A] text-[#140A07]"
+                        }`}
                 >
                     <Check className="w-4 h-4" />
                     <span>{notification}</span>
