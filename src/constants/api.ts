@@ -25,6 +25,8 @@ export const TAG_TYPES = {
     ADDRESS: "Address",
     PAYMENT: "Payment",
     WALLET: "Wallet",
+    AI: "AI",
+    RECOMMENDATIONS: "Recommendations",
 } as const;
 
 export const TAG_TYPES_LIST = Object.values(TAG_TYPES);

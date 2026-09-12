@@ -25,6 +25,14 @@ export const orderApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Order"],
         }),
+        getBaristaAssignedOrders: builder.query({
+            query: (params) => ({
+                url: "/order/barista/assigned-orders",
+                method: "GET",
+                params,
+            }),
+            providesTags: ["Order"],
+        }),
         updateOrderStatus: builder.mutation({
             query: ({ orderId, status }) => ({
                 url: `/order/status/${orderId}`,
@@ -33,6 +41,22 @@ export const orderApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["Order"],
         }),
+        addOrderTip: builder.mutation({
+            query: ({ orderId, amount, message, payType }) => ({
+                url: `/order/tip/${orderId}`,
+                method: "POST",
+                body: { amount, message, payType },
+            }),
+            invalidatesTags: ["Order"],
+        }),
+        getDailyTipsSummary: builder.query({
+            query: (params) => ({
+                url: "/order/tips/daily-summary",
+                method: "GET",
+                params,
+            }),
+            providesTags: ["Order"],
+        }),
     }),
 });
 
@@ -40,5 +64,8 @@ export const {
     useCheckoutMutation,
     useGetMyOrdersQuery,
     useGetAllOrdersQuery,
+    useGetBaristaAssignedOrdersQuery,
     useUpdateOrderStatusMutation,
+    useAddOrderTipMutation,
+    useGetDailyTipsSummaryQuery,
 } = orderApi;

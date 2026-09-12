@@ -19,7 +19,8 @@ import {
     Loader2,
     RefreshCw,
     CreditCard,
-    Coins
+    Coins,
+    Sparkles
 } from "lucide-react";
 import {
     useGetAllOrdersQuery,
@@ -27,6 +28,7 @@ import {
 } from "@/redux/features/order/orderApi";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import AdminProfileDropdown from "@/components/AdminProfileDropdown";
+import OrderAutomationModal from "@/components/OrderAutomationModal";
 
 interface OrderItem {
     name: string;
@@ -54,6 +56,12 @@ interface Order {
     status: string;
     rawStatus: string;
     paymentStatus: string;
+    assignedBarista?: {
+        id: string;
+        name: string;
+        email?: string;
+        station?: string;
+    } | null;
     flags: {
         isDelivery: boolean;
         address?: string;
@@ -206,6 +214,14 @@ function transformApiOrder(apiOrder: any): Order {
         status: formatStatus(apiOrder.status),
         rawStatus: apiOrder.status,
         paymentStatus: paymentStatusStr,
+        assignedBarista: apiOrder.assignedBarista
+            ? {
+                  id: apiOrder.assignedBarista.id,
+                  name: apiOrder.assignedBarista.name,
+                  email: apiOrder.assignedBarista.email,
+                  station: apiOrder.assignedBarista.station,
+              }
+            : null,
         flags: {
             isDelivery: !!shipping,
             address: addressStr,
@@ -275,11 +291,15 @@ export default function OrderManagement() {
     const { data: apiResponse, isLoading, isFetching, refetch } = useGetAllOrdersQuery(apiQueryParams);
     const [updateOrderStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation();
 
-    // Modal state
+    // Selected order for modal details / edit
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [detailsModalOpen, setDetailsModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [editStatus, setEditStatus] = useState<string>("Pending");
+
+    // AI Automation & Barista modal state
+    const [automationOrderId, setAutomationOrderId] = useState<string | null>(null);
+    const [automationOrderNumber, setAutomationOrderNumber] = useState<string>("");
 
     // Transformed Orders from API
     const orders: Order[] = useMemo(() => {
@@ -678,6 +698,16 @@ export default function OrderManagement() {
                                         <td className="py-4 px-6">
                                             <div className="flex justify-center items-center gap-2">
                                                 <button
+                                                    onClick={() => {
+                                                        setAutomationOrderId(order.rawId || order.id);
+                                                        setAutomationOrderNumber(order.id);
+                                                    }}
+                                                    className="p-1.5 border border-[#C07C4A]/40 bg-[#C07C4A]/10 rounded-lg text-[#C07C4A] hover:bg-[#C07C4A]/25 transition-colors"
+                                                    title="AI Order Automation & Barista"
+                                                >
+                                                    <Sparkles className="w-4 h-4" />
+                                                </button>
+                                                <button
                                                     onClick={() => handleOpenDetails(order)}
                                                     className="p-1.5 border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-800 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors"
                                                     title="View Details"
@@ -938,6 +968,30 @@ export default function OrderManagement() {
                                         {selectedOrder.status}
                                     </span>
                                 </div>
+
+                                {/* Assigned Barista */}
+                                <div className="flex justify-between items-center text-sm">
+                                    <span className="text-muted-foreground font-medium">Assigned Barista</span>
+                                    {selectedOrder.assignedBarista ? (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-6 h-6 rounded-full bg-[#C07C4A]/20 flex items-center justify-center text-[10px] font-extrabold text-[#8B4513] dark:text-[#C07C4A] uppercase">
+                                                {selectedOrder.assignedBarista.name.charAt(0)}
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="font-semibold text-foreground text-sm leading-tight">
+                                                    {selectedOrder.assignedBarista.name}
+                                                </div>
+                                                {selectedOrder.assignedBarista.station && (
+                                                    <div className="text-[10px] text-muted-foreground font-medium">
+                                                        {selectedOrder.assignedBarista.station}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-xs text-muted-foreground italic">Not yet assigned</span>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Customer Special Note */}
@@ -1023,6 +1077,15 @@ export default function OrderManagement() {
                         </form>
                     </div>
                 </div>
+            )}
+
+            {/* AI Order Automation & Barista Modal */}
+            {automationOrderId && (
+                <OrderAutomationModal
+                    orderId={automationOrderId}
+                    orderNumber={automationOrderNumber}
+                    onClose={() => setAutomationOrderId(null)}
+                />
             )}
         </div>
     );

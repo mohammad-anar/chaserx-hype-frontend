@@ -16,7 +16,8 @@ import {
     Moon, 
     ChevronDown,
     RefreshCw,
-    Loader2
+    Loader2,
+    Heart,
 } from "lucide-react";
 import { 
     ResponsiveContainer, 
@@ -31,7 +32,7 @@ import {
     BarChart, 
     Bar 
 } from "recharts";
-import { useGetAllOrdersQuery } from "@/redux/features/order/orderApi";
+import { useGetAllOrdersQuery, useGetDailyTipsSummaryQuery } from "@/redux/features/order/orderApi";
 import { useGetAllUsersQuery } from "@/redux/features/user/userApi";
 import { useGetProductsQuery } from "@/redux/features/product/productApi";
 import { useGetCategoriesQuery } from "@/redux/features/category/categoryApi";
@@ -73,13 +74,17 @@ export default function Dashboard() {
     const { data: usersResponse, isLoading: isLoadingUsers, refetch: refetchUsers } = useGetAllUsersQuery({ limit: 100 });
     const { data: productsResponse, isLoading: isLoadingProducts, refetch: refetchProducts } = useGetProductsQuery({ limit: 100 });
     const { data: categoriesResponse, isLoading: isLoadingCategories, refetch: refetchCategories } = useGetCategoriesQuery(undefined);
+    const { data: tipsResponse, refetch: refetchTips } = useGetDailyTipsSummaryQuery(undefined);
 
     const refetchAll = () => {
         refetchOrders();
         refetchUsers();
         refetchProducts();
         refetchCategories();
+        refetchTips();
     };
+
+    const tipsData = useMemo(() => tipsResponse?.data, [tipsResponse]);
 
     const rawOrders = useMemo(() => ordersResponse?.data || [], [ordersResponse]);
     const rawUsers = useMemo(() => usersResponse?.data || [], [usersResponse]);
@@ -445,6 +450,33 @@ export default function Dashboard() {
                     </div>
                 </div>
             </section>
+
+            {/* Daily Tips & Gratuities Quick Widget */}
+            <div className="bg-gradient-to-r from-[#1E0F0B] via-[#2A140B] to-[#1E0F0B] border border-[#C07C4A]/30 p-5 rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4 text-left">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0 shadow-md">
+                        <Heart className="w-6 h-6 fill-emerald-400" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-sm font-bold text-white tracking-wide">Daily Gratuities & Barista Tips</h3>
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                Today: ${(tipsData?.kpis?.todayTips || 0).toFixed(2)}
+                            </span>
+                        </div>
+                        <p className="text-xs text-[#FAF6F0]/70 mt-0.5">
+                            Total Tips Collected: <strong className="text-white">${(tipsData?.kpis?.totalTips || 0).toFixed(2)}</strong> across {tipsData?.kpis?.totalTippedOrders || 0} customer orders.
+                        </p>
+                    </div>
+                </div>
+                <Link
+                    href="/admin/tips"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#C07C4A] hover:bg-[#A66637] text-white text-xs font-bold transition-all shadow-lg shadow-[#C07C4A]/20 flex items-center justify-center gap-1.5 shrink-0"
+                >
+                    <span>View Daily Tips</span>
+                    <TrendingUp className="w-3.5 h-3.5" />
+                </Link>
+            </div>
 
             {/* Mid Section Charts */}
             <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">

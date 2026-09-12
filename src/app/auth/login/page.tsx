@@ -67,6 +67,8 @@ export default function LoginPage() {
             const role = userObj.role?.toUpperCase();
             if (role === "ADMIN") {
                 router.push("/admin");
+            } else if (role === "BARISTA") {
+                router.push("/barista");
             } else {
                 router.push("/");
             }

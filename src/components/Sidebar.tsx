@@ -16,7 +16,10 @@ import {
     Settings, 
     LogOut, 
     Menu as MenuIcon, 
-    X 
+    X,
+    Sparkles,
+    UserCheck,
+    Heart,
 } from "lucide-react";
 import Logo from "@/components/Logo";
 
@@ -31,9 +34,12 @@ const menuItems: MenuItem[] = [
     { title: "Orders", url: "/admin/orders", icon: ShoppingBag },
     { title: "Menu", url: "/admin/menu", icon: Coffee },
     { title: "Categories", url: "/admin/categories", icon: Layers },
+    { title: "Baristas", url: "/admin/baristas", icon: UserCheck },
+    { title: "Tips & Gratuity", url: "/admin/tips", icon: Heart },
     { title: "Customers", url: "/admin/customers", icon: Users },
     { title: "Rewards", url: "/admin/rewards", icon: Gift },
     { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
+    { title: "AI Insights", url: "/admin/ai-insights", icon: Sparkles },
     { title: "Settings", url: "/admin/settings", icon: Settings },
 ];
 

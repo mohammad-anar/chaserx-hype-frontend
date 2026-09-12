@@ -35,6 +35,7 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import Logo from "@/components/Logo";
 import ScrollReveal from "@/components/ScrollReveal";
+import MoodRecommendationSection from "@/components/MoodRecommendationSection";
 
 export default function WebsiteHome() {
     const router = useRouter();
@@ -340,6 +341,9 @@ export default function WebsiteHome() {
                     </div>
                 </div>
             </section>
+
+            {/* AI Mood-Based Drink Recommendation Sommelier */}
+            <MoodRecommendationSection />
 
             {/* SECTION 2: The Daily Grind */}
             <section id="daily-grind" className="bg-[#FAF6F0] text-[#2C1A14] py-24 relative z-30 border-b border-[#2C1A14]/10">

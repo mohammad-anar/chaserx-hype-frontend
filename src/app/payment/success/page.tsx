@@ -1,13 +1,12 @@
-"use client";
-
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, ArrowRight, ShoppingBag, Home, FileText } from "lucide-react";
+import { CheckCircle2, ArrowRight, ShoppingBag, Home, FileText, Heart } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import ScrollReveal from "@/components/ScrollReveal";
+import TipModal from "@/components/TipModal";
 
 function PaymentSuccessContent() {
     const searchParams = useSearchParams();
@@ -15,6 +14,8 @@ function PaymentSuccessContent() {
     const orderNumber = searchParams.get("order_number");
     const orderId = searchParams.get("order_id");
     const transactionId = searchParams.get("transaction_id");
+
+    const [isTipModalOpen, setIsTipModalOpen] = useState(false);
 
     const hasSession = Boolean(sessionId);
 
@@ -58,12 +59,6 @@ function PaymentSuccessContent() {
                                 {orderNumber || "N/A"}
                             </span>
                         </div>
-                        {/* <div className="flex justify-between items-center text-xs pb-2 border-b border-[#2C1A14]/10">
-                            <span className="text-[#6B5E59] font-medium">Order ID</span>
-                            <span className="font-mono font-bold text-[#2C1A14] truncate max-w-[200px] sm:max-w-[280px]">
-                                {orderId || "N/A"}
-                            </span>
-                        </div> */}
                         <div className="flex justify-between items-center text-xs pb-2 border-b border-[#2C1A14]/10">
                             <span className="text-[#6B5E59] font-medium">Transaction ID</span>
                             <span className="font-mono font-bold text-[#2C1A14] truncate max-w-[200px] sm:max-w-[280px]">
@@ -85,6 +80,27 @@ function PaymentSuccessContent() {
                         </div>
                     </div>
 
+                    {/* Tip Barista Banner & Button */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-[#FAF6F0] to-[#F3ECE3] border border-[#C07C4A]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-[#C07C4A]/15 text-[#C07C4A] flex items-center justify-center shrink-0">
+                                <Heart className="w-5 h-5 fill-[#C07C4A]" />
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-[#2C1A14]">Love your coffee experience?</p>
+                                <p className="text-[11px] text-[#6B5E59]">Send a tip and thank-you note to your barista.</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setIsTipModalOpen(true)}
+                            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C07C4A] to-[#8C4A1E] text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md shadow-[#C07C4A]/20 hover:brightness-110 active:scale-95 transition-all shrink-0 cursor-pointer"
+                        >
+                            <Heart className="w-3.5 h-3.5 fill-white text-white" />
+                            <span>Tip Barista</span>
+                        </button>
+                    </div>
+
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                         <Link
@@ -104,6 +120,16 @@ function PaymentSuccessContent() {
                     </div>
                 </div>
             </ScrollReveal>
+
+            {/* Tip Modal */}
+            <TipModal
+                isOpen={isTipModalOpen}
+                onClose={() => setIsTipModalOpen(false)}
+                order={{
+                    id: orderId || orderNumber || "",
+                    orderNumber: orderNumber || undefined,
+                }}
+            />
         </div>
     );
 }
