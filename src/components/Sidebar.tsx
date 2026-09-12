@@ -61,13 +61,13 @@ export default function Sidebar() {
         <>
             {/* Mobile Header */}
             <div className="lg:hidden flex items-center justify-between p-4 bg-[#1E0F0B] text-white sticky top-0 z-40 border-b border-[#2C1711]">
-                <div className="flex items-center gap-3">
-                    <Logo className="w-10 h-10" />
+                <Link href="/" className="flex items-center gap-3 group" title="Bean Fien Home">
+                    <Logo className="w-10 h-10 transition-transform duration-300 group-hover:scale-105" />
                     <div>
-                        <h1 className="font-serif text-lg font-bold tracking-wide text-white">Bean Fien</h1>
+                        <h1 className="font-serif text-lg font-bold tracking-wide text-white group-hover:text-primary transition-colors">Bean Fien</h1>
                         <p className="text-[10px] text-[#C4B4A5] uppercase tracking-widest font-semibold">Admin</p>
                     </div>
-                </div>
+                </Link>
                 <button 
                     onClick={toggleSidebar}
                     className="p-2 hover:bg-[#2C1711] rounded-lg transition-colors text-[#C4B4A5] hover:text-white"
@@ -88,13 +88,17 @@ export default function Sidebar() {
                 {/* Upper Section */}
                 <div>
                     {/* Header Logo */}
-                    <div className="p-6 flex items-center gap-3 border-b border-[#2C1711]">
-                        <Logo className="w-12 h-12" />
+                    <Link 
+                        href="/" 
+                        className="p-6 flex items-center gap-3 border-b border-[#2C1711] group hover:bg-white/[0.03] transition-colors cursor-pointer"
+                        title="Bean Fien Home"
+                    >
+                        <Logo className="w-12 h-12 transition-transform duration-300 group-hover:scale-105" />
                         <div>
-                            <h1 className="font-serif text-xl font-bold tracking-wide text-white">Bean Fien</h1>
+                            <h1 className="font-serif text-xl font-bold tracking-wide text-white group-hover:text-primary transition-colors">Bean Fien</h1>
                             <p className="text-[10px] text-[#8B4513] uppercase tracking-widest font-black">Admin</p>
                         </div>
-                    </div>
+                    </Link>
 
                     {/* Navigation Menu */}
                     <nav className="p-4 space-y-1.5">

@@ -29,7 +29,22 @@ import { menuItems } from "@/constants/menu";
 import { useCart } from "@/hooks/useCart";
 import { useGetProductsQuery } from "@/redux/features/product/productApi";
 import { useAddToCartMutation } from "@/redux/features/cart/cartApi";
-import { useGetMyWalletQuery } from "@/redux/features/wallet/walletApi";
+import { 
+    useGetMyWalletQuery, 
+    useClaimDailyDropMutation, 
+    useClaimFreePourMutation 
+} from "@/redux/features/wallet/walletApi";
+import { toast } from "sonner";
+import { 
+    Coins, 
+    Coffee, 
+    Sparkles, 
+    Loader2, 
+    Award, 
+    Zap, 
+    CheckCircle2, 
+    Copy 
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
@@ -45,11 +60,61 @@ export default function WebsiteHome() {
     const [menuTab, setMenuTab] = useState<"hot" | "iced" | "blended" | "bakery">("hot");
 
     const { data: productsRes } = useGetProductsQuery(undefined);
-    const { data: myWalletData } = useGetMyWalletQuery(undefined, { skip: !isAuthenticated });
+    const { data: myWalletData, refetch: refetchWallet } = useGetMyWalletQuery(undefined, { skip: !isAuthenticated });
     const [addToCartApi] = useAddToCartMutation();
+    const [claimDailyDropApi, { isLoading: isClaimingDaily }] = useClaimDailyDropMutation();
+    const [claimFreePourApi, { isLoading: isClaimingFreePour }] = useClaimFreePourMutation();
 
-    const loyaltyBalance = myWalletData?.data?.balance ?? myWalletData?.balance ?? (isAuthenticated ? 0 : 750);
+    const [unlockedVoucher, setUnlockedVoucher] = useState<string | null>(null);
+    const [copiedCode, setCopiedCode] = useState(false);
+
+    const loyaltyBalance = Number(myWalletData?.data?.balance ?? myWalletData?.balance ?? (isAuthenticated ? 0 : 750));
     const progressPercent = Math.min(100, Math.round((loyaltyBalance / 1000) * 100));
+
+    // Handle Daily Drop Claim
+    const handleClaimDailyDrop = async () => {
+        if (!isAuthenticated) {
+            router.push("/auth/login");
+            return;
+        }
+        try {
+            const res = await claimDailyDropApi(undefined).unwrap();
+            toast.success(res?.message || "+50 Loyalty Beans claimed!");
+            refetchWallet();
+        } catch (err: any) {
+            const msg = err?.data?.message || err?.message || "Failed to claim daily loyalty drop.";
+            toast.error(msg);
+        }
+    };
+
+    // Handle Free Pour Unlock
+    const handleClaimFreePour = async () => {
+        if (!isAuthenticated) {
+            router.push("/auth/login");
+            return;
+        }
+        if (loyaltyBalance < 1000) {
+            toast.error(`You need 1,000 beans for a Free Pour. You have ${loyaltyBalance.toLocaleString()} beans.`);
+            return;
+        }
+        try {
+            const res = await claimFreePourApi(undefined).unwrap();
+            const voucher = res?.data?.voucherCode || res?.voucherCode;
+            setUnlockedVoucher(voucher);
+            toast.success("🎉 Your Free Pour Voucher is unlocked!");
+            refetchWallet();
+        } catch (err: any) {
+            const msg = err?.data?.message || err?.message || "Failed to redeem free pour reward.";
+            toast.error(msg);
+        }
+    };
+
+    const handleCopyVoucher = (code: string) => {
+        navigator.clipboard.writeText(code);
+        setCopiedCode(true);
+        toast.success("Voucher code copied to clipboard!");
+        setTimeout(() => setCopiedCode(false), 2500);
+    };
 
     // User / Profile Dropdown State
     const [userName, setUserName] = useState("Admin");
@@ -483,41 +548,152 @@ export default function WebsiteHome() {
             {/* SECTION 4: Loyalty Program (Your next pour is on us) */}
             <section id="loyalty" className="bg-[#080403] py-24 relative z-30 border-b border-white/5 text-left">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center gap-16">
-                    {/* Left details & progress indicator */}
+                    {/* Left details & interactive progress indicator */}
                     <ScrollReveal variant="fadeInLeft" className="flex-1 max-w-xl w-full">
                         <div className="space-y-8">
                             <div className="space-y-4">
-                                <span className="text-xs font-bold uppercase tracking-widest text-[#C07C4A]">Loyalty Program</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold uppercase tracking-widest text-[#C07C4A] flex items-center gap-1.5">
+                                        <Sparkles className="w-3.5 h-3.5" /> Loyalty Program
+                                    </span>
+                                    {isAuthenticated && (
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                            Member Active
+                                        </span>
+                                    )}
+                                </div>
                                 <h2 className="font-sans text-4xl sm:text-5xl font-extrabold text-white leading-tight">
                                     Your next pour is<br />on us.
                                 </h2>
                                 <p className="text-sm text-[#FAF6F0]/70 leading-relaxed font-light">
-                                    Join the Bean Fien circle. Earn beans with every purchase and unlock exclusive seasonal drops and members-only events.
+                                    Join the Bean Fien circle. Earn 10 beans for every dollar spent and unlock complimentary pour-overs, artisanal treats, and seasonal drops.
                                 </p>
                             </div>
 
-                            {/* Current Balance Box */}
-                            <div className="bg-[#141414] p-7 rounded-2xl border border-white/5 space-y-6 shadow-xl w-full">
+                            {/* Current Balance & Milestone Dashboard */}
+                            <div className="bg-[#141414] p-6 sm:p-7 rounded-3xl border border-white/10 space-y-6 shadow-2xl w-full">
                                 <div className="flex justify-between items-center text-xs font-bold">
-                                    <span className="text-white/80">Current Balance: {loyaltyBalance.toLocaleString()} Beans</span>
-                                    <span className="text-[#C07C4A]">Free Drink at 1000</span>
+                                    <span className="text-white/90 flex items-center gap-1.5">
+                                        <Coins className="w-4 h-4 text-[#C07C4A]" />
+                                        Current Balance: <strong className="text-white text-sm">{loyaltyBalance.toLocaleString()} Beans</strong>
+                                    </span>
+                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                        loyaltyBalance >= 1000 
+                                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse" 
+                                            : "bg-[#C07C4A]/10 text-[#C07C4A] border border-[#C07C4A]/20"
+                                    }`}>
+                                        {loyaltyBalance >= 1000 ? "🎉 Free Pour Ready!" : "Free Pour at 1,000"}
+                                    </span>
                                 </div>
 
                                 {/* Progress bar */}
                                 <div className="space-y-3">
-                                    <div className="w-full bg-[#FAF6F0] h-2.5 rounded-full overflow-hidden">
+                                    <div className="w-full bg-white/10 h-3 rounded-full overflow-hidden p-0.5 border border-white/5">
                                         <div
-                                            className="bg-[#C07C4A] h-full rounded-full transition-all duration-1000"
+                                            className="bg-gradient-to-r from-[#8B4513] via-[#C07C4A] to-[#D9975D] h-full rounded-full transition-all duration-1000 shadow-lg shadow-[#C07C4A]/20"
                                             style={{ width: `${progressPercent}%` }}
                                         />
                                     </div>
-                                    {/* Progress Ticks */}
-                                    <div className="relative h-4 text-[10px] font-bold text-white/40 mt-1">
-                                        <span className="absolute left-[25%] -translate-x-1/2">250</span>
-                                        <span className="absolute left-[50%] -translate-x-1/2">500</span>
-                                        <span className="absolute left-[75%] -translate-x-1/2 text-[#C07C4A] font-extrabold">750</span>
-                                        <span className="absolute left-[100%] -translate-x-full">1000</span>
+                                    {/* Progress Ticks & Perks */}
+                                    <div className="relative h-6 text-[10px] font-bold text-white/40 mt-1">
+                                        <span className={`absolute left-[25%] -translate-x-1/2 ${loyaltyBalance >= 250 ? "text-[#C07C4A] font-extrabold" : ""}`}>
+                                            250 <span className="hidden sm:inline opacity-60">· Shot</span>
+                                        </span>
+                                        <span className={`absolute left-[50%] -translate-x-1/2 ${loyaltyBalance >= 500 ? "text-[#C07C4A] font-extrabold" : ""}`}>
+                                            500 <span className="hidden sm:inline opacity-60">· Pastry</span>
+                                        </span>
+                                        <span className={`absolute left-[75%] -translate-x-1/2 ${loyaltyBalance >= 750 ? "text-[#C07C4A] font-extrabold" : ""}`}>
+                                            750 <span className="hidden sm:inline opacity-60">· Cold Brew</span>
+                                        </span>
+                                        <span className={`absolute left-[100%] -translate-x-full ${loyaltyBalance >= 1000 ? "text-emerald-400 font-extrabold" : "text-[#C07C4A]"}`}>
+                                            1000 ★
+                                        </span>
                                     </div>
+                                </div>
+
+                                {/* Unlocked Voucher Notification Card */}
+                                {unlockedVoucher && (
+                                    <div className="p-4 rounded-2xl bg-[#C07C4A]/15 border border-[#C07C4A]/40 space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-[#C07C4A] flex items-center gap-1.5">
+                                                <Award className="w-4 h-4" /> Free Pour Voucher Unlocked!
+                                            </span>
+                                            <span className="text-[10px] font-mono font-bold bg-white/10 px-2 py-0.5 rounded text-white">
+                                                Active
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-white/10">
+                                            <code className="text-sm font-mono font-bold text-white tracking-widest">{unlockedVoucher}</code>
+                                            <button
+                                                onClick={() => handleCopyVoucher(unlockedVoucher)}
+                                                className="inline-flex items-center gap-1 px-3 py-1 bg-[#C07C4A] hover:bg-[#8B4513] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                                            >
+                                                {copiedCode ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                                {copiedCode ? "Copied!" : "Copy"}
+                                            </button>
+                                        </div>
+                                        <p className="text-[11px] text-[#FAF6F0]/70">
+                                            Show this code at the barista counter or apply it in your next cart order.
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Interactive Action Buttons */}
+                                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                                    {isAuthenticated ? (
+                                        <>
+                                            {loyaltyBalance >= 1000 ? (
+                                                <button
+                                                    onClick={handleClaimFreePour}
+                                                    disabled={isClaimingFreePour}
+                                                    className="flex-1 py-3 px-5 rounded-2xl bg-gradient-to-r from-[#8B4513] to-[#C07C4A] hover:opacity-95 text-white text-xs font-extrabold uppercase tracking-wider transition-all shadow-lg shadow-[#C07C4A]/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                                >
+                                                    {isClaimingFreePour ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Coffee className="w-4 h-4" />
+                                                    )}
+                                                    Claim Your Free Pour
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={handleClaimDailyDrop}
+                                                    disabled={isClaimingDaily}
+                                                    className="flex-1 py-3 px-5 rounded-2xl bg-[#C07C4A] hover:bg-[#8B4513] text-white text-xs font-extrabold uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                                    title="Claim daily bonus loyalty beans"
+                                                >
+                                                    {isClaimingDaily ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <Zap className="w-4 h-4 text-amber-300" />
+                                                    )}
+                                                    Claim Daily Drop (+50 Beans)
+                                                </button>
+                                            )}
+
+                                            <Link
+                                                href="/rewards"
+                                                className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-xs font-extrabold uppercase tracking-wider transition-colors border border-white/10 flex items-center justify-center gap-1.5 text-center"
+                                            >
+                                                <Gift className="w-4 h-4 text-[#C07C4A]" /> Rewards Store
+                                            </Link>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Link
+                                                href="/auth/register"
+                                                className="flex-1 py-3 px-5 rounded-2xl bg-[#C07C4A] hover:bg-[#8B4513] text-white text-xs font-extrabold uppercase tracking-wider transition-all shadow-md shadow-[#C07C4A]/20 flex items-center justify-center gap-2 text-center"
+                                            >
+                                                <Sparkles className="w-4 h-4" /> Join Circle (+100 Bonus)
+                                            </Link>
+                                            <Link
+                                                href="/auth/login"
+                                                className="py-3 px-5 rounded-2xl bg-white/5 hover:bg-white/10 text-white text-xs font-extrabold uppercase tracking-wider transition-colors border border-white/10 flex items-center justify-center text-center"
+                                            >
+                                                Sign In
+                                            </Link>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -525,7 +701,7 @@ export default function WebsiteHome() {
 
                     {/* Right: Loyalty program image */}
                     <ScrollReveal variant="fadeInRight" className="flex-1 w-full flex justify-center relative">
-                        <div className="w-full max-w-[480px] rounded-3xl overflow-hidden shadow-2xl transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500 group">
+                        <div className="w-full max-w-[480px] rounded-3xl overflow-hidden shadow-2xl transform lg:-rotate-2 hover:rotate-0 transition-transform duration-500 group border border-white/10">
                             <img
                                 src="/loyalty.png"
                                 alt="Loyalty Program Cups"

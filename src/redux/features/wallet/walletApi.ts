@@ -9,7 +9,26 @@ export const walletApi = baseApi.injectEndpoints({
             }),
             providesTags: ["Wallet"],
         }),
+        claimDailyDrop: builder.mutation({
+            query: () => ({
+                url: "/wallet/claim-daily-drop",
+                method: "POST",
+            }),
+            invalidatesTags: ["Wallet", "User"],
+        }),
+        claimFreePour: builder.mutation({
+            query: () => ({
+                url: "/wallet/claim-free-pour",
+                method: "POST",
+            }),
+            invalidatesTags: ["Wallet", "User", "Order", "Cart"],
+        }),
     }),
 });
 
-export const { useGetMyWalletQuery } = walletApi;
+export const { 
+    useGetMyWalletQuery,
+    useClaimDailyDropMutation,
+    useClaimFreePourMutation,
+} = walletApi;
+
