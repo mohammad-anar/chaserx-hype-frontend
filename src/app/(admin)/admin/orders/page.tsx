@@ -20,12 +20,22 @@ import {
     RefreshCw,
     CreditCard,
     Coins,
-    Sparkles
+    Sparkles,
+    Coffee,
+    UserCheck,
+    UserPlus,
+    ChevronDown,
+    Check,
+    Trash2
 } from "lucide-react";
 import {
     useGetAllOrdersQuery,
     useUpdateOrderStatusMutation
 } from "@/redux/features/order/orderApi";
+import {
+    useGetAllBaristasQuery,
+    useAssignBaristaToOrderMutation
+} from "@/redux/features/barista/baristaApi";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import AdminProfileDropdown from "@/components/AdminProfileDropdown";
 import OrderAutomationModal from "@/components/OrderAutomationModal";
@@ -291,6 +301,12 @@ export default function OrderManagement() {
     const { data: apiResponse, isLoading, isFetching, refetch } = useGetAllOrdersQuery(apiQueryParams);
     const [updateOrderStatus, { isLoading: isUpdating }] = useUpdateOrderStatusMutation();
 
+    // Baristas data & assignment mutation
+    const { data: baristasResponse, isLoading: isLoadingBaristas } = useGetAllBaristasQuery();
+    const [assignBarista, { isLoading: isAssigningBarista }] = useAssignBaristaToOrderMutation();
+    const [assigningOrderId, setAssigningOrderId] = useState<string | null>(null);
+    const [activeAssignOrderId, setActiveAssignOrderId] = useState<string | null>(null);
+
     // Selected order for modal details / edit
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [detailsModalOpen, setDetailsModalOpen] = useState(false);
@@ -300,6 +316,31 @@ export default function OrderManagement() {
     // AI Automation & Barista modal state
     const [automationOrderId, setAutomationOrderId] = useState<string | null>(null);
     const [automationOrderNumber, setAutomationOrderNumber] = useState<string>("");
+
+    // Close barista dropdown on click outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (!(e.target as HTMLElement).closest(".barista-dropdown-container")) {
+                setActiveAssignOrderId(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleAssignBarista = async (orderId: string, baristaId: string | null) => {
+        try {
+            setAssigningOrderId(orderId);
+            await assignBarista({ orderId, baristaId }).unwrap();
+            toast.success(baristaId ? "Barista assigned successfully" : "Barista unassigned from order");
+            setActiveAssignOrderId(null);
+            refetch();
+        } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to assign barista");
+        } finally {
+            setAssigningOrderId(null);
+        }
+    };
 
     // Transformed Orders from API
     const orders: Order[] = useMemo(() => {
@@ -373,12 +414,13 @@ export default function OrderManagement() {
             return;
         }
 
-        const headers = ["Order ID", "Customer", "Phone", "Shipping Address", "Items", "Total ($)", "Used Coins", "Earned Coins", "Payment Status", "Order Status", "Time"];
+        const headers = ["Order ID", "Customer", "Phone", "Shipping Address", "Assigned Barista", "Items", "Total ($)", "Used Coins", "Earned Coins", "Payment Status", "Order Status", "Time"];
         const rows = orders.map(o => [
             `"${o.id}"`,
             `"${o.customer}"`,
             `"${o.phone}"`,
             `"${o.flags.address || 'N/A'}"`,
+            `"${o.assignedBarista?.name || 'Unassigned'}"`,
             `"${o.itemsSummary}"`,
             o.total.toFixed(2),
             o.usedCoin,
@@ -581,6 +623,7 @@ export default function OrderManagement() {
                                 <th className="py-4 px-6">Total</th>
                                 <th className="py-4 px-6 text-center">Payment Status</th>
                                 <th className="py-4 px-6 text-center">Order Status</th>
+                                <th className="py-4 px-6 text-center">Assigned Barista</th>
                                 <th className="py-4 px-6 text-center">Flags</th>
                                 <th className="py-4 px-6">Time</th>
                                 <th className="py-4 px-6 text-center">Actions</th>
@@ -589,7 +632,7 @@ export default function OrderManagement() {
                         <tbody className="divide-y divide-border/20 text-sm">
                             {isLoading ? (
                                 <tr>
-                                    <td colSpan={10} className="py-16 text-center text-muted-foreground">
+                                    <td colSpan={11} className="py-16 text-center text-muted-foreground">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <Loader2 className="w-6 h-6 animate-spin text-primary" />
                                             <span className="text-xs font-semibold">Loading orders...</span>
@@ -658,6 +701,109 @@ export default function OrderManagement() {
                                                     <span className={`w-1.5 h-1.5 rounded-full ${getStatusDotStyle(order.status)}`} />
                                                     {order.status}
                                                 </span>
+                                            </div>
+                                        </td>
+
+                                        {/* Assigned Barista Column */}
+                                        <td className="py-4 px-6 relative barista-dropdown-container">
+                                            <div className="flex items-center justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveAssignOrderId(activeAssignOrderId === order.rawId ? null : order.rawId)}
+                                                    disabled={assigningOrderId === order.rawId}
+                                                    className={`
+                                                        group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border
+                                                        ${order.assignedBarista
+                                                            ? "bg-[#8B4513]/10 dark:bg-[#C07C4A]/10 text-[#8B4513] dark:text-[#C07C4A] border-[#8B4513]/25 hover:bg-[#8B4513]/20"
+                                                            : "bg-slate-100 dark:bg-zinc-800/80 text-muted-foreground border-dashed border-slate-300 dark:border-zinc-700 hover:border-primary hover:text-foreground hover:bg-slate-200/60"
+                                                        }
+                                                    `}
+                                                    title="Click to assign or change barista"
+                                                >
+                                                    {assigningOrderId === order.rawId ? (
+                                                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                                                    ) : order.assignedBarista ? (
+                                                        <>
+                                                            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                                            <Coffee className="w-3.5 h-3.5 text-[#8B4513] dark:text-[#C07C4A]" />
+                                                            <div className="text-left leading-tight">
+                                                                <span className="font-bold block">{order.assignedBarista.name}</span>
+                                                                {order.assignedBarista.station && (
+                                                                    <span className="text-[10px] text-muted-foreground font-normal block truncate max-w-[90px]">
+                                                                        {order.assignedBarista.station}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <ChevronDown className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity ml-0.5" />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <UserPlus className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground" />
+                                                            <span>Assign Barista</span>
+                                                            <ChevronDown className="w-3 h-3 opacity-40 group-hover:opacity-100 transition-opacity" />
+                                                        </>
+                                                    )}
+                                                </button>
+
+                                                {/* Dropdown Popover Menu */}
+                                                {activeAssignOrderId === order.rawId && (
+                                                    <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-64 bg-white dark:bg-[#1E0F0B] border border-border dark:border-[#2C1711] rounded-2xl shadow-2xl z-50 p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150 text-left">
+                                                        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex justify-between items-center border-b border-border/40 pb-1 mb-1">
+                                                            <span>Assign Barista</span>
+                                                            <span className="text-primary text-[9px] font-semibold">{baristasResponse?.data?.length || 0} available</span>
+                                                        </div>
+
+                                                        <div className="max-h-56 overflow-y-auto space-y-1">
+                                                            {baristasResponse?.data && baristasResponse.data.length > 0 ? (
+                                                                baristasResponse.data.map((b) => {
+                                                                    const isSelected = order.assignedBarista?.id === b.id;
+                                                                    return (
+                                                                        <button
+                                                                            key={b.id}
+                                                                            type="button"
+                                                                            onClick={() => handleAssignBarista(order.rawId, b.id)}
+                                                                            className={`
+                                                                                w-full text-left p-2 rounded-xl flex items-center justify-between gap-2 text-xs transition-colors
+                                                                                ${isSelected
+                                                                                    ? "bg-[#8B4513]/15 dark:bg-[#C07C4A]/20 text-[#8B4513] dark:text-[#C07C4A] font-bold"
+                                                                                    : "hover:bg-slate-100 dark:hover:bg-white/5 text-foreground font-medium"
+                                                                                }
+                                                                            `}
+                                                                        >
+                                                                            <div className="flex items-center gap-2 min-w-0">
+                                                                                <span className={`w-2 h-2 rounded-full shrink-0 ${b.isAvailable ? "bg-emerald-500" : "bg-amber-500"}`} />
+                                                                                <div className="min-w-0 truncate">
+                                                                                    <p className="truncate text-xs leading-snug">{b.name}</p>
+                                                                                    <p className="text-[10px] text-muted-foreground truncate">
+                                                                                        {b.station || "General"} · {b.activeOrderCount} active
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
+                                                                            {isSelected && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
+                                                                        </button>
+                                                                    );
+                                                                })
+                                                            ) : (
+                                                                <div className="p-3 text-center text-xs text-muted-foreground">
+                                                                    No baristas found
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {order.assignedBarista && (
+                                                            <div className="pt-1 border-t border-border/40 mt-1">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleAssignBarista(order.rawId, null)}
+                                                                    className="w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-1.5"
+                                                                >
+                                                                    <Trash2 className="w-3 h-3" />
+                                                                    <span>Unassign Barista</span>
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </td>
 
@@ -969,28 +1115,81 @@ export default function OrderManagement() {
                                     </span>
                                 </div>
 
-                                {/* Assigned Barista */}
-                                <div className="flex justify-between items-center text-sm">
-                                    <span className="text-muted-foreground font-medium">Assigned Barista</span>
-                                    {selectedOrder.assignedBarista ? (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-[#C07C4A]/20 flex items-center justify-center text-[10px] font-extrabold text-[#8B4513] dark:text-[#C07C4A] uppercase">
-                                                {selectedOrder.assignedBarista.name.charAt(0)}
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-semibold text-foreground text-sm leading-tight">
-                                                    {selectedOrder.assignedBarista.name}
+                                {/* Assigned Barista Section */}
+                                <div className="p-4 rounded-2xl bg-[#FAF6F0]/80 dark:bg-black/20 border border-border/60 space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                                            <Coffee className="w-4 h-4 text-primary" /> Assigned Barista
+                                        </span>
+                                        {selectedOrder.assignedBarista && (
+                                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                Active Assignment
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        {selectedOrder.assignedBarista ? (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-[#C07C4A]/20 flex items-center justify-center text-sm font-extrabold text-[#8B4513] dark:text-[#C07C4A] uppercase border border-[#C07C4A]/30">
+                                                    {selectedOrder.assignedBarista.name.charAt(0)}
                                                 </div>
-                                                {selectedOrder.assignedBarista.station && (
-                                                    <div className="text-[10px] text-muted-foreground font-medium">
-                                                        {selectedOrder.assignedBarista.station}
-                                                    </div>
-                                                )}
+                                                <div>
+                                                    <h5 className="font-bold text-sm text-foreground leading-tight">
+                                                        {selectedOrder.assignedBarista.name}
+                                                    </h5>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">
+                                                        {selectedOrder.assignedBarista.email || "Barista Staff"}
+                                                        {selectedOrder.assignedBarista.station ? ` · Station: ${selectedOrder.assignedBarista.station}` : ""}
+                                                    </p>
+                                                </div>
                                             </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
+                                                <UserPlus className="w-4 h-4 text-muted-foreground" />
+                                                <span>No barista assigned yet.</span>
+                                            </div>
+                                        )}
+
+                                        {/* Change / Assign Barista Dropdown inside modal */}
+                                        <div className="flex items-center gap-2">
+                                            <select
+                                                disabled={assigningOrderId === selectedOrder.rawId}
+                                                value={selectedOrder.assignedBarista?.id || ""}
+                                                onChange={(e) => {
+                                                    const newId = e.target.value || null;
+                                                    handleAssignBarista(selectedOrder.rawId, newId);
+                                                    if (newId) {
+                                                        const b = baristasResponse?.data?.find(x => x.id === newId);
+                                                        if (b) {
+                                                            setSelectedOrder({
+                                                                ...selectedOrder,
+                                                                assignedBarista: {
+                                                                    id: b.id,
+                                                                    name: b.name,
+                                                                    email: b.email,
+                                                                    station: b.station,
+                                                                }
+                                                            });
+                                                        }
+                                                    } else {
+                                                        setSelectedOrder({
+                                                            ...selectedOrder,
+                                                            assignedBarista: null
+                                                        });
+                                                    }
+                                                }}
+                                                className="px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                                            >
+                                                <option value="">{selectedOrder.assignedBarista ? "Unassign Barista" : "Select Barista to Assign..."}</option>
+                                                {baristasResponse?.data?.map((b) => (
+                                                    <option key={b.id} value={b.id}>
+                                                        {b.name} ({b.station || "General"} · {b.activeOrderCount} orders)
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
-                                    ) : (
-                                        <span className="text-xs text-muted-foreground italic">Not yet assigned</span>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
 

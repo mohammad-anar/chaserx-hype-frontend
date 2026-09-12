@@ -111,7 +111,7 @@ export const baristaApi = baseApi.injectEndpoints({
 
     assignBaristaToOrder: builder.mutation<
       any,
-      { orderId: string; baristaId?: string }
+      { orderId: string; baristaId?: string | null }
     >({
       query: ({ orderId, baristaId }) => ({
         url: `/barista/assign/${orderId}`,
