@@ -169,9 +169,19 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                             <h3 className="font-serif text-lg font-bold text-white">Shipping Address</h3>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2">
-                            <ShoppingCart className={`w-5 h-5 ${isDark ? "text-[#E05A2B]" : "text-[#C07C4A]"}`} />
-                            <h3 className="font-serif text-lg font-bold text-white">Your Cart ({totalCartItems})</h3>
+                        <div className="flex items-center justify-between flex-1 pr-4">
+                            <div className="flex items-center gap-2">
+                                <ShoppingCart className={`w-5 h-5 ${isDark ? "text-[#E05A2B]" : "text-[#C07C4A]"}`} />
+                                <h3 className="font-serif text-lg font-bold text-white">Your Cart ({totalCartItems})</h3>
+                            </div>
+                            {cart.length > 0 && (
+                                <button
+                                    onClick={() => clearCart()}
+                                    className="text-[11px] font-semibold text-white/50 hover:text-red-400 transition-colors cursor-pointer"
+                                >
+                                    Clear Cart
+                                </button>
+                            )}
                         </div>
                     )}
                     

@@ -1,10 +1,16 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { Check } from "lucide-react";
 import { CustomCartItem } from "@/types/menu";
-import { useGetCartQuery } from "@/redux/features/cart/cartApi";
+import { 
+    useGetCartQuery, 
+    useAddToCartMutation, 
+    useUpdateCartItemMutation, 
+    useRemoveCartItemMutation, 
+    useClearCartMutation 
+} from "@/redux/features/cart/cartApi";
 import { useAppSelector } from "@/redux/hooks";
 import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 
@@ -14,19 +20,39 @@ interface CartContextType {
     setIsCartOpen: (open: boolean) => void;
     notification: string | null;
     showNotification: (msg: string) => void;
-    addToCart: (item: CustomCartItem) => void;
-    updateQuantity: (itemId: string, delta: number) => void;
-    removeFromCart: (itemId: string) => void;
-    clearCart: () => void;
+    addToCart: (item: CustomCartItem) => Promise<void> | void;
+    updateQuantity: (itemId: string, delta: number) => Promise<void> | void;
+    removeFromCart: (itemId: string) => Promise<void> | void;
+    clearCart: () => Promise<void> | void;
     handleCheckout: () => void;
 }
 
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const getProductImg = (item: any) => {
+    if (!item) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
+    let imgStr = "";
+    if (Array.isArray(item?.image) && item?.image?.length > 0) {
+        imgStr = item?.image?.[0] || "";
+    } else if (typeof item?.image === "string" && item?.image) {
+        imgStr = item?.image;
+    }
+    if (!imgStr) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
+    if (imgStr.startsWith("http://") || imgStr.startsWith("https://")) return imgStr;
+    const baseUrl = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
+    return `${baseUrl}${imgStr.startsWith("/") ? "" : "/"}${imgStr}`;
+};
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
-    const { data: serverCartData } = useGetCartQuery(undefined, { skip: !isAuthenticated });
+    
+    // RTK Query Cart Hooks
+    const { data: serverCartData, refetch: refetchCart } = useGetCartQuery(undefined, { skip: !isAuthenticated });
+    const [addToCartApi] = useAddToCartMutation();
+    const [updateCartItemApi] = useUpdateCartItemMutation();
+    const [removeCartItemApi] = useRemoveCartItemMutation();
+    const [clearCartApi] = useClearCartMutation();
 
     const [cart, setCart] = useState<CustomCartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -34,33 +60,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     // Sync server cart data if user is logged in
     useEffect(() => {
-        if (isAuthenticated && serverCartData?.data?.cartItems) {
-            const mappedItems: CustomCartItem[] = serverCartData.data.cartItems.map((ci: any) => {
-                const rawImg = ci?.coinProduct?.product?.image || ci?.product?.image || "";
-                const baseUrl = process.env.NEXT_PUBLIC_BASEURL || "http://localhost:5000";
-                const image = `${baseUrl}${rawImg}`
+        if (isAuthenticated) {
+            if (serverCartData?.data?.cartItems) {
+                const mappedItems: CustomCartItem[] = serverCartData.data.cartItems.map((ci: any) => {
+                    const prod = ci?.coinProduct?.product || ci?.product;
+                    const image = getProductImg(prod);
+                    const prodName = ci?.coinProduct?.product?.name || ci?.coinProduct?.name || ci?.product?.name || "Product";
+                    const prodDesc = ci?.coinProduct?.product?.description || ci?.product?.description || "";
+                    const basePrice = ci?.isCoinProduct ? 0 : Number(ci?.product?.basePrice || 0);
+                    const finalPrice = ci?.isCoinProduct ? 0 : Number(ci?.totalPrice || (basePrice * (ci?.quantity || 1)));
 
-                return {
-                    id: ci?.id,
-                    item: {
-                        id: ci?.productId || ci?.coinProductId || ci?.id,
-                        name: ci?.coinProduct?.product?.name || ci?.product?.name || "Product",
-                        image: image,
-                        category: "Coffee",
-                        price: ci?.isCoinProduct ? 0 : Number(ci?.product?.basePrice || 0),
-                        description: ci?.product?.description || ""
-                    },
-                    quantity: ci?.quantity || 1,
-                    size: "medium",
-                    milk: "whole",
-                    addons: [],
-                    instructions: ci?.isCoinProduct ? "Redeemed with Points" : "",
-                    finalPrice: ci?.isCoinProduct ? 0 : Number(ci?.totalPrice || 0),
-                    isReward: Boolean(ci?.isCoinProduct),
-                    rewardPointsCost: ci?.coinProduct?.needPoint || 0
-                };
-            });
-            setCart(mappedItems);
+                    return {
+                        id: ci?.id, // server cartItem id
+                        item: {
+                            id: ci?.productId || ci?.coinProductId || ci?.id,
+                            name: prodName,
+                            image: image,
+                            category: (typeof ci?.product?.category === "object" ? ci?.product?.category?.name?.toLowerCase() : ci?.product?.category) || "espresso",
+                            price: basePrice,
+                            description: prodDesc,
+                        },
+                        quantity: Number(ci?.quantity || 1),
+                        size: ci?.selectedSize?.name?.toLowerCase() || "medium",
+                        milk: ci?.selectedMild?.name?.toLowerCase() || "whole",
+                        addons: Array.isArray(ci?.cartItemExtras) ? ci.cartItemExtras.map((e: any) => e.productExtra?.name || "Extra") : [],
+                        instructions: ci?.isCoinProduct ? "Redeemed with Points" : "",
+                        finalPrice: finalPrice,
+                        isReward: Boolean(ci?.isCoinProduct),
+                        rewardPointsCost: ci?.coinProduct?.needPoint || 0,
+                    };
+                });
+                setCart(mappedItems);
+            } else if (serverCartData?.data && Array.isArray(serverCartData.data.cartItems) && serverCartData.data.cartItems.length === 0) {
+                setCart([]);
+            }
         }
     }, [isAuthenticated, serverCartData]);
 
@@ -81,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [isAuthenticated]);
 
-    // Save cart to sessionStorage whenever it changes
+    // Save cart to sessionStorage whenever it changes locally
     const saveCart = (newCart: CustomCartItem[]) => {
         setCart(newCart);
         if (typeof window !== "undefined") {
@@ -96,39 +129,99 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }, 3000);
     };
 
-    const addToCart = (newItem: CustomCartItem) => {
-        const existingIndex = cart.findIndex(i => i.id === newItem.id);
-
-        if (existingIndex > -1) {
-            const updated = [...cart];
-            updated[existingIndex].quantity += newItem.quantity;
-            saveCart(updated);
+    const addToCart = async (newItem: CustomCartItem) => {
+        if (isAuthenticated) {
+            try {
+                await addToCartApi({
+                    productId: newItem.isReward ? undefined : (newItem.item.id || undefined),
+                    coinProductId: newItem.isReward ? (newItem.item.id || undefined) : undefined,
+                    isCoinProduct: Boolean(newItem.isReward),
+                    quantity: newItem.quantity || 1,
+                }).unwrap();
+                refetchCart();
+            } catch (err: any) {
+                console.error("Cart add error:", err);
+                const msg = err?.data?.message || err?.message || "Failed to add item to cart.";
+                showNotification(msg);
+                return;
+            }
         } else {
-            saveCart([...cart, newItem]);
+            const existingIndex = cart.findIndex(i => 
+                i.item.id === newItem.item.id && 
+                i.size === newItem.size && 
+                i.milk === newItem.milk
+            );
+
+            if (existingIndex > -1) {
+                const updated = [...cart];
+                updated[existingIndex].quantity += newItem.quantity;
+                saveCart(updated);
+            } else {
+                saveCart([...cart, newItem]);
+            }
         }
         showNotification(`Added ${newItem.item.name} to Cart`);
     };
 
-    const updateQuantity = (itemId: string, delta: number) => {
-        const updated = cart.map(i => {
-            if (i.id === itemId) {
-                const newQty = i.quantity + delta;
-                return newQty > 0 ? { ...i, quantity: newQty } : null;
+    const updateQuantity = async (itemId: string, delta: number) => {
+        const targetItem = cart.find(i => i.id === itemId);
+        if (!targetItem) return;
+
+        const newQty = targetItem.quantity + delta;
+
+        if (isAuthenticated) {
+            try {
+                if (newQty > 0) {
+                    await updateCartItemApi({ cartItemId: itemId, quantity: newQty }).unwrap();
+                } else {
+                    await removeCartItemApi(itemId).unwrap();
+                }
+                refetchCart();
+            } catch (err: any) {
+                console.error("Cart update error:", err);
+                const msg = err?.data?.message || err?.message || "Failed to update item quantity.";
+                showNotification(msg);
             }
-            return i;
-        }).filter(Boolean) as CustomCartItem[];
-        saveCart(updated);
+        } else {
+            const updated = cart.map(i => {
+                if (i.id === itemId) {
+                    return newQty > 0 ? { ...i, quantity: newQty } : null;
+                }
+                return i;
+            }).filter(Boolean) as CustomCartItem[];
+            saveCart(updated);
+        }
     };
 
-    const removeFromCart = (itemId: string) => {
+    const removeFromCart = async (itemId: string) => {
         const itemToRemove = cart.find(i => i.id === itemId);
         const name = itemToRemove ? itemToRemove.item.name : "Item";
-        const updated = cart.filter(i => i.id !== itemId);
-        saveCart(updated);
+
+        if (isAuthenticated) {
+            try {
+                await removeCartItemApi(itemId).unwrap();
+                refetchCart();
+            } catch (err: any) {
+                console.error("Cart remove error:", err);
+                const msg = err?.data?.message || err?.message || "Failed to remove item from cart.";
+                showNotification(msg);
+            }
+        } else {
+            const updated = cart.filter(i => i.id !== itemId);
+            saveCart(updated);
+        }
         showNotification(`Removed ${name} from Cart`);
     };
 
-    const clearCart = () => {
+    const clearCart = async () => {
+        if (isAuthenticated) {
+            try {
+                await clearCartApi({}).unwrap();
+                refetchCart();
+            } catch (err: any) {
+                console.error("Cart clear error:", err);
+            }
+        }
         saveCart([]);
     };
 
