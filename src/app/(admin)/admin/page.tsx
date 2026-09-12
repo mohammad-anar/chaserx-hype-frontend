@@ -94,7 +94,7 @@ export default function Dashboard() {
     // 1. Stats Cards
     const stats = useMemo(() => {
         const validOrders = rawOrders.filter((o: any) => o.status !== "CANCELED" && o.status !== "FAILED");
-        const totalRevenue = validOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0);
+        const totalRevenue = validOrders.reduce((sum: number, o: any) => sum + Number(o.total || o.finalAmount || 0), 0);
         const totalOrders = rawOrders.length;
         const totalUsers = rawUsers.length;
         
@@ -111,163 +111,226 @@ export default function Dashboard() {
         return {
             revenue: hasRealData 
                 ? `$${totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
-                : "$24,580.00",
-            ordersCount: hasRealData ? totalOrders.toLocaleString() : "1,234",
-            customersCount: hasRealData ? totalUsers.toLocaleString() : "856",
-            coinsCount: hasRealData ? formatCoins(totalCoins) : "47.2K",
+                : "$0.00",
+            ordersCount: hasRealData ? totalOrders.toLocaleString() : "0",
+            customersCount: hasRealData ? totalUsers.toLocaleString() : "0",
+            coinsCount: hasRealData ? formatCoins(totalCoins) : "0",
         };
     }, [rawOrders, rawUsers]);
 
     // 2. Revenue Overview Data Map (Week, Month, Year)
     const revenueDataMap = useMemo(() => {
         const validOrders = rawOrders.filter((o: any) => o.status !== "CANCELED" && o.status !== "FAILED");
+        const now = new Date();
 
-        // Week aggregation
-        const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        // 1. Week View: Monday to Sunday of the current week
+        const startOfWeek = new Date(now);
+        const dayOfWeek = startOfWeek.getDay(); // 0 is Sun, 1 is Mon...
+        const diffToMon = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+        startOfWeek.setDate(startOfWeek.getDate() + diffToMon);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+        const weekDays = [
+            { label: "Mon", dayIndex: 1 },
+            { label: "Tue", dayIndex: 2 },
+            { label: "Wed", dayIndex: 3 },
+            { label: "Thu", dayIndex: 4 },
+            { label: "Fri", dayIndex: 5 },
+            { label: "Sat", dayIndex: 6 },
+            { label: "Sun", dayIndex: 0 },
+        ];
         const weekMap: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
-        const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-        // Month aggregation (Weeks 1 to 4)
+        // 2. Month View: Weeks 1 to 4 of the current month
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth();
         const monthMap: Record<string, number> = { "Wk 1": 0, "Wk 2": 0, "Wk 3": 0, "Wk 4": 0 };
 
-        // Year aggregation (Jan to Dec)
+        // 3. Year View: Jan to Dec of the current year
         const yearMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const yearMap: Record<string, number> = {};
         yearMonths.forEach(m => { yearMap[m] = 0; });
 
-        let hasRealOrderData = false;
-
         if (validOrders.length > 0) {
             validOrders.forEach((ord: any) => {
-                const date = new Date(ord.createdAt);
-                const dayName = dayNames[date.getDay()];
-                const orderTotal = Number(ord.total || 0);
+                if (!ord.createdAt) return;
+                const ordDate = new Date(ord.createdAt);
+                if (isNaN(ordDate.getTime())) return;
 
-                if (weekMap[dayName] !== undefined) {
-                    weekMap[dayName] += orderTotal;
-                    hasRealOrderData = true;
+                const amount = Number(ord.total ?? ord.finalAmount ?? 0);
+                if (isNaN(amount) || amount <= 0) return;
+
+                // Week calculation
+                if (ordDate.getTime() >= startOfWeek.getTime() && ordDate.getTime() < endOfWeek.getTime()) {
+                    const dayIdx = ordDate.getDay();
+                    const matchingDay = weekDays.find(w => w.dayIndex === dayIdx);
+                    if (matchingDay && weekMap[matchingDay.label] !== undefined) {
+                        weekMap[matchingDay.label] += amount;
+                    }
                 }
 
-                const dom = date.getDate();
-                let wk = "Wk 1";
-                if (dom > 21) wk = "Wk 4";
-                else if (dom > 14) wk = "Wk 3";
-                else if (dom > 7) wk = "Wk 2";
-                monthMap[wk] += orderTotal;
+                // Month calculation
+                if (ordDate.getFullYear() === currentYear && ordDate.getMonth() === currentMonth) {
+                    const dom = ordDate.getDate();
+                    let wk = "Wk 1";
+                    if (dom > 21) wk = "Wk 4";
+                    else if (dom > 14) wk = "Wk 3";
+                    else if (dom > 7) wk = "Wk 2";
+                    monthMap[wk] += amount;
+                }
 
-                const monthName = yearMonths[date.getMonth()];
-                if (yearMap[monthName] !== undefined) yearMap[monthName] += orderTotal;
+                // Year calculation
+                if (ordDate.getFullYear() === currentYear) {
+                    const monthName = yearMonths[ordDate.getMonth()];
+                    if (yearMap[monthName] !== undefined) {
+                        yearMap[monthName] += amount;
+                    }
+                }
             });
         }
 
-        if (hasRealOrderData) {
-            return {
-                week: weekDays.map(name => ({ name, value: Math.round(weekMap[name]) })),
-                month: Object.entries(monthMap).map(([name, val]) => ({ name, value: Math.round(val) })),
-                year: yearMonths.map(name => ({ name, value: Math.round(yearMap[name]) })),
-            };
-        }
-
-        // Clean baseline data if no orders exist yet
         return {
-            week: [
-                { name: "Mon", value: 1200 },
-                { name: "Tue", value: 1800 },
-                { name: "Wed", value: 1600 },
-                { name: "Thu", value: 2200 },
-                { name: "Fri", value: 2900 },
-                { name: "Sat", value: 3400 },
-                { name: "Sun", value: 2800 },
-            ],
-            month: [
-                { name: "Wk 1", value: 1300 },
-                { name: "Wk 2", value: 1750 },
-                { name: "Wk 3", value: 2100 },
-                { name: "Wk 4", value: 2800 },
-            ],
-            year: [
-                { name: "Jan", value: 12000 },
-                { name: "Feb", value: 15000 },
-                { name: "Mar", value: 14000 },
-                { name: "Apr", value: 18500 },
-                { name: "May", value: 21000 },
-                { name: "Jun", value: 24580 },
-                { name: "Jul", value: 23000 },
-                { name: "Aug", value: 26000 },
-                { name: "Sep", value: 25000 },
-                { name: "Oct", value: 28000 },
-                { name: "Nov", value: 30000 },
-                { name: "Dec", value: 35000 },
-            ]
+            week: weekDays.map(d => ({ name: d.label, value: Math.round(weekMap[d.label] * 100) / 100 })),
+            month: Object.entries(monthMap).map(([name, val]) => ({ name, value: Math.round(val * 100) / 100 })),
+            year: yearMonths.map(name => ({ name, value: Math.round(yearMap[name] * 100) / 100 })),
         };
     }, [rawOrders]);
 
     const maxRevenueOverviewYAxis = useMemo(() => {
         const currentData = revenueDataMap[timeRange] || [];
         const peak = Math.max(...currentData.map((d: any) => d.value || 0), 0);
-        if (peak <= 0) return 500;
-        return Math.ceil((peak * 1.3) / 100) * 100;
+        if (peak <= 0) return 100;
+        return Math.ceil((peak * 1.25) / 50) * 50;
     }, [revenueDataMap, timeRange]);
 
     // 3. Category Split Data
     const categorySplitData = useMemo(() => {
-        if (!rawCategories.length) {
+        const validOrders = rawOrders.filter((o: any) => o.status !== "CANCELED" && o.status !== "FAILED");
+
+        // Map category ID to Category Name
+        const catNameMap: Record<string, string> = {};
+        rawCategories.forEach((c: any) => {
+            if (c.id && c.name) catNameMap[c.id] = c.name;
+        });
+
+        // Initialize category tally
+        const catCountMap: Record<string, number> = {};
+        rawCategories.forEach((c: any) => {
+            if (c.name) catCountMap[c.name] = 0;
+        });
+
+        let totalItemsSold = 0;
+
+        // 1. Tally from live customer order items
+        validOrders.forEach((ord: any) => {
+            const items = ord.orderItems || ord.items || [];
+            items.forEach((item: any) => {
+                const catName =
+                    item.product?.category?.name ||
+                    (item.product?.categoryId && catNameMap[item.product.categoryId]) ||
+                    item.coinProduct?.product?.category?.name ||
+                    item.category?.name ||
+                    "Other";
+
+                const qty = Number(item.quantity || 1);
+                catCountMap[catName] = (catCountMap[catName] || 0) + qty;
+                totalItemsSold += qty;
+            });
+        });
+
+        // 2. Fallback to product catalog breakdown if no orders placed yet
+        if (totalItemsSold === 0 && rawProducts.length > 0) {
+            rawProducts.forEach((p: any) => {
+                const catName = p.category?.name || (p.categoryId && catNameMap[p.categoryId]) || "Other";
+                catCountMap[catName] = (catCountMap[catName] || 0) + 1;
+                totalItemsSold += 1;
+            });
+        }
+
+        // 3. Fallback to categories list if no products
+        if (totalItemsSold === 0 && rawCategories.length > 0) {
+            rawCategories.forEach((c: any) => {
+                catCountMap[c.name] = 1;
+                totalItemsSold += 1;
+            });
+        }
+
+        // If categories still empty or initial loading
+        if (totalItemsSold === 0) {
             return [
-                { name: "Hot Drinks", value: 45, color: "#5C2E16" },
-                { name: "Iced", value: 28, color: "#8E512F" },
-                { name: "Blended", value: 15, color: "#C07C4A" },
-                { name: "Food", value: 12, color: "#D9975D" },
+                { name: "Coffee", value: 40, count: 0, color: defaultCategoryColors[0] },
+                { name: "Specialty Drinks", value: 30, count: 0, color: defaultCategoryColors[1] },
+                { name: "Pastries & Food", value: 20, count: 0, color: defaultCategoryColors[2] },
+                { name: "Merchandise", value: 10, count: 0, color: defaultCategoryColors[3] },
             ];
         }
 
-        const catCountMap: Record<string, number> = {};
-        rawCategories.forEach((c: any) => { catCountMap[c.name] = 0; });
+        // Filter and sort top categories
+        const entries = Object.entries(catCountMap)
+            .filter(([_, count]) => count > 0)
+            .sort((a, b) => b[1] - a[1]);
 
-        rawProducts.forEach((p: any) => {
-            const catName = p.category?.name || "Other";
-            const orderCount = p._count?.orderItems || 1;
-            catCountMap[catName] = (catCountMap[catName] || 0) + orderCount;
-        });
+        if (entries.length === 0) {
+            return [
+                { name: "Coffee", value: 100, count: 0, color: defaultCategoryColors[0] }
+            ];
+        }
 
-        const totalProductOrders = Object.values(catCountMap).reduce((a, b) => a + b, 0) || 1;
+        const topCategories = entries.slice(0, 5);
+        const topSum = topCategories.reduce((acc, curr) => acc + curr[1], 0) || 1;
 
-        return Object.entries(catCountMap).slice(0, 5).map(([name, count], index) => ({
+        return topCategories.map(([name, count], index) => ({
             name,
-            value: Math.round((count / totalProductOrders) * 100),
+            count,
+            value: Math.max(1, Math.round((count / topSum) * 100)),
             color: defaultCategoryColors[index % defaultCategoryColors.length],
         }));
-    }, [rawCategories, rawProducts]);
+    }, [rawOrders, rawCategories, rawProducts]);
 
-    // 4. Daily Orders Bar Chart Data
+    const totalCategoryItemsCount = useMemo(() => {
+        return categorySplitData.reduce((sum, item: any) => sum + (item.count || 0), 0);
+    }, [categorySplitData]);
+
+    // 4. Daily Orders Bar Chart Data (Current Week)
     const dailyOrdersData = useMemo(() => {
         const daysMap: Record<string, number> = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
         const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-        if (rawOrders.length > 0) {
-            rawOrders.forEach((ord: any) => {
-                const dayName = dayNames[new Date(ord.createdAt).getDay()];
-                if (daysMap[dayName] !== undefined) {
-                    daysMap[dayName] += 1;
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        const dayOfWeek = startOfWeek.getDay();
+        const diffToMon = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+        startOfWeek.setDate(startOfWeek.getDate() + diffToMon);
+        startOfWeek.setHours(0, 0, 0, 0);
+
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+        const validOrders = rawOrders.filter((o: any) => o.status !== "CANCELED" && o.status !== "FAILED");
+
+        if (validOrders.length > 0) {
+            validOrders.forEach((ord: any) => {
+                if (!ord.createdAt) return;
+                const ordDate = new Date(ord.createdAt);
+                if (isNaN(ordDate.getTime())) return;
+
+                if (ordDate.getTime() >= startOfWeek.getTime() && ordDate.getTime() < endOfWeek.getTime()) {
+                    const dayName = dayNames[ordDate.getDay()];
+                    if (daysMap[dayName] !== undefined) {
+                        daysMap[dayName] += 1;
+                    }
                 }
             });
-
-            const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-            return days.map(name => ({
-                name,
-                value: daysMap[name],
-            }));
         }
 
-        // Clean baseline data if no orders exist yet
-        return [
-            { name: "Mon", value: 48 },
-            { name: "Tue", value: 63 },
-            { name: "Wed", value: 70 },
-            { name: "Thu", value: 58 },
-            { name: "Fri", value: 89 },
-            { name: "Sat", value: 104 },
-            { name: "Sun", value: 80 },
-        ];
+        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        return days.map(name => ({
+            name,
+            value: daysMap[name],
+        }));
     }, [rawOrders]);
 
     const maxDailyOrdersYAxis = useMemo(() => {
@@ -579,14 +642,27 @@ export default function Dashboard() {
                                     ))}
                                 </Pie>
                                 <ChartTooltip 
-                                    formatter={(value: any) => [`${value}%`, "Share"]}
+                                    contentStyle={{
+                                        backgroundColor: isDarkMode ? "#1E0F0B" : "#ffffff",
+                                        borderColor: "#EADDCB",
+                                        borderRadius: "12px",
+                                        color: isDarkMode ? "#F5EFEB" : "#2C1A14"
+                                    }}
+                                    formatter={(value: any, name: any, item: any) => [
+                                        `${value}% ${item?.payload?.count ? `(${item.payload.count} sold)` : ""}`,
+                                        "Share"
+                                    ]}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                         {/* Center Total label */}
-                        <div className="absolute text-center">
-                            <span className="text-2xl font-extrabold font-serif">100%</span>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Total Share</p>
+                        <div className="absolute text-center pointer-events-none">
+                            <span className="text-2xl font-extrabold font-serif">
+                                {totalCategoryItemsCount > 0 ? totalCategoryItemsCount : "100%"}
+                            </span>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                                {totalCategoryItemsCount > 0 ? "Items Sold" : "Total Share"}
+                            </p>
                         </div>
                     </div>
 
