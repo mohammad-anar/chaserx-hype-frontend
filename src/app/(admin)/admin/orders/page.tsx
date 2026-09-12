@@ -965,24 +965,24 @@ export default function OrderManagement() {
                         </div>
 
                         {/* Modal Body */}
-                        <div className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+                        <div className="p-4 sm:p-6 space-y-5 max-h-[85vh] overflow-y-auto overflow-x-hidden">
                             {/* Delivery/Pickup Banner with Full Address Details */}
                             <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-500/20 flex flex-col gap-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
                                         {selectedOrder.flags.isDelivery ? <MapPin className="w-5 h-5" /> : <ShoppingBag className="w-5 h-5" />}
                                     </div>
-                                    <div>
+                                    <div className="min-w-0 flex-1">
                                         <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-400">
                                             {selectedOrder.flags.isDelivery ? "Shipping / Delivery Address" : "Store Pickup"}
                                         </h4>
-                                        <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400/90 mt-0.5">
+                                        <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400/90 mt-0.5 break-words">
                                             {selectedOrder.flags.address || "123 Coffee Bean St, New York, NY, United States"}
                                         </p>
                                     </div>
                                 </div>
                                 {selectedOrder.shippingDetails && (
-                                    <div className="mt-2 pt-2 border-t border-emerald-500/10 grid grid-cols-2 gap-2 text-[11px] text-emerald-900 dark:text-emerald-300">
+                                    <div className="mt-2 pt-2 border-t border-emerald-500/10 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-emerald-900 dark:text-emerald-300">
                                         <div><span className="font-semibold">Recipient:</span> {selectedOrder.shippingDetails.fullName}</div>
                                         <div><span className="font-semibold">Phone:</span> {selectedOrder.shippingDetails.phone}</div>
                                         <div><span className="font-semibold">City/State:</span> {selectedOrder.shippingDetails.city}{selectedOrder.shippingDetails.state ? `, ${selectedOrder.shippingDetails.state}` : ''}</div>
@@ -1006,12 +1006,12 @@ export default function OrderManagement() {
                                         </div>
 
                                         {/* Item Info */}
-                                        <div className="flex-1 flex flex-col justify-between">
+                                        <div className="flex-1 flex flex-col justify-between min-w-0">
                                             <div className="flex justify-between items-start gap-2">
-                                                <h4 className="font-serif font-bold text-sm text-[#2C1A14] dark:text-white leading-tight">
+                                                <h4 className="font-serif font-bold text-sm text-[#2C1A14] dark:text-white leading-tight truncate">
                                                     {item.name} <span className="text-[#8B4513] dark:text-[#C07C4A]">x {item.qty}</span>
                                                 </h4>
-                                                <div className="text-right">
+                                                <div className="text-right shrink-0">
                                                     {item.isCoinProduct ? (
                                                         <span className="font-extrabold text-[#8B4513] dark:text-[#C07C4A] text-sm flex items-center gap-1 justify-end">
                                                             🪙 {item.coinCost ? item.coinCost * item.qty : "Coins"}
@@ -1116,7 +1116,7 @@ export default function OrderManagement() {
                                 </div>
 
                                 {/* Assigned Barista Section */}
-                                <div className="p-4 rounded-2xl bg-[#FAF6F0]/80 dark:bg-black/20 border border-border/60 space-y-3">
+                                <div className="p-4 rounded-2xl bg-[#FAF6F0]/80 dark:bg-black/20 border border-border/60 space-y-3.5">
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                                             <Coffee className="w-4 h-4 text-primary" /> Assigned Barista
@@ -1128,31 +1128,40 @@ export default function OrderManagement() {
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                        {selectedOrder.assignedBarista ? (
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-9 h-9 rounded-full bg-[#C07C4A]/20 flex items-center justify-center text-sm font-extrabold text-[#8B4513] dark:text-[#C07C4A] uppercase border border-[#C07C4A]/30">
-                                                    {selectedOrder.assignedBarista.name.charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <h5 className="font-bold text-sm text-foreground leading-tight">
-                                                        {selectedOrder.assignedBarista.name}
-                                                    </h5>
-                                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                                        {selectedOrder.assignedBarista.email || "Barista Staff"}
-                                                        {selectedOrder.assignedBarista.station ? ` · Station: ${selectedOrder.assignedBarista.station}` : ""}
-                                                    </p>
-                                                </div>
+                                    {/* Barista Details Card */}
+                                    {selectedOrder.assignedBarista ? (
+                                        <div className="flex items-center gap-3 p-3 bg-white/70 dark:bg-zinc-900/70 rounded-xl border border-border/60">
+                                            <div className="w-10 h-10 rounded-full bg-[#C07C4A]/20 flex items-center justify-center text-sm font-extrabold text-[#8B4513] dark:text-[#C07C4A] uppercase border border-[#C07C4A]/30 shrink-0">
+                                                {selectedOrder.assignedBarista.name.charAt(0)}
                                             </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2 text-xs text-muted-foreground italic">
-                                                <UserPlus className="w-4 h-4 text-muted-foreground" />
-                                                <span>No barista assigned yet.</span>
+                                            <div className="min-w-0 flex-1">
+                                                <h5 className="font-bold text-sm text-foreground leading-tight truncate">
+                                                    {selectedOrder.assignedBarista.name}
+                                                </h5>
+                                                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                                    {selectedOrder.assignedBarista.email || "Barista Staff"}
+                                                    {selectedOrder.assignedBarista.station ? ` · Station: ${selectedOrder.assignedBarista.station}` : ""}
+                                                </p>
                                             </div>
-                                        )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground italic p-3 bg-white/50 dark:bg-zinc-900/40 rounded-xl border border-dashed border-border/60">
+                                            <UserPlus className="w-4 h-4 text-muted-foreground shrink-0" />
+                                            <span>No barista currently assigned to this order.</span>
+                                        </div>
+                                    )}
 
-                                        {/* Change / Assign Barista Dropdown inside modal */}
-                                        <div className="flex items-center gap-2">
+                                    {/* Assign / Change Barista Select Dropdown - Positioned cleanly UNDER the barista */}
+                                    <div className="space-y-1.5 pt-1">
+                                        <label className="text-[11px] font-bold text-muted-foreground flex items-center justify-between">
+                                            <span>{selectedOrder.assignedBarista ? "Change Assigned Barista:" : "Assign To Barista:"}</span>
+                                            {assigningOrderId === selectedOrder.rawId && (
+                                                <span className="inline-flex items-center gap-1 text-[10px] text-primary font-medium">
+                                                    <Loader2 className="w-3 h-3 animate-spin" /> Updating...
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="relative w-full">
                                             <select
                                                 disabled={assigningOrderId === selectedOrder.rawId}
                                                 value={selectedOrder.assignedBarista?.id || ""}
@@ -1179,12 +1188,12 @@ export default function OrderManagement() {
                                                         });
                                                     }
                                                 }}
-                                                className="px-3 py-1.5 rounded-xl border border-border bg-white dark:bg-card text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                                                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-white dark:bg-zinc-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary cursor-pointer text-foreground shadow-sm truncate"
                                             >
-                                                <option value="">{selectedOrder.assignedBarista ? "Unassign Barista" : "Select Barista to Assign..."}</option>
+                                                <option value="">{selectedOrder.assignedBarista ? "Unassign Barista (Remove)" : "Select Barista to Assign..."}</option>
                                                 {baristasResponse?.data?.map((b) => (
                                                     <option key={b.id} value={b.id}>
-                                                        {b.name} ({b.station || "General"} · {b.activeOrderCount} orders)
+                                                        {b.name} ({b.station || "General"} · {b.activeOrderCount} {b.activeOrderCount === 1 ? "order" : "orders"})
                                                     </option>
                                                 ))}
                                             </select>
@@ -1212,11 +1221,11 @@ export default function OrderManagement() {
             {/* UPDATE STATUS MODAL */}
             {editModalOpen && selectedOrder && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border/80 relative animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border/80 relative animate-in fade-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
                         {/* Header */}
-                        <div className="p-6 pb-4 border-b border-border/30 flex justify-between items-start">
+                        <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-border/30 flex justify-between items-start shrink-0">
                             <div>
-                                <h2 className="font-serif text-xl font-bold text-[#2C1A14] dark:text-white">Update Order Status</h2>
+                                <h2 className="font-serif text-lg sm:text-xl font-bold text-[#2C1A14] dark:text-white">Update Order Status</h2>
                                 <p className="text-xs text-muted-foreground mt-0.5">{selectedOrder.id}</p>
                             </div>
                             <button
@@ -1228,15 +1237,15 @@ export default function OrderManagement() {
                         </div>
 
                         {/* Modal Body */}
-                        <form onSubmit={handleSaveStatus} className="p-6 space-y-5">
+                        <form onSubmit={handleSaveStatus} className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto overflow-x-hidden">
                             <div className="space-y-1">
                                 <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Customer</label>
-                                <p className="text-sm font-semibold">{selectedOrder.customer}</p>
+                                <p className="text-sm font-semibold truncate">{selectedOrder.customer}</p>
                             </div>
 
                             <div className="space-y-1">
                                 <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">Items</label>
-                                <p className="text-sm font-semibold">{selectedOrder.itemsSummary}</p>
+                                <p className="text-sm font-semibold text-muted-foreground leading-snug">{selectedOrder.itemsSummary}</p>
                             </div>
 
                             <div className="space-y-2">
@@ -1244,7 +1253,7 @@ export default function OrderManagement() {
                                 <select
                                     value={editStatus}
                                     onChange={(e) => setEditStatus(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold cursor-pointer"
                                 >
                                     <option value="Pending">Pending</option>
                                     <option value="Confirmed">Confirmed</option>
