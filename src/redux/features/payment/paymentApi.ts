@@ -2,6 +2,14 @@ import { baseApi } from "../../api/baseApi";
 
 export const paymentApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
+        confirmPayment: builder.mutation({
+            query: (data: { sessionId: string }) => ({
+                url: "/payment/confirm",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: ["Payment", "Order", "Cart", "User"],
+        }),
         getMyRewardPayments: builder.query({
             query: (params) => ({
                 url: "/payment/my-reward-payments",
@@ -22,6 +30,7 @@ export const paymentApi = baseApi.injectEndpoints({
 });
 
 export const {
+    useConfirmPaymentMutation,
     useGetMyRewardPaymentsQuery,
     useGetMyPaymentsQuery,
 } = paymentApi;

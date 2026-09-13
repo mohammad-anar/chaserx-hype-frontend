@@ -1,14 +1,15 @@
 "use client";
 
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, ArrowRight, ShoppingBag, Home, FileText, Heart } from "lucide-react";
+import { CheckCircle2, ArrowRight, ShoppingBag, Home, FileText, Heart, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import ScrollReveal from "@/components/ScrollReveal";
 import TipModal from "@/components/TipModal";
+import { useConfirmPaymentMutation } from "@/redux/features/payment/paymentApi";
 
 function PaymentSuccessContent() {
     const searchParams = useSearchParams();
@@ -18,6 +19,17 @@ function PaymentSuccessContent() {
     const transactionId = searchParams.get("transaction_id");
 
     const [isTipModalOpen, setIsTipModalOpen] = useState(false);
+    const [confirmPayment, { isLoading: isConfirming }] = useConfirmPaymentMutation();
+
+    useEffect(() => {
+        if (sessionId) {
+            confirmPayment({ sessionId })
+                .unwrap()
+                .catch((err) => {
+                    console.log("Payment confirmation note:", err?.data?.message || err?.message);
+                });
+        }
+    }, [sessionId, confirmPayment]);
 
     const hasSession = Boolean(sessionId);
 
