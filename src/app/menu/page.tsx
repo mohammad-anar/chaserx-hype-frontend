@@ -7,7 +7,6 @@ import { ArrowRight } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useGetCategoriesQuery } from "@/redux/features/category/categoryApi";
 import { useGetProductsQuery } from "@/redux/features/product/productApi";
-import { useAddToCartMutation } from "@/redux/features/cart/cartApi";
 import { useAppSelector } from "@/redux/hooks";
 import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 import Navbar from "@/components/Navbar";
@@ -24,7 +23,6 @@ export default function CustomerMenu() {
 
     const { cart, addToCart } = useCart();
     const { data: categoriesRes } = useGetCategoriesQuery(undefined);
-    const [addToCartApi] = useAddToCartMutation();
 
     const queryParams = selectedCategoryId !== "all" ? { categoryId: selectedCategoryId } : undefined;
     const { data: productsRes, isLoading: isProductsLoading } = useGetProductsQuery(queryParams);
@@ -59,18 +57,6 @@ export default function CustomerMenu() {
 
     const handleDirectAddToCart = async (item: any, e?: React.MouseEvent) => {
         if (e) e?.stopPropagation();
-
-        if (isAuthenticated && item?.id) {
-            try {
-                await addToCartApi({
-                    productId: item?.id,
-                    quantity: 1,
-                    isCoinProduct: false,
-                }).unwrap();
-            } catch (err) {
-                console.log("Cart API note:", err);
-            }
-        }
 
         const priceVal = parsePrice(item?.basePrice ?? item?.price);
         const itemImg = getProductImg(item);

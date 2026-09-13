@@ -18,7 +18,6 @@ import {
   Compass,
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import { useAddToCartMutation } from "@/redux/features/cart/cartApi";
 import { useGetMoodRecommendationMutation } from "@/redux/features/ai/aiApi";
 import { useAppSelector } from "@/redux/hooks";
 import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
@@ -80,7 +79,6 @@ export default function MoodRecommendationSection() {
   const router = useRouter();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const { addToCart, showNotification } = useCart();
-  const [addToCartApi] = useAddToCartMutation();
 
   const [selectedMood, setSelectedMood] = useState<MoodType>("relaxed");
   const [inputText, setInputText] = useState("");
@@ -158,19 +156,6 @@ export default function MoodRecommendationSection() {
     setTimeout(() => {
       setAddedItemIds((prev) => ({ ...prev, [productId]: false }));
     }, 2000);
-
-    // Sync with backend cart if authenticated
-    if (isAuthenticated) {
-      try {
-        await addToCartApi({
-          productId,
-          quantity: 1,
-          isCoinProduct: false,
-        }).unwrap();
-      } catch (err) {
-        console.log("Cart API note:", err);
-      }
-    }
 
     const priceVal = parsePrice(item?.basePrice ?? item?.price);
     const itemImg = getProductImg(item);

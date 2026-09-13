@@ -28,7 +28,6 @@ import { MenuItem, CustomCartItem } from "@/types/menu";
 import { menuItems } from "@/constants/menu";
 import { useCart } from "@/hooks/useCart";
 import { useGetProductsQuery } from "@/redux/features/product/productApi";
-import { useAddToCartMutation } from "@/redux/features/cart/cartApi";
 import { 
     useGetMyWalletQuery, 
     useClaimDailyDropMutation, 
@@ -61,7 +60,6 @@ export default function WebsiteHome() {
 
     const { data: productsRes } = useGetProductsQuery(undefined);
     const { data: myWalletData, refetch: refetchWallet } = useGetMyWalletQuery(undefined, { skip: !isAuthenticated });
-    const [addToCartApi] = useAddToCartMutation();
     const [claimDailyDropApi, { isLoading: isClaimingDaily }] = useClaimDailyDropMutation();
     const [claimFreePourApi, { isLoading: isClaimingFreePour }] = useClaimFreePourMutation();
 
@@ -155,18 +153,6 @@ export default function WebsiteHome() {
 
     const handleDirectAddToCart = async (item: any, e?: React.MouseEvent) => {
         if (e) e?.stopPropagation();
-
-        if (isAuthenticated && item?.id) {
-            try {
-                await addToCartApi({
-                    productId: item?.id,
-                    quantity: 1,
-                    isCoinProduct: false,
-                }).unwrap();
-            } catch (err) {
-                console.log("Cart API note:", err);
-            }
-        }
 
         const priceVal = parsePrice(item?.basePrice ?? item?.price);
         const itemImg = getProductImg(item);

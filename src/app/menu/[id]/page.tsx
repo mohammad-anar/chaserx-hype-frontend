@@ -19,7 +19,6 @@ import { MenuItem, CustomCartItem } from "@/types/menu";
 import { menuItems } from "@/constants/menu";
 import { useCart } from "@/hooks/useCart";
 import { useGetProductByIdQuery, useGetProductsQuery } from "@/redux/features/product/productApi";
-import { useAddToCartMutation } from "@/redux/features/cart/cartApi";
 import { useAppSelector } from "@/redux/hooks";
 import { selectIsAuthenticated } from "@/redux/features/auth/authSlice";
 import Navbar from "@/components/Navbar";
@@ -63,7 +62,6 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
     const { cart, addToCart, updateQuantity } = useCart();
     const { data: productDetailRes } = useGetProductByIdQuery(id, { skip: !id });
     const { data: allProductsRes } = useGetProductsQuery(undefined);
-    const [addToCartApi] = useAddToCartMutation();
 
     const parsePrice = (val: any): number => {
         const num = parseFloat(val);
@@ -136,18 +134,6 @@ export default function MenuDetailPage({ params }: { params: Promise<{ id: strin
     // Add Customized Item to Cart
     const handleAddCustomizedToCart = async () => {
         const itemPrice = calculateCustomizerPrice();
-
-        if (isAuthenticated) {
-            try {
-                await addToCartApi({
-                    productId: selectedItem.id,
-                    quantity: 1,
-                    isCoinProduct: false,
-                }).unwrap();
-            } catch (err) {
-                console.log("Cart API error:", err);
-            }
-        }
 
         const existing = cart.find(i =>
             i.item.id === selectedItem.id &&
