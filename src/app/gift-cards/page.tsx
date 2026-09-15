@@ -25,6 +25,12 @@ import {
 } from "lucide-react";
 import { MenuItem, CustomCartItem } from "@/types/menu";
 import { useCart } from "@/hooks/useCart";
+import {
+    useGetMyGiftCardsQuery,
+    useCreateGiftCardCheckoutMutation,
+    useRedeemGiftCardCodeMutation,
+    useUpdateGiftCardMutation,
+} from "@/redux/features/giftCard/giftCardApi";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
@@ -62,6 +68,12 @@ export default function GiftCardsPage() {
     // Page view state: "purchase" or "balance"
     const [viewMode, setViewMode] = useState<"purchase" | "balance">("purchase");
 
+    // RTK Query Hooks
+    const { data: myGiftCardsResponse, isFetching, refetch: refetchCards } = useGetMyGiftCardsQuery(undefined, { skip: !isAuthenticated });
+    const [createGiftCardCheckout, { isLoading: isPurchasing }] = useCreateGiftCardCheckoutMutation();
+    const [redeemCodeApi, { isLoading: isRedeeming }] = useRedeemGiftCardCodeMutation();
+    const [updateCardApi, { isLoading: isUpdatingCard }] = useUpdateGiftCardMutation();
+
     // Purchase Form State
     const [selectedDesign, setSelectedDesign] = useState(0);
     const [amountPreset, setAmountPreset] = useState<number | "custom">(25);
@@ -70,10 +82,14 @@ export default function GiftCardsPage() {
     const [recipientEmail, setRecipientEmail] = useState("");
     const [personalMessage, setPersonalMessage] = useState("");
 
-    // Balance & Card Details State (Mocked)
-    const [cardBalance, setCardBalance] = useState(42.50);
-    const [cardNickname, setCardNickname] = useState("Morning Ritual Card");
-    const [isCardActive, setIsCardActive] = useState(true);
+    // Balance & Card Details State (Live API + fallbacks)
+    const apiCardData = myGiftCardsResponse?.data;
+    const cardBalance = apiCardData?.cardBalance ?? 0;
+    const cardNickname = apiCardData?.cardNickname || "Morning Ritual Card";
+    const isCardActive = apiCardData?.isCardActive ?? true;
+    const transactions = apiCardData?.transactions || [];
+    const primaryCardId = apiCardData?.cards?.[0]?.id || "primary";
+
     const [isRenaming, setIsRenaming] = useState(false);
     const [tempNickname, setTempNickname] = useState("");
 
@@ -88,65 +104,112 @@ export default function GiftCardsPage() {
         }, 0);
     }, []);
 
-    // Add Gift Card to Cart
-    const handleAddGiftCardToCart = (e: React.FormEvent) => {
+    // Add Gift Card to Cart or Direct Checkout
+    const handleAddGiftCardToCart = async (e: React.FormEvent) => {
         e.preventDefault();
 
         // Calculate card value
         const cardValue = amountPreset === "custom" ? parseFloat(customAmountVal) : amountPreset;
         
         if (!cardValue || isNaN(cardValue) || cardValue <= 0) {
+            showNotification("Please enter a valid gift card amount.");
             return;
         }
 
         if (!recipientName.trim() || !recipientEmail.trim()) {
+            showNotification("Please provide both recipient name and email.");
             return;
         }
 
-        const newGiftCardItem: CustomCartItem = {
-            id: `giftcard-${Date.now()}`,
-            item: {
-                id: `gc-${selectedDesign}-${Date.now()}`,
-                name: `Bean Fien Gift Card ($${cardValue.toFixed(2)})`,
-                price: cardValue,
-                description: `Sent to ${recipientName} (${recipientEmail}). Msg: "${personalMessage || "Enjoy some fresh brew!"}"`,
-                category: "seasonal",
-                image: cardDesigns[selectedDesign].url
-            },
-            quantity: 1,
-            size: "medium",
-            milk: "whole",
-            addons: [],
-            instructions: `Recipient: ${recipientName} (${recipientEmail}). Msg: ${personalMessage}`,
-            finalPrice: cardValue,
-            isGiftCard: true
-        };
+        try {
+            const res = await createGiftCardCheckout({
+                amount: cardValue,
+                recipientName: recipientName.trim(),
+                recipientEmail: recipientEmail.trim(),
+                personalMessage: personalMessage.trim() || undefined,
+                designIndex: selectedDesign,
+            }).unwrap();
 
-        addToCart(newGiftCardItem);
+            const paymentUrl = res?.data?.paymentUrl;
+            if (paymentUrl) {
+                window.location.href = paymentUrl;
+                return;
+            }
 
-        // Reset form
-        setRecipientName("");
-        setRecipientEmail("");
-        setPersonalMessage("");
-        setCustomAmountVal("");
-        setAmountPreset(25);
+            showNotification(`Digital Gift Card of $${cardValue.toFixed(2)} sent to ${recipientEmail}!`);
+
+            // Reset form
+            setRecipientName("");
+            setRecipientEmail("");
+            setPersonalMessage("");
+            setCustomAmountVal("");
+            setAmountPreset(25);
+            setViewMode("balance");
+        } catch (err: any) {
+            console.error("Gift card checkout error:", err);
+            const errMsg = err?.data?.message || err?.message || "Failed to initialize gift card purchase.";
+            showNotification(errMsg);
+        }
     };
 
     // Handle Code Redemption
-    const handleRedeemCode = (e: React.FormEvent) => {
+    const handleRedeemCode = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!redeemCode.trim()) return;
-        setCardBalance(prev => prev + 25.0);
-        setViewMode("balance");
-        setRedeemCode("");
+        if (!redeemCode.trim()) {
+            showNotification("Please enter a gift card code.");
+            return;
+        }
+
+        if (!isAuthenticated) {
+            showNotification("Please sign in to redeem gift cards to your profile.");
+            router.push("/auth/login");
+            return;
+        }
+
+        try {
+            const res = await redeemCodeApi({ code: redeemCode.trim() }).unwrap();
+            showNotification(res?.message || "Gift card redeemed successfully!");
+            setViewMode("balance");
+            setRedeemCode("");
+            refetchCards();
+        } catch (err: any) {
+            console.error("Redeem error:", err);
+            const errMsg = err?.data?.message || err?.message || "Failed to redeem code. Please verify the code and try again.";
+            showNotification(errMsg);
+        }
     };
 
     // Save Nickname
-    const handleSaveNickname = () => {
-        if (tempNickname.trim()) {
-            setCardNickname(tempNickname.trim());
+    const handleSaveNickname = async () => {
+        if (!tempNickname.trim()) {
+            setIsRenaming(false);
+            return;
         }
-        setIsRenaming(false);
+
+        try {
+            await updateCardApi({
+                id: primaryCardId,
+                nickname: tempNickname.trim(),
+            }).unwrap();
+            showNotification("Card nickname updated successfully!");
+        } catch (err: any) {
+            showNotification(err?.data?.message || "Failed to update card nickname.");
+        } finally {
+            setIsRenaming(false);
+        }
+    };
+
+    // Toggle Active/Inactive Card Status
+    const handleToggleCardActive = async () => {
+        try {
+            await updateCardApi({
+                id: primaryCardId,
+                isActive: !isCardActive,
+            }).unwrap();
+            showNotification(!isCardActive ? "Card reactivated successfully." : "Card deactivated temporarily.");
+        } catch (err: any) {
+            showNotification(err?.data?.message || "Failed to update card status.");
+        }
     };
 
     const currentCardValue = amountPreset === "custom" ? parseFloat(customAmountVal) || 0 : amountPreset;
@@ -503,53 +566,38 @@ export default function GiftCardsPage() {
                                     </div>
 
                                     <div className="space-y-4">
-                                        {/* Tx 1 */}
-                                        <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
-                                                    <Coffee className="w-5 h-5 stroke-[1.5]" />
-                                                </div>
-                                                <div className="text-left space-y-1">
-                                                    <h4 className="text-sm font-bold text-[#2C1A14]">Mobile Order</h4>
-                                                    <p className="text-xs text-[#6B5E59]">Downtown Soho • Oct 24, 2024</p>
-                                                </div>
+                                        {transactions && transactions.length > 0 ? (
+                                            transactions.map((tx: any) => {
+                                                const isCredit = tx.type === "CREDIT" || tx.type === "RELOAD" || tx.type === "REFUND";
+                                                const formattedDate = new Date(tx.createdAt).toLocaleDateString("en-US", {
+                                                    month: "short",
+                                                    day: "numeric",
+                                                    year: "numeric"
+                                                });
+                                                return (
+                                                    <div key={tx.id} className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
+                                                                {isCredit ? <CreditCard className="w-5 h-5 stroke-[1.5]" /> : <Coffee className="w-5 h-5 stroke-[1.5]" />}
+                                                            </div>
+                                                            <div className="text-left space-y-1">
+                                                                <h4 className={`text-sm font-bold ${isCredit ? "text-[#C07C4A]" : "text-[#2C1A14]"}`}>
+                                                                    {tx.description || (isCredit ? "Funds Added / Reload" : "Purchase Deduction")}
+                                                                </h4>
+                                                                <p className="text-xs text-[#6B5E59]">{formattedDate}</p>
+                                                            </div>
+                                                        </div>
+                                                        <span className={`font-bold text-xs ${isCredit ? "text-[#C07C4A]" : "text-[#2C1A14]"}`}>
+                                                            {isCredit ? `+ $${Number(tx.amount).toFixed(2)}` : `- $${Number(tx.amount).toFixed(2)}`}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })
+                                        ) : (
+                                            <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-8 text-center text-[#6B5E59] text-xs">
+                                                No transactions recorded yet on your gift card balance.
                                             </div>
-                                            <span className="font-bold text-[#2C1A14] text-xs">
-                                                - $6.50
-                                            </span>
-                                        </div>
-
-                                        {/* Tx 2 */}
-                                        <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
-                                                    <CreditCard className="w-5 h-5 stroke-[1.5]" />
-                                                </div>
-                                                <div className="text-left space-y-1">
-                                                    <h4 className="text-sm font-bold text-[#C07C4A]">Reload</h4>
-                                                    <p className="text-xs text-[#6B5E59]">Auto-Reload • Oct 20, 2024</p>
-                                                </div>
-                                            </div>
-                                            <span className="font-bold text-[#C07C4A] text-xs">
-                                                + $25.00
-                                            </span>
-                                        </div>
-
-                                        {/* Tx 3 */}
-                                        <div className="bg-[#FAF6F0] rounded-lg border border-[#2C1A14]/10 p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-full bg-[#FAF0ED] border border-[#F6DED6] flex items-center justify-center text-[#C07C4A]">
-                                                    <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
-                                                </div>
-                                                <div className="text-left space-y-1">
-                                                    <h4 className="text-sm font-bold text-[#2C1A14]">In-Store Purchase</h4>
-                                                    <p className="text-xs text-[#6B5E59]">Chelsea Market • Oct 15, 2024</p>
-                                                </div>
-                                            </div>
-                                            <span className="font-bold text-[#2C1A14] text-xs">
-                                                - $14.20
-                                            </span>
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
                             </ScrollReveal>
@@ -587,12 +635,21 @@ export default function GiftCardsPage() {
                                             <ArrowRight className="w-4 h-4 text-[#C07C4A]" />
                                         </button>
 
-                                        {/* Deactivate Card */}
+                                        {/* Deactivate / Activate Card */}
                                         <button 
                                             type="button"
-                                            onClick={() => {
-                                                setIsCardActive(!isCardActive);
-                                                showNotification(isCardActive ? "Card deactivated temporarily." : "Card reactivated.");
+                                            onClick={async () => {
+                                                try {
+                                                    const nextStatus = isCardActive ? "INACTIVE" : "ACTIVE";
+                                                    await updateCardApi({
+                                                        id: primaryCardId,
+                                                        status: nextStatus,
+                                                    }).unwrap();
+                                                    showNotification(isCardActive ? "Card deactivated temporarily." : "Card reactivated.");
+                                                    refetchCards();
+                                                } catch (err: any) {
+                                                    showNotification(err?.data?.message || "Failed to update card status.");
+                                                }
                                             }}
                                             className="w-full flex items-center justify-between p-4 rounded-lg border border-[#2C1A14]/10 hover:bg-red-50/5 transition-colors text-left"
                                         >

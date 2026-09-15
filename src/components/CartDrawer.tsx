@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, X, Minus, Plus, Trash2, ArrowLeft, MapPin } from "lucide-react";
+import { ShoppingCart, X, Minus, Plus, Trash2, ArrowLeft, MapPin, Gift, CreditCard } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useCheckoutMutation } from "@/redux/features/order/orderApi";
 import { useGetMyAddressesQuery } from "@/redux/features/address/addressApi";
+import { useGetMyGiftCardsQuery } from "@/redux/features/giftCard/giftCardApi";
 import { useAppSelector } from "@/redux/hooks";
 import { selectIsAuthenticated, selectUser } from "@/redux/features/auth/authSlice";
 
@@ -19,6 +20,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
     const isAuthenticated = useAppSelector(selectIsAuthenticated);
     const user = useAppSelector(selectUser);
     const { data: myAddressesData } = useGetMyAddressesQuery(undefined, { skip: !isAuthenticated });
+    const { data: myGiftCardsData } = useGetMyGiftCardsQuery(undefined, { skip: !isAuthenticated });
     const [checkoutApi, { isLoading: isCheckingOut }] = useCheckoutMutation();
 
     const { 
@@ -35,6 +37,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
 
     // Step state: "cart" -> "shipping"
     const [step, setStep] = useState<"cart" | "shipping">("cart");
+    const [applyGiftCard, setApplyGiftCard] = useState(false);
 
     // Shipping Address Form state matching ShippingAddress model fields
     const [addressForm, setAddressForm] = useState({
@@ -68,6 +71,10 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
     const totalCartItems = cart.reduce((sum, item) => sum + (item?.quantity || 0), 0);
     const cartSubtotal = cart.reduce((sum, item) => sum + ((item?.finalPrice || 0) * (item?.quantity || 0)), 0);
 
+    const giftCardBalance = Number(myGiftCardsData?.data?.cardBalance ?? (user as any)?.giftCardBalance ?? 0);
+    const giftCardDeduction = applyGiftCard && giftCardBalance > 0 ? Math.min(giftCardBalance, cartSubtotal) : 0;
+    const finalPayableTotal = Math.max(0, cartSubtotal - giftCardDeduction);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setAddressForm(prev => ({ ...prev, [name]: value }));
@@ -99,7 +106,8 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
         }
 
         const checkoutPayload = {
-            payType: "CARD",
+            payType: "CARD" as any,
+            giftCardAmount: giftCardDeduction > 0 ? giftCardDeduction : undefined,
             shippingAddress: {
                 fullName: fullName.trim() || undefined,
                 street1: street1.trim(),
@@ -123,7 +131,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
             if (paymentUrl) {
                 window.location.href = paymentUrl;
             } else {
-                showNotification("Order placed successfully!");
+                showNotification("Order placed and confirmed successfully!");
                 router.push("/rewards");
             }
         } catch (err: any) {
@@ -418,20 +426,64 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                                     className="w-full bg-[#140A07] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-white/30 focus:border-[#C07C4A] outline-none transition-colors"
                                 />
                             </div>
+
+                            {/* Gift Card Balance Deduction Option */}
+                            {giftCardBalance > 0 && (
+                                <div className="mt-3 p-3.5 rounded-xl bg-white/5 border border-white/10 text-left space-y-2">
+                                    <label className="flex items-center justify-between cursor-pointer group">
+                                        <div className="flex items-center gap-2.5">
+                                            <Gift className="w-4 h-4 text-[#C07C4A]" />
+                                            <div>
+                                                <span className="text-xs font-bold text-white block leading-tight">
+                                                    Use Gift Card Balance
+                                                </span>
+                                                <span className="text-[10px] text-white/60">
+                                                    ${giftCardBalance.toFixed(2)} available
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            checked={applyGiftCard}
+                                            onChange={(e) => setApplyGiftCard(e.target.checked)}
+                                            className="w-4 h-4 rounded accent-[#C07C4A] cursor-pointer"
+                                        />
+                                    </label>
+
+                                    {applyGiftCard && (
+                                        <div className="pt-2 border-t border-white/5 flex justify-between text-[11px] text-[#C07C4A] font-semibold">
+                                            <span>Gift Card Applied:</span>
+                                            <span>- ${giftCardDeduction.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Footer Summary - Step 2 */}
                         <div className="pt-4 border-t border-white/5 space-y-3 mt-3">
-                            <div className="flex justify-between items-center text-sm font-semibold">
-                                <span className="text-white/60">Total Payment</span>
-                                <span className="text-white text-base font-bold">${cartSubtotal.toFixed(2)}</span>
+                            <div className="space-y-1 text-sm font-semibold">
+                                <div className="flex justify-between items-center text-white/60 text-xs">
+                                    <span>Subtotal</span>
+                                    <span>${cartSubtotal.toFixed(2)}</span>
+                                </div>
+                                {applyGiftCard && giftCardDeduction > 0 && (
+                                    <div className="flex justify-between items-center text-[#C07C4A] text-xs">
+                                        <span>Gift Card Credit</span>
+                                        <span>- ${giftCardDeduction.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center pt-1 border-t border-white/5">
+                                    <span className="text-white">Total Payment</span>
+                                    <span className="text-white text-base font-bold">${finalPayableTotal.toFixed(2)}</span>
+                                </div>
                             </div>
 
                             <div className="flex gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setStep("cart")}
-                                    className="px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-xs font-bold transition-colors"
+                                    className="px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/80 text-xs font-bold transition-colors cursor-pointer"
                                 >
                                     Back
                                 </button>
@@ -454,7 +506,7 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                                             <span>Processing Checkout...</span>
                                         </>
                                     ) : (
-                                        "Checkout & Buy"
+                                        finalPayableTotal <= 0 ? "Confirm & Pay with Gift Card" : "Checkout & Pay"
                                     )}
                                 </button>
                             </div>

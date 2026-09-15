@@ -18,7 +18,8 @@ import {
     ShoppingBag, 
     ShieldCheck, 
     Phone, 
-    Mail 
+    Mail,
+    QrCode 
 } from "lucide-react";
 import { 
     useGetAllUsersQuery, 
@@ -26,6 +27,7 @@ import {
     useUpdateUserStatusMutation, 
     useDeleteUserMutation 
 } from "@/redux/features/user/userApi";
+import { useLookupLoyaltyCodeQuery } from "@/redux/features/loyalty/loyaltyApi";
 
 const formatJoinedDate = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -118,6 +120,14 @@ export default function Customers() {
         { skip: !selectedUserId || !detailsModalOpen }
     );
     const selectedCustomer = userDetailResponse?.data || userDetailResponse;
+
+    // Loyalty profile lookup for the selected customer's loyalty code
+    const customerLoyaltyCode = selectedCustomer?.loyaltyCode || "";
+    const { data: loyaltyLookupData } = useLookupLoyaltyCodeQuery(
+        customerLoyaltyCode,
+        { skip: !customerLoyaltyCode || customerLoyaltyCode.length < 5 }
+    );
+    const customerLoyaltyProfile = loyaltyLookupData?.data;
 
     // Calculate customer stats dynamically
     const stats = useMemo(() => {
@@ -447,6 +457,14 @@ export default function Customers() {
                                         </h4>
                                     </div>
 
+                                    {/* Loyalty Points Balance */}
+                                    <div className="bg-[#FAF6F0]/65 dark:bg-white/5 p-4 rounded-2xl border border-border/45 flex flex-col justify-between min-h-[90px]">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Loyalty Points</span>
+                                        <h4 className="font-serif text-2xl font-bold text-amber-600 dark:text-amber-400 mt-2">
+                                            ⭐ {customerLoyaltyProfile?.pointsBalance ?? selectedCustomer?.pointsBalance ?? 0}
+                                        </h4>
+                                    </div>
+
                                     {/* Total Spent */}
                                     <div className="bg-[#FAF6F0]/65 dark:bg-white/5 p-4 rounded-2xl border border-border/45 flex flex-col justify-between min-h-[90px]">
                                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Total Spent</span>
@@ -471,6 +489,23 @@ export default function Customers() {
                                         </select>
                                     </div>
                                 </div>
+
+                                {/* Loyalty Code Display */}
+                                {customerLoyaltyCode && (
+                                    <div className="space-y-2 pt-2 border-t border-border/30">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                            <ShieldCheck className="w-3.5 h-3.5 text-primary" /> Loyalty Member Code
+                                        </h4>
+                                        <div className="p-3 bg-[#FAF6F0]/40 dark:bg-white/5 rounded-xl border border-border/40 flex items-center justify-between gap-3">
+                                            <code className="text-xs font-mono font-bold text-[#8B4513] dark:text-[#C07C4A] tracking-widest">
+                                                {customerLoyaltyCode}
+                                            </code>
+                                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-bold uppercase">
+                                                {customerLoyaltyProfile ? `${customerLoyaltyProfile.pointsBalance} pts` : "Active"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Saved Addresses Section */}
                                 {selectedCustomer.addresses && selectedCustomer.addresses.length > 0 && (

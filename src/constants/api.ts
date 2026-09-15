@@ -25,6 +25,8 @@ export const TAG_TYPES = {
     ADDRESS: "Address",
     PAYMENT: "Payment",
     WALLET: "Wallet",
+    GIFT_CARD: "GiftCard",
+    LOYALTY: "Loyalty",
     AI: "AI",
     RECOMMENDATIONS: "Recommendations",
 } as const;

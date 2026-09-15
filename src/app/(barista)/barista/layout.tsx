@@ -155,6 +155,18 @@ export default function BaristaLayout({
               </Link>
 
               <Link
+                href="/barista/scan"
+                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  pathname === "/barista/scan"
+                    ? "bg-[#C07C4A] text-white shadow-md shadow-[#C07C4A]/20"
+                    : "text-[#FAF6F0]/70 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Scan Loyalty QR</span>
+              </Link>
+
+              <Link
                 href="/barista/profile"
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   pathname === "/barista/profile"

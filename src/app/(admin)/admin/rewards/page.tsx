@@ -16,7 +16,8 @@ import {
     CreditCard, 
     Image as ImageIcon,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    DollarSign
 } from "lucide-react";
 import { 
     useGetCoinProductsQuery, 
@@ -25,16 +26,10 @@ import {
     useDeleteCoinProductMutation 
 } from "@/redux/features/coinProduct/coinProductApi";
 import { useGetProductsQuery } from "@/redux/features/product/productApi";
-
-interface GiftCardRequest {
-    id: string;
-    customer: string;
-    email: string;
-    date: string;
-    amount: number;
-    status: "Pending" | "Sent";
-    code?: string;
-}
+import {
+    useGetAllGiftCardsQuery,
+    useAdminAddFundsMutation,
+} from "@/redux/features/giftCard/giftCardApi";
 
 interface CardDesign {
     id: string;
@@ -47,11 +42,6 @@ const initialCardDesigns: CardDesign[] = [
     { id: "D-02", label: "Café Scene", image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80" },
     { id: "D-03", label: "Latte Art", image: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80" },
     { id: "D-04", label: "Morning Brew", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80" }
-];
-
-const initialRequests: GiftCardRequest[] = [
-    { id: "Q-01", customer: "Sarah Chen", email: "sarah.chen@email.com", date: "Jun 3", amount: 25.00, status: "Pending" },
-    { id: "Q-02", customer: "James Park", email: "james.park@email.com", date: "Jun 3", amount: 50.00, status: "Pending" }
 ];
 
 const getProductImg = (item: any) => {
@@ -94,10 +84,12 @@ export default function Rewards() {
     // RTK Query Hooks for CoinProducts and Products
     const { data: coinProductsResponse, isLoading: isLoadingCoinProducts, isFetching, refetch } = useGetCoinProductsQuery(undefined);
     const { data: productsResponse } = useGetProductsQuery({ limit: 100 });
+    const { data: allGiftCardsResponse, isLoading: isLoadingGiftCards, refetch: refetchGiftCards } = useGetAllGiftCardsQuery();
 
     const [createCoinProduct, { isLoading: isCreating }] = useCreateCoinProductMutation();
     const [updateCoinProduct, { isLoading: isUpdating }] = useUpdateCoinProductMutation();
     const [deleteCoinProduct] = useDeleteCoinProductMutation();
+    const [adminAddFunds, { isLoading: isAddingFunds }] = useAdminAddFundsMutation();
 
     const coinProducts = useMemo(() => {
         return coinProductsResponse?.data || [];
@@ -107,18 +99,20 @@ export default function Rewards() {
         return productsResponse?.data || [];
     }, [productsResponse]);
 
-    // Modal State
+    const allGiftCards = useMemo(() => {
+        return allGiftCardsResponse?.data || [];
+    }, [allGiftCardsResponse]);
+
+    // Modal State for Coin Products
     const [rewardModalOpen, setRewardModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [selectedCoinProductId, setSelectedCoinProductId] = useState("");
-
-    // Modal Inputs
     const [selectedProductId, setSelectedProductId] = useState("");
     const [needPoint, setNeedPoint] = useState(100);
 
     // Gift Card Settings state
     const [settingsTab, setSettingsTab] = useState<"amounts" | "designs">("amounts");
-    const [giftAmounts, setGiftAmounts] = useState<number[]>([10, 25, 50]);
+    const [giftAmounts, setGiftAmounts] = useState<number[]>([10, 25, 50, 100]);
     const [newAmountInput, setNewAmountInput] = useState("");
 
     // Designs sub-state
@@ -126,10 +120,13 @@ export default function Rewards() {
     const [newDesignLabel, setNewDesignLabel] = useState("");
     const [newDesignImage, setNewDesignImage] = useState("");
 
-    // Requests state
-    const [requests, setRequests] = useState<GiftCardRequest[]>(initialRequests);
-    const [requestTab, setRequestTab] = useState<"Pending" | "All">("Pending");
-    const [inputCodes, setInputCodes] = useState<{ [key: string]: string }>({});
+    // Gift Card Registry & Add Funds State
+    const [giftCardFilterTab, setGiftCardFilterTab] = useState<"All" | "ACTIVE" | "REDEEMED" | "INACTIVE">("All");
+    const [addFundsModalOpen, setAddFundsModalOpen] = useState(false);
+    const [selectedGiftCardForFunds, setSelectedGiftCardForFunds] = useState<any>(null);
+    const [addFundsEmail, setAddFundsEmail] = useState("");
+    const [addFundsAmount, setAddFundsAmount] = useState(25);
+    const [addFundsReason, setAddFundsReason] = useState("Staff courtesy credit");
 
     // Summary calculations from live API
     const activeRewardsCount = useMemo(() => coinProducts.length, [coinProducts]);
@@ -145,16 +142,35 @@ export default function Rewards() {
         }, 0);
     }, [coinProducts]);
 
-    const pendingRequestsCount = useMemo(() => requests.filter(r => r.status === "Pending").length, [requests]);
+    const filteredGiftCards = useMemo(() => {
+        if (giftCardFilterTab === "All") return allGiftCards;
+        return allGiftCards.filter((card: any) => card.status === giftCardFilterTab);
+    }, [allGiftCards, giftCardFilterTab]);
 
-    const filteredRequests = useMemo(() => {
-        if (requestTab === "Pending") {
-            return requests.filter(r => r.status === "Pending");
+    // Handle Admin Add Funds Submit
+    const handleSaveAddFunds = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (addFundsAmount <= 0) {
+            toast.error("Please enter a valid amount greater than $0.");
+            return;
         }
-        return requests;
-    }, [requests, requestTab]);
 
-    // Reward Catalog Handlers
+        try {
+            await adminAddFunds({
+                giftCardId: selectedGiftCardForFunds?.id || undefined,
+                email: addFundsEmail.trim() || undefined,
+                amount: Number(addFundsAmount),
+                reason: addFundsReason.trim() || undefined,
+            }).unwrap();
+
+            toast.success(`Successfully credited $${Number(addFundsAmount).toFixed(2)}!`);
+            setAddFundsModalOpen(false);
+            refetchGiftCards();
+        } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to credit funds.");
+        }
+    };
+
     const handleOpenAddReward = () => {
         setEditMode(false);
         setSelectedCoinProductId("");
@@ -250,20 +266,6 @@ export default function Rewards() {
 
     const handleRemoveDesign = (id: string) => {
         setCardDesigns(cardDesigns.filter(d => d.id !== id));
-    };
-
-    // Gift card requests actions
-    const handleSendCode = (id: string) => {
-        const code = inputCodes[id];
-        if (!code || code.trim() === "") {
-            toast.error("Please enter a valid gift card code first!");
-            return;
-        }
-
-        setRequests(prev => prev.map(req => 
-            req.id === id ? { ...req, status: "Sent", code: code.trim() } : req
-        ));
-        toast.success(`Gift card code "${code}" sent to customer!`);
     };
 
     return (
@@ -559,91 +561,143 @@ export default function Rewards() {
                 )}
             </div>
 
-            {/* Gift Card Requests Section */}
+            {/* Gift Card Orders & System Registry Section */}
             <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-4">
                 <div className="flex justify-between items-center flex-wrap gap-4">
                     <div>
                         <div className="flex items-center gap-2">
-                            <h3 className="font-serif text-lg font-bold text-[#2C1A14] dark:text-white">Gift Card Requests</h3>
-                            {pendingRequestsCount > 0 && (
-                                <span className="px-2 py-0.5 bg-red-600 text-white rounded-full text-[10px] font-bold">
-                                    {pendingRequestsCount} pending
+                            <h3 className="font-serif text-lg font-bold text-[#2C1A14] dark:text-white">Gift Cards Registry</h3>
+                            {allGiftCards.length > 0 && (
+                                <span className="px-2.5 py-0.5 bg-[#8B4513]/10 text-[#8B4513] dark:text-[#C07C4A] rounded-full text-[10px] font-bold">
+                                    {allGiftCards.length} issued
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">Customers who requested a gift card — send them the code</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Live digital gift cards issued in the system — view balances and credit funds</p>
                     </div>
 
-                    {/* Filter buttons */}
-                    <div className="flex bg-[#F3ECE3] dark:bg-[#2C1711] p-1 rounded-xl w-fit border border-border/40">
-                        {(["Pending", "All"] as const).map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setRequestTab(tab)}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${requestTab === tab ? "bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] shadow-sm font-bold" : "text-muted-foreground hover:text-[#2C1A14]"}`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => {
+                                setSelectedGiftCardForFunds(null);
+                                setAddFundsEmail("");
+                                setAddFundsAmount(25);
+                                setAddFundsReason("Staff courtesy credit");
+                                setAddFundsModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Add / Credit Funds
+                        </button>
+
+                        {/* Filter buttons */}
+                        <div className="flex bg-[#F3ECE3] dark:bg-[#2C1711] p-1 rounded-xl w-fit border border-border/40">
+                            {(["All", "ACTIVE", "REDEEMED", "INACTIVE"] as const).map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setGiftCardFilterTab(tab)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                                        giftCardFilterTab === tab 
+                                            ? "bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] shadow-sm font-bold" 
+                                            : "text-muted-foreground hover:text-[#2C1A14]"
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Requests list */}
-                <div className="space-y-4">
-                    {filteredRequests.length > 0 ? (
-                        filteredRequests.map((req) => (
-                            <div key={req.id} className="p-4 bg-[#FAF6F0]/40 dark:bg-black/10 rounded-2xl border border-border/40 space-y-3">
-                                <div className="flex justify-between items-start flex-wrap gap-3">
-                                    <div className="flex items-center gap-3">
-                                        {/* Avatar Fallback */}
-                                        <div className="w-10 h-10 rounded-full bg-[#8B4513] text-white flex items-center justify-center text-xs font-bold">
-                                            {req.customer.split(" ").map(n => n[0]).join("").toUpperCase()}
+                {/* Gift Cards list */}
+                {isLoadingGiftCards ? (
+                    <div className="py-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        <span className="text-xs font-semibold">Loading gift cards...</span>
+                    </div>
+                ) : filteredGiftCards.length > 0 ? (
+                    <div className="space-y-3">
+                        {filteredGiftCards.map((card: any) => {
+                            const recipientLabel = card.recipientName || card.recipientEmail || "Customer";
+                            const senderLabel = card.sender?.name || card.sender?.email || (card.isCustom ? "System Issued" : "Direct Purchase");
+                            const formattedDate = new Date(card.createdAt).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                            });
+
+                            return (
+                                <div key={card.id} className="p-4 bg-[#FAF6F0]/40 dark:bg-black/10 rounded-2xl border border-border/40 space-y-3 hover:border-border/80 transition-colors">
+                                    <div className="flex justify-between items-start flex-wrap gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-[#8B4513] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                                {recipientLabel.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <h4 className="font-bold text-sm text-[#2C1A14] dark:text-white">{recipientLabel}</h4>
+                                                    <span className="text-[10px] text-muted-foreground">{formattedDate}</span>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                                                        card.status === "ACTIVE" 
+                                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                                                            : card.status === "REDEEMED"
+                                                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                                            : "bg-zinc-500/10 text-zinc-600"
+                                                    }`}>
+                                                        {card.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground">
+                                                    To: <span className="font-medium text-foreground">{card.recipientEmail}</span> · From: <span className="font-medium text-foreground">{senderLabel}</span>
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <h4 className="font-bold text-sm">{req.customer}</h4>
-                                                <span className="text-[10px] text-muted-foreground">{req.date}</span>
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${req.status === "Pending" ? "bg-amber-500/10 text-amber-600" : "bg-emerald-500/10 text-emerald-600"}`}>
-                                                    {req.status}
+                                        
+                                        <div className="flex items-center gap-3">
+                                            <div className="text-right">
+                                                <span className="text-[10px] font-bold text-muted-foreground uppercase block">Balance / Initial</span>
+                                                <span className="text-sm font-black text-[#8B4513] dark:text-[#C07C4A]">
+                                                    ${Number(card.balance || 0).toFixed(2)} <span className="text-muted-foreground font-normal text-xs">/ ${Number(card.initialAmount || 0).toFixed(2)}</span>
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-muted-foreground">{req.email}</p>
+
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedGiftCardForFunds(card);
+                                                    setAddFundsEmail(card.recipientEmail || "");
+                                                    setAddFundsAmount(25);
+                                                    setAddFundsReason("Staff adjustment");
+                                                    setAddFundsModalOpen(true);
+                                                }}
+                                                className="px-3 py-1.5 bg-[#E2D4C5] hover:bg-[#D5C6B5] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[#2C1A14] dark:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                            >
+                                                <Plus className="w-3.5 h-3.5" /> Credit
+                                            </button>
                                         </div>
                                     </div>
-                                    
-                                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#8B4513] dark:text-[#C07C4A]">
-                                        <CreditCard className="w-4 h-4 text-primary" />
-                                        Gift Card - ${req.amount.toFixed(2)}
+
+                                    {/* Card Code display */}
+                                    <div className="flex items-center justify-between gap-2 p-2.5 bg-white/70 dark:bg-black/30 rounded-xl border border-border/50 text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Card Code:</span>
+                                            <span className="font-mono font-bold tracking-wider text-[#2C1A14] dark:text-white">{card.code}</span>
+                                        </div>
+                                        {card.personalMessage && (
+                                            <p className="text-[11px] text-muted-foreground italic truncate max-w-xs">
+                                                &quot;{card.personalMessage}&quot;
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
-
-                                {req.status === "Pending" ? (
-                                    <div className="flex gap-3 max-w-2xl">
-                                        <input 
-                                            type="text"
-                                            value={inputCodes[req.id] || ""}
-                                            onChange={(e) => setInputCodes({ ...inputCodes, [req.id]: e.target.value })}
-                                            placeholder="Enter gift card code (e.g. BF-GC-XXXX-XXXX)"
-                                            className="flex-1 px-4 py-2 rounded-xl border border-border bg-white dark:bg-zinc-900 text-xs focus:outline-none"
-                                        />
-                                        <button 
-                                            onClick={() => handleSendCode(req.id)}
-                                            className="px-4 py-2 bg-[#E2D4C5] hover:bg-[#D5C6B5] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[#2C1A14] dark:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
-                                        >
-                                            <Send className="w-3.5 h-3.5" /> Send Code
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-500/10 text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
-                                        Sent Code: <span className="font-mono bg-white dark:bg-black/30 px-2 py-0.5 rounded border border-emerald-500/20">{req.code}</span>
-                                    </div>
-                                )}
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-center text-sm text-muted-foreground py-6">No requests found.</p>
-                    )}
-                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="text-center py-10 bg-[#FAF6F0]/20 dark:bg-black/10 rounded-2xl border border-border/40">
+                        <p className="text-sm font-semibold text-muted-foreground">No gift cards match this filter.</p>
+                    </div>
+                )}
             </div>
 
             {/* NEW/EDIT REWARD MODAL */}
@@ -718,6 +772,97 @@ export default function Rewards() {
                                         "Save Reward"
                                     ) : (
                                         "Create Reward"
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ADMIN ADD / CREDIT FUNDS MODAL */}
+            {addFundsModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border/80 relative animate-in fade-in zoom-in-95 duration-200">
+                        {/* Header */}
+                        <div className="p-6 pb-4 border-b border-border/30 flex justify-between items-start">
+                            <div>
+                                <h2 className="font-serif text-xl font-bold text-[#2C1A14] dark:text-white flex items-center gap-2">
+                                    <DollarSign className="w-5 h-5 text-primary" /> Credit / Add Funds
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    {selectedGiftCardForFunds 
+                                        ? `Adding funds to card (${selectedGiftCardForFunds.code})` 
+                                        : "Credit gift card balance for a customer email"}
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setAddFundsModalOpen(false)}
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* Modal Form */}
+                        <form onSubmit={handleSaveAddFunds} className="p-6 space-y-4">
+                            {!selectedGiftCardForFunds && (
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Recipient / Customer Email</label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={addFundsEmail}
+                                        onChange={(e) => setAddFundsEmail(e.target.value)}
+                                        placeholder="customer@example.com"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Amount to Credit ($)</label>
+                                <input
+                                    type="number"
+                                    required
+                                    min={1}
+                                    step="0.01"
+                                    value={addFundsAmount}
+                                    onChange={(e) => setAddFundsAmount(parseFloat(e.target.value))}
+                                    placeholder="25.00"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Reason / Note (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={addFundsReason}
+                                    onChange={(e) => setAddFundsReason(e.target.value)}
+                                    placeholder="e.g. VIP loyalty reward, customer satisfaction"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="flex items-center gap-3 pt-4 border-t border-border/30">
+                                <button
+                                    type="button"
+                                    onClick={() => setAddFundsModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE3]/60 text-[#2C1A14] font-bold text-xs uppercase tracking-wider transition-colors border border-border/40 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isAddingFunds}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C07C4A] hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-[#C07C4A]/15 cursor-pointer disabled:opacity-50"
+                                >
+                                    {isAddingFunds ? (
+                                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                    ) : (
+                                        "Credit Funds"
                                     )}
                                 </button>
                             </div>
