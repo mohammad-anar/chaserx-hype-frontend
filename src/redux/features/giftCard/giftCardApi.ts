@@ -128,6 +128,70 @@ export const giftCardApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [TAG_TYPES.GIFT_CARD, TAG_TYPES.USER_PROFILE, TAG_TYPES.WALLET],
         }),
+
+        // Styles / Templates
+        getGiftCardStyles: builder.query<any, { active?: boolean } | void>({
+            query: (params) => ({
+                url: "/gift-cards/styles",
+                method: "GET",
+                params: params || {},
+            }),
+            providesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        createGiftCardStyle: builder.mutation<any, { name: string; image: string; order?: number }>({
+            query: (data) => ({
+                url: "/gift-cards/styles",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        updateGiftCardStyle: builder.mutation<any, { id: string; name?: string; image?: string; isActive?: boolean; order?: number }>({
+            query: ({ id, ...data }) => ({
+                url: `/gift-cards/styles/${id}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        deleteGiftCardStyle: builder.mutation<any, string>({
+            query: (id) => ({
+                url: `/gift-cards/styles/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        // Admin: get gift card details
+        adminGetGiftCardById: builder.query<any, string>({
+            query: (id) => ({
+                url: `/gift-cards/admin/cards/${id}`,
+                method: "GET",
+            }),
+            providesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        // Admin: update gift card
+        adminUpdateGiftCard: builder.mutation<any, {
+            id: string;
+            nickname?: string;
+            recipientName?: string;
+            recipientEmail?: string;
+            personalMessage?: string;
+            status?: string;
+            isActive?: boolean;
+            designIndex?: number;
+        }>({
+            query: ({ id, ...data }) => ({
+                url: `/gift-cards/admin/cards/${id}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: [TAG_TYPES.GIFT_CARD],
+        }),
     }),
 });
 
@@ -143,4 +207,10 @@ export const {
     useCheckGiftCardBalanceQuery,
     useGetAllGiftCardsQuery,
     useAdminAddFundsMutation,
+    useGetGiftCardStylesQuery,
+    useCreateGiftCardStyleMutation,
+    useUpdateGiftCardStyleMutation,
+    useDeleteGiftCardStyleMutation,
+    useAdminGetGiftCardByIdQuery,
+    useAdminUpdateGiftCardMutation,
 } = giftCardApi;

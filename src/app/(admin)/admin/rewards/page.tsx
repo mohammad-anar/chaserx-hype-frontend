@@ -17,7 +17,15 @@ import {
     Image as ImageIcon,
     Loader2,
     RefreshCw,
-    DollarSign
+    DollarSign,
+    Eye,
+    Copy,
+    Check,
+    Clock,
+    Activity,
+    ShieldAlert,
+    User as UserIcon,
+    Mail
 } from "lucide-react";
 import { 
     useGetCoinProductsQuery, 
@@ -30,6 +38,12 @@ import {
     useGetAllGiftCardsQuery,
     useGetAllGiftCardOrdersQuery,
     useAdminAddFundsMutation,
+    useGetGiftCardStylesQuery,
+    useCreateGiftCardStyleMutation,
+    useUpdateGiftCardStyleMutation,
+    useDeleteGiftCardStyleMutation,
+    useAdminGetGiftCardByIdQuery,
+    useAdminUpdateGiftCardMutation,
 } from "@/redux/features/giftCard/giftCardApi";
 
 interface CardDesign {
@@ -37,13 +51,6 @@ interface CardDesign {
     label: string;
     image: string;
 }
-
-const initialCardDesigns: CardDesign[] = [
-    { id: "D-01", label: "Coffee Beans", image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80" },
-    { id: "D-02", label: "Café Scene", image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80" },
-    { id: "D-03", label: "Latte Art", image: "https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80" },
-    { id: "D-04", label: "Morning Brew", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80" }
-];
 
 const getProductImg = (item: any) => {
     if (!item) return "https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=500";
@@ -82,16 +89,25 @@ export default function Rewards() {
         };
     }, []);
 
-    // RTK Query Hooks for CoinProducts and Products
+    // RTK Query Hooks
     const { data: coinProductsResponse, isLoading: isLoadingCoinProducts, isFetching, refetch } = useGetCoinProductsQuery(undefined);
     const { data: productsResponse } = useGetProductsQuery({ limit: 100 });
     const { data: allGiftCardsResponse, isLoading: isLoadingGiftCards, refetch: refetchGiftCards } = useGetAllGiftCardsQuery();
     const { data: allGiftCardOrdersResponse, isLoading: isLoadingOrders, refetch: refetchOrders } = useGetAllGiftCardOrdersQuery();
+    const { data: stylesResponse, isLoading: isLoadingStyles, refetch: refetchStyles } = useGetGiftCardStylesQuery();
 
     const [createCoinProduct, { isLoading: isCreating }] = useCreateCoinProductMutation();
     const [updateCoinProduct, { isLoading: isUpdating }] = useUpdateCoinProductMutation();
     const [deleteCoinProduct] = useDeleteCoinProductMutation();
     const [adminAddFunds, { isLoading: isAddingFunds }] = useAdminAddFundsMutation();
+
+    // Style Mutations
+    const [createStyleApi, { isLoading: isCreatingStyle }] = useCreateGiftCardStyleMutation();
+    const [updateStyleApi, { isLoading: isUpdatingStyle }] = useUpdateGiftCardStyleMutation();
+    const [deleteStyleApi, { isLoading: isDeletingStyle }] = useDeleteGiftCardStyleMutation();
+
+    // Admin Card Update Mutation
+    const [adminUpdateCardApi, { isLoading: isUpdatingCard }] = useAdminUpdateGiftCardMutation();
 
     const coinProducts = useMemo(() => {
         return coinProductsResponse?.data || [];
@@ -109,6 +125,10 @@ export default function Rewards() {
         return allGiftCardOrdersResponse?.data || [];
     }, [allGiftCardOrdersResponse]);
 
+    const allStyles = useMemo(() => {
+        return stylesResponse?.data || [];
+    }, [stylesResponse]);
+
     // Modal State for Coin Products
     const [rewardModalOpen, setRewardModalOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
@@ -117,14 +137,17 @@ export default function Rewards() {
     const [needPoint, setNeedPoint] = useState(100);
 
     // Gift Card Settings state
-    const [settingsTab, setSettingsTab] = useState<"amounts" | "designs">("amounts");
+    const [settingsTab, setSettingsTab] = useState<"amounts" | "designs">("designs");
     const [giftAmounts, setGiftAmounts] = useState<number[]>([10, 25, 50, 100]);
     const [newAmountInput, setNewAmountInput] = useState("");
 
-    // Designs sub-state
-    const [cardDesigns, setCardDesigns] = useState<CardDesign[]>(initialCardDesigns);
-    const [newDesignLabel, setNewDesignLabel] = useState("");
-    const [newDesignImage, setNewDesignImage] = useState("");
+    // Style Modal State
+    const [styleModalOpen, setStyleModalOpen] = useState(false);
+    const [styleEditMode, setStyleEditMode] = useState(false);
+    const [selectedStyleId, setSelectedStyleId] = useState("");
+    const [styleName, setStyleName] = useState("");
+    const [styleImage, setStyleImage] = useState("");
+    const [styleIsActive, setStyleIsActive] = useState(true);
 
     // Gift Card Registry & Add Funds State
     const [giftCardFilterTab, setGiftCardFilterTab] = useState<"All" | "ACTIVE" | "REDEEMED" | "INACTIVE">("All");
@@ -135,6 +158,27 @@ export default function Rewards() {
     const [addFundsEmail, setAddFundsEmail] = useState("");
     const [addFundsAmount, setAddFundsAmount] = useState(25);
     const [addFundsReason, setAddFundsReason] = useState("Staff courtesy credit");
+
+    // Card View Details & Edit Modal States
+    const [cardDetailsModalOpen, setCardDetailsModalOpen] = useState(false);
+    const [selectedCardIdForDetails, setSelectedCardIdForDetails] = useState<string | null>(null);
+    const [copiedCode, setCopiedCode] = useState(false);
+
+    const [editCardModalOpen, setEditCardModalOpen] = useState(false);
+    const [selectedCardForEdit, setSelectedCardForEdit] = useState<any>(null);
+    const [editCardNickname, setEditCardNickname] = useState("");
+    const [editCardRecipientName, setEditCardRecipientName] = useState("");
+    const [editCardRecipientEmail, setEditCardRecipientEmail] = useState("");
+    const [editCardPersonalMessage, setEditCardPersonalMessage] = useState("");
+    const [editCardStatus, setEditCardStatus] = useState<string>("ACTIVE");
+    const [editCardIsActive, setEditCardIsActive] = useState<boolean>(true);
+
+    // Query card details on demand
+    const { data: cardDetailsResponse, isLoading: isLoadingCardDetails } = useAdminGetGiftCardByIdQuery(
+        selectedCardIdForDetails as string,
+        { skip: !selectedCardIdForDetails }
+    );
+    const activeCardDetails = cardDetailsResponse?.data;
 
     // Filtered Gift Card Orders
     const filteredGiftCardOrders = useMemo(() => {
@@ -189,6 +233,105 @@ export default function Rewards() {
             refetchGiftCards();
         } catch (err: any) {
             toast.error(err?.data?.message || "Failed to credit funds.");
+        }
+    };
+
+    // Style Handlers
+    const handleOpenCreateStyle = () => {
+        setStyleEditMode(false);
+        setSelectedStyleId("");
+        setStyleName("");
+        setStyleImage("");
+        setStyleIsActive(true);
+        setStyleModalOpen(true);
+    };
+
+    const handleOpenEditStyle = (style: any) => {
+        setStyleEditMode(true);
+        setSelectedStyleId(style.id);
+        setStyleName(style.name || "");
+        setStyleImage(style.image || "");
+        setStyleIsActive(style.isActive !== false);
+        setStyleModalOpen(true);
+    };
+
+    const handleSaveStyle = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!styleName.trim() || !styleImage.trim()) {
+            toast.error("Please provide both style name and image URL.");
+            return;
+        }
+
+        try {
+            if (styleEditMode && selectedStyleId) {
+                await updateStyleApi({
+                    id: selectedStyleId,
+                    name: styleName.trim(),
+                    image: styleImage.trim(),
+                    isActive: styleIsActive,
+                }).unwrap();
+                toast.success("Gift card style updated successfully.");
+            } else {
+                await createStyleApi({
+                    name: styleName.trim(),
+                    image: styleImage.trim(),
+                }).unwrap();
+                toast.success("Gift card style created successfully.");
+            }
+            setStyleModalOpen(false);
+            refetchStyles();
+        } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to save gift card style.");
+        }
+    };
+
+    const handleDeleteStyle = async (id: string, name: string) => {
+        if (confirm(`Are you sure you want to delete style template "${name}"?`)) {
+            try {
+                await deleteStyleApi(id).unwrap();
+                toast.success(`Style "${name}" deleted.`);
+                refetchStyles();
+            } catch (err: any) {
+                toast.error(err?.data?.message || "Failed to delete style.");
+            }
+        }
+    };
+
+    // Edit Gift Card Handlers
+    const handleOpenEditCard = (card: any) => {
+        setSelectedCardForEdit(card);
+        setEditCardNickname(card.nickname || "");
+        setEditCardRecipientName(card.recipientName || "");
+        setEditCardRecipientEmail(card.recipientEmail || "");
+        setEditCardPersonalMessage(card.personalMessage || "");
+        setEditCardStatus(card.status || "ACTIVE");
+        setEditCardIsActive(card.isActive !== false);
+        setEditCardModalOpen(true);
+    };
+
+    const handleSaveEditCard = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedCardForEdit?.id) return;
+
+        try {
+            await adminUpdateCardApi({
+                id: selectedCardForEdit.id,
+                nickname: editCardNickname.trim() || undefined,
+                recipientName: editCardRecipientName.trim() || undefined,
+                recipientEmail: editCardRecipientEmail.trim() || undefined,
+                personalMessage: editCardPersonalMessage.trim() || undefined,
+                status: editCardStatus,
+                isActive: editCardIsActive,
+            }).unwrap();
+
+            toast.success("Gift card updated successfully.");
+            setEditCardModalOpen(false);
+            refetchGiftCards();
+            if (selectedCardIdForDetails === selectedCardForEdit.id) {
+                // details will auto-refresh via tag invalidation
+            }
+        } catch (err: any) {
+            toast.error(err?.data?.message || "Failed to update gift card.");
         }
     };
 
@@ -266,27 +409,6 @@ export default function Rewards() {
 
     const handleRemoveAmount = (amount: number) => {
         setGiftAmounts(giftAmounts.filter(a => a !== amount));
-    };
-
-    // Design cards actions
-    const handleAddDesign = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newDesignLabel) return;
-        const defaultImage = "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80";
-        const img = newDesignImage.trim() !== "" ? newDesignImage.trim() : defaultImage;
-
-        const newDesign: CardDesign = {
-            id: `D-${Math.floor(Math.random() * 900 + 100)}`,
-            label: newDesignLabel,
-            image: img
-        };
-        setCardDesigns([...cardDesigns, newDesign]);
-        setNewDesignLabel("");
-        setNewDesignImage("");
-    };
-
-    const handleRemoveDesign = (id: string) => {
-        setCardDesigns(cardDesigns.filter(d => d.id !== id));
     };
 
     return (
@@ -501,83 +623,75 @@ export default function Rewards() {
                 {/* Designs Tab Panel */}
                 {settingsTab === "designs" && (
                     <div className="space-y-6 pt-2">
-                        <p className="text-xs text-muted-foreground">Add or remove gift card designs available in the app.</p>
+                        <div className="flex justify-between items-center flex-wrap gap-4">
+                            <div>
+                                <p className="text-xs text-muted-foreground">Manage gift card visual style templates stored in the database.</p>
+                                <p className="text-[11px] text-muted-foreground/80">These templates are shown to customers when customizing and purchasing gift cards.</p>
+                            </div>
+                            <button
+                                onClick={handleOpenCreateStyle}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] font-bold text-xs uppercase tracking-wider hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                            >
+                                <Plus className="w-4 h-4" /> Add Style Template
+                            </button>
+                        </div>
                         
-                        {/* Designs Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {cardDesigns.map((design) => (
-                                <div key={design.id} className="bg-[#FAF6F0]/40 dark:bg-black/10 rounded-2xl border border-border/60 overflow-hidden group">
-                                    <div className="h-24 w-full bg-cover bg-center" style={{ backgroundImage: `url(${design.image})` }} />
-                                    <div className="p-3 flex justify-between items-center">
-                                        <span className="text-xs font-bold">{design.label}</span>
-                                        <button 
-                                            onClick={() => handleRemoveDesign(design.id)}
-                                            className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg border border-red-500/20 transition-colors cursor-pointer"
+                        {/* Dynamic Styles Grid */}
+                        {isLoadingStyles ? (
+                            <div className="py-10 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                                <span className="text-xs font-semibold">Loading style templates...</span>
+                            </div>
+                        ) : allStyles.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {allStyles.map((style: any) => (
+                                    <div key={style.id} className="bg-[#FAF6F0]/40 dark:bg-black/10 rounded-2xl border border-border/60 overflow-hidden group shadow-sm flex flex-col justify-between">
+                                        <div 
+                                            className="h-28 w-full bg-cover bg-center relative group-hover:scale-105 transition-transform duration-300" 
+                                            style={{ backgroundImage: `url(${style.image})` }}
                                         >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Add New Design Form */}
-                        <div className="p-4 rounded-2xl bg-[#FAF6F0]/40 dark:bg-black/10 border border-border/50 max-w-xl space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Add New Design</h4>
-                            
-                            <form onSubmit={handleAddDesign} className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Design Image</label>
-                                    <div className="flex gap-3">
-                                        <input 
-                                            type="file"
-                                            id="reward-design-photo-upload"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    const reader = new FileReader();
-                                                    reader.onloadend = () => {
-                                                        setNewDesignImage(reader.result as string);
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                }
-                                            }}
-                                        />
-                                        <label
-                                            htmlFor="reward-design-photo-upload"
-                                            className="px-4 py-2 rounded-xl border border-dashed border-border hover:bg-[#F3ECE3]/30 dark:hover:bg-white/5 font-bold text-xs text-[#8B4513] dark:text-[#C07C4A] flex items-center gap-1.5 cursor-pointer"
-                                        >
-                                            <ImageIcon className="w-4 h-4" /> Choose Photo
-                                        </label>
-                                        
-                                        {newDesignImage && (
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-10 h-10 rounded-lg bg-cover bg-center border border-border" style={{ backgroundImage: `url(${newDesignImage})` }} />
-                                                <button type="button" onClick={() => setNewDesignImage("")} className="text-red-500 cursor-pointer"><X className="w-4 h-4" /></button>
+                                            {style.isActive === false && (
+                                                <span className="absolute top-2 right-2 px-2 py-0.5 bg-red-600/90 text-white rounded-md text-[9px] font-bold uppercase">
+                                                    Inactive
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="p-3 flex justify-between items-center bg-white/60 dark:bg-zinc-900/60 border-t border-border/40">
+                                            <div>
+                                                <span className="text-xs font-bold block text-foreground">{style.name}</span>
+                                                <span className="text-[10px] text-muted-foreground">ID: {style.id.slice(0, 8)}...</span>
                                             </div>
-                                        )}
+                                            <div className="flex items-center gap-1.5">
+                                                <button 
+                                                    onClick={() => handleOpenEditStyle(style)}
+                                                    className="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-foreground rounded-lg border border-border/60 transition-colors cursor-pointer"
+                                                    title="Edit Style"
+                                                >
+                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleDeleteStyle(style.id, style.name)}
+                                                    className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-600 rounded-lg border border-red-500/20 transition-colors cursor-pointer"
+                                                    title="Delete Style"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="space-y-1.5">
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase">Label</label>
-                                    <input 
-                                        type="text"
-                                        required
-                                        value={newDesignLabel}
-                                        onChange={(e) => setNewDesignLabel(e.target.value)}
-                                        placeholder="e.g. Autumn Harvest"
-                                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-white dark:bg-zinc-900 text-sm focus:outline-none"
-                                    />
-                                </div>
-
-                                <button type="submit" className="w-full py-2.5 bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] text-xs font-bold uppercase tracking-wider rounded-xl hover:opacity-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
-                                    <Plus className="w-4 h-4" /> Add Design
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-10 bg-[#FAF6F0]/20 dark:bg-black/10 rounded-2xl border border-border/40">
+                                <p className="text-sm font-semibold text-muted-foreground">No style templates found.</p>
+                                <button
+                                    onClick={handleOpenCreateStyle}
+                                    className="mt-2 text-xs font-bold text-primary hover:underline cursor-pointer"
+                                >
+                                    + Add First Style Template
                                 </button>
-                            </form>
-                        </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -717,7 +831,7 @@ export default function Rewards() {
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">Live digital gift cards issued in the system — view balances and credit funds</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Live digital gift cards issued in the system — view balances, audit details, edit, and credit funds</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -791,6 +905,11 @@ export default function Rewards() {
                                                     }`}>
                                                         {card.status}
                                                     </span>
+                                                    {card.isActive === false && (
+                                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-500/10 text-red-600">
+                                                            Disabled
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <p className="text-xs text-muted-foreground">
                                                     To: <span className="font-medium text-foreground">{card.recipientEmail}</span> · From: <span className="font-medium text-foreground">{senderLabel}</span>
@@ -798,13 +917,33 @@ export default function Rewards() {
                                             </div>
                                         </div>
                                         
-                                        <div className="flex items-center gap-3">
-                                            <div className="text-right">
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                            <div className="text-right mr-2">
                                                 <span className="text-[10px] font-bold text-muted-foreground uppercase block">Balance / Initial</span>
                                                 <span className="text-sm font-black text-[#8B4513] dark:text-[#C07C4A]">
                                                     ${Number(card.balance || 0).toFixed(2)} <span className="text-muted-foreground font-normal text-xs">/ ${Number(card.initialAmount || 0).toFixed(2)}</span>
                                                 </span>
                                             </div>
+
+                                            {/* Action Buttons */}
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedCardIdForDetails(card.id);
+                                                    setCardDetailsModalOpen(true);
+                                                }}
+                                                className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-foreground rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-border/60 cursor-pointer"
+                                                title="View Details"
+                                            >
+                                                <Eye className="w-3.5 h-3.5 text-primary" /> Details
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleOpenEditCard(card)}
+                                                className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-foreground rounded-xl text-xs font-bold transition-all flex items-center gap-1 border border-border/60 cursor-pointer"
+                                                title="Edit Gift Card"
+                                            >
+                                                <Edit2 className="w-3.5 h-3.5" /> Edit
+                                            </button>
 
                                             <button
                                                 onClick={() => {
@@ -814,7 +953,7 @@ export default function Rewards() {
                                                     setAddFundsReason("Staff adjustment");
                                                     setAddFundsModalOpen(true);
                                                 }}
-                                                className="px-3 py-1.5 bg-[#E2D4C5] hover:bg-[#D5C6B5] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[#2C1A14] dark:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                                className="px-3 py-2 bg-[#E2D4C5] hover:bg-[#D5C6B5] dark:bg-zinc-800 dark:hover:bg-zinc-700 text-[#2C1A14] dark:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
                                             >
                                                 <Plus className="w-3.5 h-3.5" /> Credit
                                             </button>
@@ -1007,6 +1146,353 @@ export default function Rewards() {
                                         <Loader2 className="w-4 h-4 animate-spin text-white" />
                                     ) : (
                                         "Credit Funds"
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* STYLE CREATE / EDIT MODAL */}
+            {styleModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border/80 relative animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 pb-4 border-b border-border/30 flex justify-between items-start">
+                            <div>
+                                <h2 className="font-serif text-xl font-bold text-[#2C1A14] dark:text-white">
+                                    {styleEditMode ? "Edit Style Template" : "New Style Template"}
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    Define visual background style for digital gift cards
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setStyleModalOpen(false)}
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveStyle} className="p-6 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Style Name</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={styleName}
+                                    onChange={(e) => setStyleName(e.target.value)}
+                                    placeholder="e.g. Espresso Gold, Autumn Roast"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Image URL</label>
+                                <input
+                                    type="url"
+                                    required
+                                    value={styleImage}
+                                    onChange={(e) => setStyleImage(e.target.value)}
+                                    placeholder="https://images.unsplash.com/..."
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            {/* Preview */}
+                            {styleImage && (
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Preview</label>
+                                    <div 
+                                        className="h-28 w-full rounded-2xl bg-cover bg-center border border-border/80 shadow-sm"
+                                        style={{ backgroundImage: `url(${styleImage})` }}
+                                    />
+                                </div>
+                            )}
+
+                            {styleEditMode && (
+                                <div className="flex items-center gap-3 pt-1">
+                                    <input 
+                                        type="checkbox"
+                                        id="style-active-toggle"
+                                        checked={styleIsActive}
+                                        onChange={(e) => setStyleIsActive(e.target.checked)}
+                                        className="w-4 h-4 rounded text-primary focus:ring-primary"
+                                    />
+                                    <label htmlFor="style-active-toggle" className="text-xs font-semibold text-foreground cursor-pointer">
+                                        Active & available for customer purchase
+                                    </label>
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-3 pt-4 border-t border-border/30">
+                                <button
+                                    type="button"
+                                    onClick={() => setStyleModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE3]/60 text-[#2C1A14] font-bold text-xs uppercase tracking-wider transition-colors border border-border/40 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isCreatingStyle || isUpdatingStyle}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C07C4A] hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-[#C07C4A]/15 cursor-pointer disabled:opacity-50"
+                                >
+                                    {isCreatingStyle || isUpdatingStyle ? (
+                                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                    ) : styleEditMode ? (
+                                        "Update Style"
+                                    ) : (
+                                        "Create Style"
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* GIFT CARD DETAILS MODAL */}
+            {cardDetailsModalOpen && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-2xl max-h-[90vh] rounded-3xl shadow-2xl overflow-y-auto border border-border/80 relative animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 pb-4 border-b border-border/30 flex justify-between items-start sticky top-0 bg-white/95 dark:bg-[#1E0F0B]/95 backdrop-blur z-10">
+                            <div>
+                                <h2 className="font-serif text-xl font-bold text-[#2C1A14] dark:text-white flex items-center gap-2">
+                                    <CreditCard className="w-5 h-5 text-primary" /> Gift Card Full Details
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    Complete audit, linked order, and ledger timeline
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    setCardDetailsModalOpen(false);
+                                    setSelectedCardIdForDetails(null);
+                                }}
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {isLoadingCardDetails ? (
+                            <div className="py-20 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                                <Loader2 className="w-7 h-7 animate-spin text-primary" />
+                                <span className="text-xs font-semibold">Fetching gift card details from database...</span>
+                            </div>
+                        ) : activeCardDetails ? (
+                            <div className="p-6 space-y-6">
+                                {/* Visual Card Header with Code Copy */}
+                                <div className="relative rounded-2xl p-6 overflow-hidden bg-gradient-to-br from-[#2C1A14] via-[#3D251E] to-[#1E0F0B] text-white shadow-lg border border-[#8B4513]/30 space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <span className="text-[10px] font-bold text-[#C07C4A] uppercase tracking-widest block">BEAN FIEN GIFT CARD</span>
+                                            <h3 className="font-serif text-2xl font-black mt-1">${Number(activeCardDetails.balance || 0).toFixed(2)}</h3>
+                                            <span className="text-xs text-white/70">Initial Value: ${Number(activeCardDetails.initialAmount || 0).toFixed(2)}</span>
+                                        </div>
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${
+                                            activeCardDetails.status === "ACTIVE" 
+                                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" 
+                                                : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                                        }`}>
+                                            {activeCardDetails.status}
+                                        </span>
+                                    </div>
+
+                                    {/* Card Code Bar with Copy */}
+                                    <div className="flex items-center justify-between p-3 rounded-xl bg-white/10 backdrop-blur border border-white/15">
+                                        <div>
+                                            <span className="text-[9px] text-white/60 uppercase block">Redemption Code</span>
+                                            <span className="font-mono text-base font-black tracking-widest text-[#E2D4C5]">{activeCardDetails.code}</span>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(activeCardDetails.code);
+                                                toast.success("Card code copied to clipboard!");
+                                            }}
+                                            className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                                        >
+                                            <Copy className="w-3.5 h-3.5" /> Copy Code
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Details Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-2xl bg-[#FAF6F0]/60 dark:bg-zinc-900/60 border border-border/50 space-y-2">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                                            <UserIcon className="w-3.5 h-3.5 text-primary" /> Recipient
+                                        </span>
+                                        <p className="font-bold text-sm text-foreground">{activeCardDetails.recipientName || "N/A"}</p>
+                                        <p className="text-xs text-muted-foreground">{activeCardDetails.recipientEmail || "N/A"}</p>
+                                        {activeCardDetails.personalMessage && (
+                                            <p className="text-xs italic text-muted-foreground/90 border-t border-border/40 pt-1.5 mt-1.5">
+                                                &quot;{activeCardDetails.personalMessage}&quot;
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="p-4 rounded-2xl bg-[#FAF6F0]/60 dark:bg-zinc-900/60 border border-border/50 space-y-2">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                                            <Mail className="w-3.5 h-3.5 text-primary" /> Sender / Purchaser
+                                        </span>
+                                        <p className="font-bold text-sm text-foreground">{activeCardDetails.sender?.name || activeCardDetails.giftCardOrder?.purchaser?.name || "System"}</p>
+                                        <p className="text-xs text-muted-foreground">{activeCardDetails.sender?.email || activeCardDetails.giftCardOrder?.purchaser?.email || "Direct Checkout"}</p>
+                                        {activeCardDetails.giftCardOrder && (
+                                            <p className="text-[11px] text-primary font-mono border-t border-border/40 pt-1.5 mt-1.5">
+                                                Order: #{activeCardDetails.giftCardOrder.orderNumber} ({activeCardDetails.giftCardOrder.paymentStatus})
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Transaction History Ledger */}
+                                <div className="space-y-3">
+                                    <h4 className="font-serif text-sm font-bold text-foreground flex items-center gap-2">
+                                        <Activity className="w-4 h-4 text-primary" /> Transaction Ledger History
+                                    </h4>
+
+                                    {activeCardDetails.transactions && activeCardDetails.transactions.length > 0 ? (
+                                        <div className="border border-border/60 rounded-2xl overflow-hidden divide-y divide-border/40">
+                                            {activeCardDetails.transactions.map((tx: any) => (
+                                                <div key={tx.id} className="p-3.5 bg-white dark:bg-zinc-900/40 flex items-center justify-between gap-3 text-xs">
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold ${
+                                                                tx.type === "CREDIT" 
+                                                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                                                                    : "bg-red-500/10 text-red-600 dark:text-red-400"
+                                                            }`}>
+                                                                {tx.type}
+                                                            </span>
+                                                            <span className="font-semibold text-foreground">{tx.description || tx.type}</span>
+                                                        </div>
+                                                        <span className="text-[10px] text-muted-foreground">
+                                                            {new Date(tx.createdAt).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <span className={`font-mono font-bold text-sm ${
+                                                        tx.type === "CREDIT" ? "text-emerald-600" : "text-foreground"
+                                                    }`}>
+                                                        {tx.type === "CREDIT" ? "+" : "-"}${Number(tx.amount).toFixed(2)}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-4 rounded-xl bg-muted/20 border border-border/40 text-center text-xs text-muted-foreground">
+                                            No ledger transactions recorded yet.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            )}
+
+            {/* GIFT CARD EDIT MODAL */}
+            {editCardModalOpen && selectedCardForEdit && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-[#1E0F0B] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border/80 relative animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 pb-4 border-b border-border/30 flex justify-between items-start">
+                            <div>
+                                <h2 className="font-serif text-xl font-bold text-[#2C1A14] dark:text-white flex items-center gap-2">
+                                    <Edit2 className="w-5 h-5 text-primary" /> Edit Gift Card
+                                </h2>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    Update details for card {selectedCardForEdit.code}
+                                </p>
+                            </div>
+                            <button 
+                                onClick={() => setEditCardModalOpen(false)}
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSaveEditCard} className="p-6 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Recipient Name</label>
+                                <input
+                                    type="text"
+                                    value={editCardRecipientName}
+                                    onChange={(e) => setEditCardRecipientName(e.target.value)}
+                                    placeholder="Recipient Name"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Recipient Email</label>
+                                <input
+                                    type="email"
+                                    value={editCardRecipientEmail}
+                                    onChange={(e) => setEditCardRecipientEmail(e.target.value)}
+                                    placeholder="recipient@example.com"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Status</label>
+                                <select
+                                    value={editCardStatus}
+                                    onChange={(e) => setEditCardStatus(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                >
+                                    <option value="ACTIVE">ACTIVE</option>
+                                    <option value="INACTIVE">INACTIVE</option>
+                                    <option value="DEPLETED">DEPLETED</option>
+                                    <option value="EXPIRED">EXPIRED</option>
+                                    <option value="REDEEMED">REDEEMED</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">Personal Message</label>
+                                <textarea
+                                    value={editCardPersonalMessage}
+                                    onChange={(e) => setEditCardPersonalMessage(e.target.value)}
+                                    rows={2}
+                                    placeholder="Warm message..."
+                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-[#F3ECE3]/40 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary text-sm font-semibold"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-1">
+                                <input 
+                                    type="checkbox"
+                                    id="edit-card-active-toggle"
+                                    checked={editCardIsActive}
+                                    onChange={(e) => setEditCardIsActive(e.target.checked)}
+                                    className="w-4 h-4 rounded text-primary focus:ring-primary"
+                                />
+                                <label htmlFor="edit-card-active-toggle" className="text-xs font-semibold text-foreground cursor-pointer">
+                                    Card is Active & usable for drink checkouts
+                                </label>
+                            </div>
+
+                            <div className="flex items-center gap-3 pt-4 border-t border-border/30">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditCardModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F3ECE3]/60 text-[#2C1A14] font-bold text-xs uppercase tracking-wider transition-colors border border-border/40 cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isUpdatingCard}
+                                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C07C4A] hover:opacity-95 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-[#C07C4A]/15 cursor-pointer disabled:opacity-50"
+                                >
+                                    {isUpdatingCard ? (
+                                        <Loader2 className="w-4 h-4 animate-spin text-white" />
+                                    ) : (
+                                        "Save Changes"
                                     )}
                                 </button>
                             </div>

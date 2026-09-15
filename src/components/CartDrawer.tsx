@@ -291,19 +291,63 @@ export default function CartDrawer({ theme = "light" }: CartDrawerProps) {
                         </div>
 
                         {/* Footer Summary - Step 1 */}
-                        <div className="pt-5 border-t border-white/5 space-y-4">
-                            <div className="flex justify-between items-center text-sm font-semibold">
-                                <span className="text-white/60">Subtotal</span>
-                                <span className="text-white text-base font-bold">${cartSubtotal.toFixed(2)}</span>
+                        <div className="pt-4 border-t border-white/5 space-y-3">
+                            {/* Gift Card Balance Option in Step 1 */}
+                            {isAuthenticated && giftCardBalance > 0 && cart.length > 0 && (
+                                <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-left space-y-2">
+                                    <label className="flex items-center justify-between cursor-pointer group">
+                                        <div className="flex items-center gap-2.5">
+                                            <Gift className="w-4 h-4 text-[#C07C4A]" />
+                                            <div>
+                                                <span className="text-xs font-bold text-white block leading-tight">
+                                                    Use Gift Card Balance
+                                                </span>
+                                                <span className="text-[10px] text-white/60">
+                                                    ${giftCardBalance.toFixed(2)} available
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            checked={applyGiftCard}
+                                            onChange={(e) => setApplyGiftCard(e.target.checked)}
+                                            className="w-4 h-4 rounded accent-[#C07C4A] cursor-pointer"
+                                        />
+                                    </label>
+
+                                    {applyGiftCard && (
+                                        <div className="pt-2 border-t border-white/5 flex justify-between text-[11px] text-[#C07C4A] font-semibold">
+                                            <span>Gift Card Applied:</span>
+                                            <span>- ${giftCardDeduction.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="space-y-1">
+                                <div className="flex justify-between items-center text-xs text-white/60">
+                                    <span>Subtotal</span>
+                                    <span>${cartSubtotal.toFixed(2)}</span>
+                                </div>
+                                {applyGiftCard && giftCardDeduction > 0 && (
+                                    <div className="flex justify-between items-center text-xs text-[#C07C4A] font-semibold">
+                                        <span>Gift Card Credit</span>
+                                        <span>- ${giftCardDeduction.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center text-sm font-semibold pt-1 border-t border-white/5">
+                                    <span className="text-white">Total</span>
+                                    <span className="text-white text-base font-bold">${finalPayableTotal.toFixed(2)}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center text-xs text-[#6B5E59]">
-                                <span>Taxes and delivery fee calculated at checkout</span>
+                            <div className="flex justify-between items-center text-[11px] text-[#6B5E59]">
+                                <span>Taxes and delivery calculated next</span>
                             </div>
                             <button
                                 onClick={onProceedToShipping}
                                 disabled={cart.length === 0}
                                 className={`
-                                    w-full py-4 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+                                    w-full py-3.5 rounded-xl text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
                                     ${cart.length > 0
                                         ? isDark
                                             ? "bg-[#E05A2B] text-[#080403] hover:scale-[1.02] cursor-pointer shadow-lg shadow-[#E05A2B]/10"

@@ -40,13 +40,14 @@ import {
     useGetMyGiftCardOrdersQuery,
     useRedeemGiftCardCodeMutation,
     useUpdateGiftCardMutation,
+    useGetGiftCardStylesQuery,
 } from "@/redux/features/giftCard/giftCardApi";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const cardDesigns = [
+const defaultCardDesigns = [
     {
         id: 0,
         name: "Coffee Beans",
@@ -79,11 +80,24 @@ export default function GiftCardsPage() {
     const [viewMode, setViewMode] = useState<"purchase" | "balance" | "my-orders">("purchase");
 
     // RTK Query Hooks
+    const { data: stylesResponse } = useGetGiftCardStylesQuery({ active: true });
     const { data: myGiftCardsResponse, isFetching, refetch: refetchCards } = useGetMyGiftCardsQuery(undefined, { skip: !isAuthenticated });
     const { data: myOrdersResponse, isFetching: isFetchingOrders, refetch: refetchOrders } = useGetMyGiftCardOrdersQuery(undefined, { skip: !isAuthenticated });
     const [createGiftCardOrderCheckout, { isLoading: isPurchasing }] = useCreateGiftCardOrderCheckoutMutation();
     const [redeemCodeApi, { isLoading: isRedeeming }] = useRedeemGiftCardCodeMutation();
     const [updateCardApi, { isLoading: isUpdatingCard }] = useUpdateGiftCardMutation();
+
+    const activeCardDesigns = useMemo(() => {
+        if (stylesResponse?.data && stylesResponse.data.length > 0) {
+            return stylesResponse.data.map((s: any, idx: number) => ({
+                id: idx,
+                styleId: s.id,
+                name: s.name,
+                url: s.image,
+            }));
+        }
+        return defaultCardDesigns;
+    }, [stylesResponse]);
 
     // Purchase Form State
     const [selectedDesign, setSelectedDesign] = useState(0);
@@ -373,7 +387,7 @@ export default function GiftCardsPage() {
                             
                             {/* Selected Card Art Background */}
                             <img 
-                                src={cardDesigns[selectedDesign].url} 
+                                src={(activeCardDesigns[selectedDesign] || activeCardDesigns[0])?.url} 
                                 alt="Gift Card Design" 
                                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
@@ -439,7 +453,7 @@ export default function GiftCardsPage() {
                                             Select the aesthetic for the digital gift card.
                                         </p>
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                            {cardDesigns.map((design) => (
+                                            {activeCardDesigns.map((design: any) => (
                                                 <button
                                                     key={design.id}
                                                     type="button"
