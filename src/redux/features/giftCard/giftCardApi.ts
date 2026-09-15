@@ -3,7 +3,53 @@ import { TAG_TYPES } from "@/constants/api";
 
 export const giftCardApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        // Purchase a gift card
+        // Direct purchase of a gift card for a recipient
+        createGiftCardOrderCheckout: builder.mutation<any, {
+            amount: number;
+            recipientName: string;
+            recipientEmail: string;
+            personalMessage?: string;
+            designIndex?: number;
+            nickname?: string;
+        }>({
+            query: (data) => ({
+                url: "/gift-cards/order-checkout",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: [TAG_TYPES.GIFT_CARD, TAG_TYPES.USER_PROFILE],
+        }),
+
+        // Poll single gift card order by ID
+        getGiftCardOrderById: builder.query<any, string>({
+            query: (id) => ({
+                url: `/gift-cards/orders/${id}`,
+                method: "GET",
+            }),
+            providesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        // Get user's purchased gift card orders
+        getMyGiftCardOrders: builder.query<any, Record<string, any> | void>({
+            query: (params) => ({
+                url: "/gift-cards/my-orders",
+                method: "GET",
+                params: params || {},
+            }),
+            providesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        // Admin: get all gift card orders and payment statuses
+        getAllGiftCardOrders: builder.query<any, Record<string, any> | void>({
+            query: (params) => ({
+                url: "/gift-cards/admin/orders",
+                method: "GET",
+                params: params || {},
+            }),
+            providesTags: [TAG_TYPES.GIFT_CARD],
+        }),
+
+        // Legacy / fallback checkout
         createGiftCardCheckout: builder.mutation<any, {
             amount: number;
             recipientName: string;
@@ -13,7 +59,7 @@ export const giftCardApi = baseApi.injectEndpoints({
             nickname?: string;
         }>({
             query: (data) => ({
-                url: "/gift-cards/checkout",
+                url: "/gift-cards/order-checkout",
                 method: "POST",
                 body: data,
             }),
@@ -86,6 +132,10 @@ export const giftCardApi = baseApi.injectEndpoints({
 });
 
 export const {
+    useCreateGiftCardOrderCheckoutMutation,
+    useGetGiftCardOrderByIdQuery,
+    useGetMyGiftCardOrdersQuery,
+    useGetAllGiftCardOrdersQuery,
     useCreateGiftCardCheckoutMutation,
     useGetMyGiftCardsQuery,
     useRedeemGiftCardCodeMutation,

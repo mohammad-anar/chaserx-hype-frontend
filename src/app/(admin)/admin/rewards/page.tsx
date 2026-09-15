@@ -28,6 +28,7 @@ import {
 import { useGetProductsQuery } from "@/redux/features/product/productApi";
 import {
     useGetAllGiftCardsQuery,
+    useGetAllGiftCardOrdersQuery,
     useAdminAddFundsMutation,
 } from "@/redux/features/giftCard/giftCardApi";
 
@@ -85,6 +86,7 @@ export default function Rewards() {
     const { data: coinProductsResponse, isLoading: isLoadingCoinProducts, isFetching, refetch } = useGetCoinProductsQuery(undefined);
     const { data: productsResponse } = useGetProductsQuery({ limit: 100 });
     const { data: allGiftCardsResponse, isLoading: isLoadingGiftCards, refetch: refetchGiftCards } = useGetAllGiftCardsQuery();
+    const { data: allGiftCardOrdersResponse, isLoading: isLoadingOrders, refetch: refetchOrders } = useGetAllGiftCardOrdersQuery();
 
     const [createCoinProduct, { isLoading: isCreating }] = useCreateCoinProductMutation();
     const [updateCoinProduct, { isLoading: isUpdating }] = useUpdateCoinProductMutation();
@@ -102,6 +104,10 @@ export default function Rewards() {
     const allGiftCards = useMemo(() => {
         return allGiftCardsResponse?.data || [];
     }, [allGiftCardsResponse]);
+
+    const allGiftCardOrders = useMemo(() => {
+        return allGiftCardOrdersResponse?.data || [];
+    }, [allGiftCardOrdersResponse]);
 
     // Modal State for Coin Products
     const [rewardModalOpen, setRewardModalOpen] = useState(false);
@@ -122,11 +128,26 @@ export default function Rewards() {
 
     // Gift Card Registry & Add Funds State
     const [giftCardFilterTab, setGiftCardFilterTab] = useState<"All" | "ACTIVE" | "REDEEMED" | "INACTIVE">("All");
+    const [orderFilterTab, setOrderFilterTab] = useState<"All" | "PAID" | "PENDING" | "FAILED">("All");
+    const [orderSearchTerm, setOrderSearchTerm] = useState("");
     const [addFundsModalOpen, setAddFundsModalOpen] = useState(false);
     const [selectedGiftCardForFunds, setSelectedGiftCardForFunds] = useState<any>(null);
     const [addFundsEmail, setAddFundsEmail] = useState("");
     const [addFundsAmount, setAddFundsAmount] = useState(25);
     const [addFundsReason, setAddFundsReason] = useState("Staff courtesy credit");
+
+    // Filtered Gift Card Orders
+    const filteredGiftCardOrders = useMemo(() => {
+        return allGiftCardOrders.filter((ord: any) => {
+            const matchesStatus = orderFilterTab === "All" || ord.paymentStatus === orderFilterTab;
+            const matchesSearch = !orderSearchTerm.trim() || 
+                (ord.orderNumber || "").toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+                (ord.recipientName || "").toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+                (ord.recipientEmail || "").toLowerCase().includes(orderSearchTerm.toLowerCase()) ||
+                (ord.purchaser?.name || "").toLowerCase().includes(orderSearchTerm.toLowerCase());
+            return matchesStatus && matchesSearch;
+        });
+    }, [allGiftCardOrders, orderFilterTab, orderSearchTerm]);
 
     // Summary calculations from live API
     const activeRewardsCount = useMemo(() => coinProducts.length, [coinProducts]);
@@ -557,6 +578,129 @@ export default function Rewards() {
                                 </button>
                             </form>
                         </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Gift Card Direct Orders & Payments Section */}
+            <div className="bg-white dark:bg-card p-6 rounded-3xl border border-border/60 shadow-sm space-y-4">
+                <div className="flex justify-between items-center flex-wrap gap-4">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h3 className="font-serif text-lg font-bold text-[#2C1A14] dark:text-white">Gift Card Orders & Direct Payments</h3>
+                            {allGiftCardOrders.length > 0 && (
+                                <span className="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] font-bold">
+                                    {allGiftCardOrders.length} orders
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">Peer-to-peer customer gift card purchases with real-time payment fulfillment</p>
+                    </div>
+
+                    <div className="flex items-center gap-3 flex-wrap">
+                        {/* Search */}
+                        <div className="relative w-48 sm:w-60">
+                            <input
+                                type="text"
+                                placeholder="Search order, email..."
+                                value={orderSearchTerm}
+                                onChange={(e) => setOrderSearchTerm(e.target.value)}
+                                className="w-full px-3.5 py-1.5 rounded-xl border border-border/70 bg-[#FAF6F0]/40 dark:bg-zinc-900 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                            />
+                        </div>
+
+                        {/* Status Filters */}
+                        <div className="flex bg-[#F3ECE3] dark:bg-[#2C1711] p-1 rounded-xl w-fit border border-border/40">
+                            {(["All", "PAID", "PENDING", "FAILED"] as const).map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setOrderFilterTab(tab)}
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                                        orderFilterTab === tab 
+                                            ? "bg-[#2C1A14] dark:bg-primary text-white dark:text-[#1E0F0B] shadow-sm font-bold" 
+                                            : "text-muted-foreground hover:text-[#2C1A14]"
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <button
+                            onClick={() => refetchOrders()}
+                            className="p-2 rounded-xl border border-border/70 bg-[#FAF6F0]/40 dark:bg-zinc-900 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                            title="Refresh Orders"
+                        >
+                            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingOrders ? "animate-spin text-primary" : ""}`} />
+                        </button>
+                    </div>
+                </div>
+
+                {isLoadingOrders ? (
+                    <div className="py-10 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        <span className="text-xs font-semibold">Loading gift card orders...</span>
+                    </div>
+                ) : filteredGiftCardOrders.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b border-border/60 text-[11px] uppercase font-bold text-muted-foreground">
+                                    <th className="py-3 px-3">Order #</th>
+                                    <th className="py-3 px-3">Purchaser</th>
+                                    <th className="py-3 px-3">Recipient</th>
+                                    <th className="py-3 px-3 text-right">Amount</th>
+                                    <th className="py-3 px-3">Card Code</th>
+                                    <th className="py-3 px-3 text-center">Payment Status</th>
+                                    <th className="py-3 px-3 text-right">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/40">
+                                {filteredGiftCardOrders.map((ord: any) => (
+                                    <tr key={ord.id} className="hover:bg-muted/30 transition-colors">
+                                        <td className="py-3.5 px-3 font-mono font-bold text-primary">
+                                            {ord.orderNumber}
+                                        </td>
+                                        <td className="py-3.5 px-3">
+                                            <div className="font-semibold text-foreground">{ord.purchaser?.name || "Guest Purchaser"}</div>
+                                            <div className="text-[10px] text-muted-foreground">{ord.purchaser?.email || "Direct Checkout"}</div>
+                                        </td>
+                                        <td className="py-3.5 px-3">
+                                            <div className="font-semibold text-foreground">{ord.recipientName}</div>
+                                            <div className="text-[10px] text-muted-foreground">{ord.recipientEmail}</div>
+                                        </td>
+                                        <td className="py-3.5 px-3 text-right font-bold text-foreground">
+                                            ${Number(ord.amount).toFixed(2)}
+                                        </td>
+                                        <td className="py-3.5 px-3 font-mono font-bold text-[#8B4513] dark:text-[#C07C4A]">
+                                            {ord.giftCard?.code || (
+                                                <span className="text-muted-foreground font-sans font-normal italic text-[11px]">
+                                                    Pending Payment
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="py-3.5 px-3 text-center">
+                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                                                ord.paymentStatus === "PAID"
+                                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                                    : ord.paymentStatus === "PENDING"
+                                                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                                    : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                                            }`}>
+                                                {ord.paymentStatus}
+                                            </span>
+                                        </td>
+                                        <td className="py-3.5 px-3 text-right text-muted-foreground">
+                                            {new Date(ord.createdAt).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-muted-foreground text-xs">
+                        No gift card direct orders found matching the filter.
                     </div>
                 )}
             </div>
