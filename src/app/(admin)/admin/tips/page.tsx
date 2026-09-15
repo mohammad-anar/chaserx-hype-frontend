@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { useGetDailyTipsSummaryQuery } from "@/redux/features/order/orderApi";
+import NotificationDropdown from "@/components/NotificationDropdown";
+import AdminProfileDropdown from "@/components/AdminProfileDropdown";
 import {
   DollarSign,
   Heart,
@@ -17,6 +20,8 @@ import {
   ArrowUpRight,
   RefreshCw,
   Gift,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 export default function AdminTipsPage() {
@@ -54,140 +59,161 @@ export default function AdminTipsPage() {
   }, [dailyBreakdown]);
 
   return (
-    <div className="space-y-6 sm:space-y-8 font-sans">
+    <div className="flex-1 p-4 md:p-8 space-y-6 bg-background min-h-screen text-foreground transition-colors duration-300 text-left">
       {/* PAGE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-wide">
-              Daily Tips & Gratuities
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Live Tracker
-            </span>
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary mb-1">
+            <Heart className="w-3.5 h-3.5 fill-primary text-primary" />
+            <span>Gratuity & Staff Appreciation</span>
           </div>
-          <p className="text-xs text-[#FAF6F0]/60 mt-1">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
+            Daily Tips & Gratuities
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Monitor daily customer gratuities, barista tip allocations, and historical trends.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
           <button
             type="button"
             onClick={() => refetch()}
             disabled={isFetching}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/40 border border-[#C07C4A]/25 text-xs font-bold text-[#FAF6F0]/80 hover:text-white hover:bg-white/5 transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-card hover:bg-muted/60 transition-colors text-xs font-bold text-muted-foreground hover:text-foreground cursor-pointer shadow-xs"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-[#C07C4A]" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin text-primary" : ""}`} />
             <span>Refresh</span>
           </button>
+
+          <NotificationDropdown />
+          <AdminProfileDropdown />
         </div>
-      </div>
+      </header>
 
       {/* KPI METRICS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Tips */}
-        <div className="p-5 rounded-3xl bg-[#140A07]/70 border border-[#C07C4A]/20 backdrop-blur-xl shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0]/60">
-              Total Tips Collected
-            </span>
-            <div className="p-2 rounded-xl bg-[#C07C4A]/15 text-[#C07C4A]">
-              <DollarSign className="w-4 h-4" />
+        <div className="bg-card p-6 rounded-2xl border border-border/70 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-300 group">
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
+              <DollarSign className="w-6 h-6" />
             </div>
+            <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+              <TrendingUp className="w-3 h-3" /> Lifetime
+            </span>
           </div>
-          <p className="text-3xl font-black text-white">
-            ${kpis.totalTips.toFixed(2)}
-          </p>
-          <p className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>Lifetime customer appreciation</span>
-          </p>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Total Tips Collected
+            </p>
+            <h2 className="font-serif text-3xl font-extrabold mt-1 text-foreground">
+              ${kpis.totalTips.toFixed(2)}
+            </h2>
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">
+              Customer appreciation
+            </p>
+          </div>
         </div>
 
         {/* Today's Tips */}
-        <div className="p-5 rounded-3xl bg-[#140A07]/70 border border-emerald-500/30 backdrop-blur-xl shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0]/60">
-              Today&apos;s Tips
-            </span>
-            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400">
-              <Sparkles className="w-4 h-4" />
+        <div className="bg-card p-6 rounded-2xl border border-border/70 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-300 group">
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-primary/10 text-primary rounded-xl group-hover:scale-110 transition-transform">
+              <Sparkles className="w-6 h-6" />
             </div>
+            <span className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+              Today
+            </span>
           </div>
-          <p className="text-3xl font-black text-white">
-            ${kpis.todayTips.toFixed(2)}
-          </p>
-          <p className="text-[11px] text-[#FAF6F0]/50 font-medium">
-            Accumulated since midnight
-          </p>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Today&apos;s Tips
+            </p>
+            <h2 className="font-serif text-3xl font-extrabold mt-1 text-foreground">
+              ${kpis.todayTips.toFixed(2)}
+            </h2>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Accumulated since midnight
+            </p>
+          </div>
         </div>
 
         {/* Tipped Orders Count */}
-        <div className="p-5 rounded-3xl bg-[#140A07]/70 border border-[#C07C4A]/20 backdrop-blur-xl shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0]/60">
-              Tipped Orders
-            </span>
-            <div className="p-2 rounded-xl bg-amber-500/15 text-amber-400">
-              <Heart className="w-4 h-4" />
+        <div className="bg-card p-6 rounded-2xl border border-border/70 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-300 group">
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl group-hover:scale-110 transition-transform">
+              <Heart className="w-6 h-6" />
             </div>
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+              Orders
+            </span>
           </div>
-          <p className="text-3xl font-black text-white">
-            {kpis.totalTippedOrders}
-          </p>
-          <p className="text-[11px] text-[#FAF6F0]/50 font-medium">
-            Orders with voluntary gratuity
-          </p>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Tipped Orders
+            </p>
+            <h2 className="font-serif text-3xl font-extrabold mt-1 text-foreground">
+              {kpis.totalTippedOrders}
+            </h2>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Voluntary patron gratuities
+            </p>
+          </div>
         </div>
 
         {/* Average Tip */}
-        <div className="p-5 rounded-3xl bg-[#140A07]/70 border border-[#C07C4A]/20 backdrop-blur-xl shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#FAF6F0]/60">
-              Average Tip Amount
-            </span>
-            <div className="p-2 rounded-xl bg-purple-500/15 text-purple-400">
-              <Award className="w-4 h-4" />
+        <div className="bg-card p-6 rounded-2xl border border-border/70 shadow-sm hover:shadow-md hover:border-primary/40 transition-all duration-300 group">
+          <div className="flex justify-between items-start">
+            <div className="p-3 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-xl group-hover:scale-110 transition-transform">
+              <Award className="w-6 h-6" />
             </div>
+            <span className="flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+              Average
+            </span>
           </div>
-          <p className="text-3xl font-black text-white">
-            ${kpis.avgTip.toFixed(2)}
-          </p>
-          <p className="text-[11px] text-[#FAF6F0]/50 font-medium">
-            Per tipped customer order
-          </p>
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Average Tip Amount
+            </p>
+            <h2 className="font-serif text-3xl font-extrabold mt-1 text-foreground">
+              ${kpis.avgTip.toFixed(2)}
+            </h2>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Per tipped customer order
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* FILTER & DATE CONTROLS */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-[#140A07]/60 p-4 rounded-3xl border border-[#C07C4A]/15 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#FAF6F0]/40" />
+      <div className="bg-card p-4 rounded-2xl border border-border/70 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full">
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search by date (YYYY-MM-DD)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-black/40 border border-[#C07C4A]/20 text-xs text-white placeholder:text-[#FAF6F0]/30 focus:outline-none focus:border-[#C07C4A]"
+              className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary transition-all"
             />
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-[#FAF6F0]/70">
-            <span className="text-[11px] font-semibold text-[#FAF6F0]/50">From:</span>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <span className="text-[11px] font-semibold">From:</span>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-black/40 border border-[#C07C4A]/20 text-xs text-white focus:outline-none focus:border-[#C07C4A]"
+              className="px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary transition-all"
             />
-            <span className="text-[11px] font-semibold text-[#FAF6F0]/50">To:</span>
+            <span className="text-[11px] font-semibold">To:</span>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-black/40 border border-[#C07C4A]/20 text-xs text-white focus:outline-none focus:border-[#C07C4A]"
+              className="px-3 py-2 rounded-xl border border-border bg-background text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/45 focus:border-primary transition-all"
             />
             {(startDate || endDate) && (
               <button
@@ -196,7 +222,7 @@ export default function AdminTipsPage() {
                   setStartDate("");
                   setEndDate("");
                 }}
-                className="text-xs text-[#C07C4A] hover:underline"
+                className="px-3 py-2 rounded-xl text-xs font-bold text-primary hover:underline cursor-pointer"
               >
                 Clear
               </button>
@@ -206,34 +232,35 @@ export default function AdminTipsPage() {
       </div>
 
       {/* TWO COLUMN GRID: DAILY BREAKDOWN + BARISTA LEADERBOARD */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* DAILY BREAKDOWN TABLE (2 Cols on LG) */}
-        <div className="lg:col-span-2 rounded-3xl bg-[#140A07]/60 border border-[#C07C4A]/20 p-5 sm:p-6 backdrop-blur-xl shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="lg:col-span-2 bg-card rounded-2xl border border-border/70 p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#C07C4A]" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                Every Day Tips Breakdown
+              <Calendar className="w-4 h-4 text-primary" />
+              <h2 className="font-serif text-lg font-bold text-foreground">
+                Daily Tips Breakdown
               </h2>
             </div>
-            <span className="text-xs text-[#FAF6F0]/50">
+            <span className="text-xs text-muted-foreground font-medium">
               {filteredDaily.length} recorded days
             </span>
           </div>
 
           {isLoading ? (
-            <div className="py-12 text-center text-xs text-[#FAF6F0]/50">
-              Loading daily tips data...
+            <div className="py-12 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
+              <RefreshCw className="w-5 h-5 animate-spin text-primary" />
+              <span>Loading daily tips data...</span>
             </div>
           ) : filteredDaily.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#FAF6F0]/50">
+            <div className="py-12 text-center text-xs text-muted-foreground">
               No daily tip records found for the selected period.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-white/10 text-[11px] uppercase font-bold text-[#FAF6F0]/50">
+                  <tr className="border-b border-border text-[11px] uppercase font-bold text-muted-foreground">
                     <th className="py-3 px-3">Date</th>
                     <th className="py-3 px-3">Tips Volume</th>
                     <th className="py-3 px-3 text-center">Orders</th>
@@ -241,29 +268,29 @@ export default function AdminTipsPage() {
                     <th className="py-3 px-3 text-right">Total Tips</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-border/60">
                   {filteredDaily.map((day: any) => {
                     const ratio = Math.min(100, Math.round((day.totalAmount / maxDailyAmount) * 100));
                     return (
-                      <tr key={day.date} className="hover:bg-white/5 transition-colors">
-                        <td className="py-3.5 px-3 font-semibold text-white">
+                      <tr key={day.date} className="hover:bg-muted/40 transition-colors">
+                        <td className="py-3.5 px-3 font-semibold text-foreground">
                           {day.date}
                         </td>
                         <td className="py-3.5 px-3">
-                          <div className="w-full max-w-[140px] bg-black/40 h-2 rounded-full overflow-hidden border border-white/10">
+                          <div className="w-full max-w-[140px] bg-muted h-2 rounded-full overflow-hidden border border-border/60">
                             <div
-                              className="h-full bg-gradient-to-r from-[#C07C4A] to-emerald-400 rounded-full transition-all"
+                              className="h-full bg-gradient-to-r from-primary to-emerald-500 rounded-full transition-all"
                               style={{ width: `${ratio}%` }}
                             />
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 text-center text-[#FAF6F0]/70 font-medium">
+                        <td className="py-3.5 px-3 text-center text-muted-foreground font-medium">
                           {day.count}
                         </td>
-                        <td className="py-3.5 px-3 text-right text-[#FAF6F0]/70 font-medium">
+                        <td className="py-3.5 px-3 text-right text-muted-foreground font-medium">
                           ${day.avgTip.toFixed(2)}
                         </td>
-                        <td className="py-3.5 px-3 text-right font-black text-emerald-400">
+                        <td className="py-3.5 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400">
                           +${day.totalAmount.toFixed(2)}
                         </td>
                       </tr>
@@ -276,21 +303,21 @@ export default function AdminTipsPage() {
         </div>
 
         {/* BARISTA LEADERBOARD (1 Col on LG) */}
-        <div className="rounded-3xl bg-[#140A07]/60 border border-[#C07C4A]/20 p-5 sm:p-6 backdrop-blur-xl shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="bg-card rounded-2xl border border-border/70 p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border">
             <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-amber-400" />
-              <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+              <Award className="w-4 h-4 text-amber-500" />
+              <h2 className="font-serif text-lg font-bold text-foreground">
                 Barista Distribution
               </h2>
             </div>
-            <span className="text-xs text-[#FAF6F0]/50">
+            <span className="text-xs text-muted-foreground font-medium">
               {baristaLeaderboard.length} baristas
             </span>
           </div>
 
           {baristaLeaderboard.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#FAF6F0]/50">
+            <div className="py-12 text-center text-xs text-muted-foreground">
               No barista tip distributions recorded yet.
             </div>
           ) : (
@@ -298,24 +325,24 @@ export default function AdminTipsPage() {
               {baristaLeaderboard.map((b: any, idx: number) => (
                 <div
                   key={b.baristaId}
-                  className="p-3.5 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-between gap-3 hover:border-[#C07C4A]/40 transition-colors"
+                  className="p-3.5 rounded-xl bg-muted/30 border border-border/60 flex items-center justify-between gap-3 hover:border-primary/40 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-[#C07C4A]/20 text-[#C07C4A] font-black text-xs flex items-center justify-center border border-[#C07C4A]/30">
+                    <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-black text-xs flex items-center justify-center border border-primary/20">
                       #{idx + 1}
                     </span>
                     <div>
-                      <h4 className="text-xs font-bold text-white">{b.name}</h4>
-                      <p className="text-[10px] text-[#FAF6F0]/50 font-medium">
+                      <h4 className="text-xs font-bold text-foreground">{b.name}</h4>
+                      <p className="text-[10px] text-muted-foreground font-medium">
                         {b.station} · {b.count} tips
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-black text-emerald-400">
+                    <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                       ${b.totalTips.toFixed(2)}
                     </p>
-                    <p className="text-[10px] text-[#FAF6F0]/40 font-medium">
+                    <p className="text-[10px] text-muted-foreground font-medium">
                       avg ${b.avgTip.toFixed(2)}
                     </p>
                   </div>
@@ -324,24 +351,24 @@ export default function AdminTipsPage() {
             </div>
           )}
         </div>
-      </div>
+      </section>
 
       {/* RECENT TIPS ACTIVITY FEED */}
-      <div className="rounded-3xl bg-[#140A07]/60 border border-[#C07C4A]/20 p-5 sm:p-6 backdrop-blur-xl shadow-xl space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+      <section className="bg-card rounded-2xl border border-border/70 p-5 sm:p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-border">
           <div className="flex items-center gap-2">
-            <Heart className="w-4 h-4 text-[#C07C4A]" />
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+            <Heart className="w-4 h-4 text-primary fill-primary/20" />
+            <h2 className="font-serif text-lg font-bold text-foreground">
               Recent Gratuity Activity & Compliments
             </h2>
           </div>
-          <span className="text-xs text-[#FAF6F0]/50">
+          <span className="text-xs text-muted-foreground font-medium">
             Latest {recentTips.length} transactions
           </span>
         </div>
 
         {recentTips.length === 0 ? (
-          <div className="py-12 text-center text-xs text-[#FAF6F0]/50">
+          <div className="py-12 text-center text-xs text-muted-foreground">
             No recent tip transactions recorded yet.
           </div>
         ) : (
@@ -349,30 +376,30 @@ export default function AdminTipsPage() {
             {recentTips.map((tip: any) => (
               <div
                 key={tip.id}
-                className="p-4 rounded-2xl bg-black/40 border border-[#C07C4A]/15 space-y-2 hover:border-[#C07C4A]/40 transition-all"
+                className="p-4 rounded-xl bg-muted/20 border border-border/60 space-y-2 hover:border-primary/40 transition-all"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <span className="text-[11px] font-bold text-[#C07C4A]">
+                    <span className="text-[11px] font-bold text-primary">
                       #{tip.order?.orderNumber || tip.orderId?.slice(-6)}
                     </span>
-                    <h4 className="text-xs font-bold text-white mt-0.5">
+                    <h4 className="text-xs font-bold text-foreground mt-0.5">
                       {tip.user?.name || "Customer"}
                     </h4>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     +${Number(tip.amount || 0).toFixed(2)}
                   </span>
                 </div>
 
                 {tip.message && (
-                  <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-[11px] text-[#FAF6F0]/80 italic flex items-start gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="p-2.5 rounded-lg bg-muted/60 border border-border/50 text-[11px] text-foreground italic flex items-start gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                     <span>&ldquo;{tip.message}&rdquo;</span>
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-[#FAF6F0]/50 font-medium">
+                <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[10px] text-muted-foreground font-medium">
                   <span>To: {tip.barista?.name || "Kitchen Team"}</span>
                   <span>{new Date(tip.createdAt).toLocaleDateString()}</span>
                 </div>
@@ -380,7 +407,7 @@ export default function AdminTipsPage() {
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 }
