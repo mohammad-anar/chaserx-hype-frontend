@@ -50,7 +50,7 @@ export default function AdminBaristasPage() {
   const [updateBarista, { isLoading: isUpdating }] = useUpdateBaristaProfileMutation();
 
   const baristas: Barista[] = useMemo(
-    () => baristaResponse?.data || [],
+    () => (baristaResponse?.data || []).filter((b: any) => b.role !== "ADMIN"),
     [baristaResponse]
   );
 

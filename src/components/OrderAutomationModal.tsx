@@ -52,7 +52,7 @@ export default function OrderAutomationModal({
     useAssignBaristaToOrderMutation();
 
   const automationData = statusResponse?.data;
-  const baristas = baristasResponse?.data || [];
+  const baristas = (baristasResponse?.data || []).filter((b: any) => b.role !== "ADMIN");
 
   const handleRetry = async () => {
     try {
