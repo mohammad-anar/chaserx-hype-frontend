@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import {
     QrCode,
@@ -60,54 +60,101 @@ export default function BaristaScanPage() {
         setSearchedCode(cleaned);
     };
 
-    // Camera QR Code Scanner with html5-qrcode
+    // Camera QR Code Scanner — native BarcodeDetector API (no npm package needed)
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const animFrameRef = useRef<number | null>(null);
+
+    const stopCamera = useCallback(() => {
+        if (animFrameRef.current) {
+            cancelAnimationFrame(animFrameRef.current);
+            animFrameRef.current = null;
+        }
+        if (scannerRef.current) {
+            (scannerRef.current as MediaStream)
+                .getTracks()
+                .forEach((t: MediaStreamTrack) => t.stop());
+            scannerRef.current = null;
+        }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+    }, []);
+
     useEffect(() => {
-        let html5QrCode: any = null;
+        if (!isCameraActive) {
+            stopCamera();
+            return;
+        }
 
-        if (isCameraActive) {
-            import("html5-qrcode").then(({ Html5Qrcode }) => {
-                const qrElementId = "barista-qr-reader";
-                const element = document.getElementById(qrElementId);
-                if (!element) return;
+        // Check native BarcodeDetector support
+        if (typeof window === "undefined" || !("BarcodeDetector" in window)) {
+            setScannerError("QR scanning is not supported on this browser. Please use Chrome or Edge, or type the code manually.");
+            setIsCameraActive(false);
+            return;
+        }
 
-                html5QrCode = new Html5Qrcode(qrElementId);
-                scannerRef.current = html5QrCode;
+        let cancelled = false;
 
-                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        const startScanner = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment" },
+                });
 
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
-                    (decodedText: string) => {
-                        // Successfully scanned
-                        const cleanCode = decodedText.trim().toUpperCase();
-                        setInputCode(cleanCode);
-                        setSearchedCode(cleanCode);
-                        toast.success(`Scanned: ${cleanCode}`);
-                        // Stop camera after successful detection
-                        setIsCameraActive(false);
-                    },
-                    (errorMsg: string) => {
-                        // ignore frame errors
+                if (cancelled) {
+                    stream.getTracks().forEach((t) => t.stop());
+                    return;
+                }
+
+                scannerRef.current = stream;
+
+                if (videoRef.current) {
+                    videoRef.current.srcObject = stream;
+                    await videoRef.current.play();
+                }
+
+                // @ts-ignore — BarcodeDetector is not yet in TS lib
+                const detector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+
+                const scan = async () => {
+                    if (cancelled || !videoRef.current || videoRef.current.readyState < 2) {
+                        animFrameRef.current = requestAnimationFrame(scan);
+                        return;
                     }
-                ).catch((err: any) => {
+                    try {
+                        const barcodes = await detector.detect(videoRef.current);
+                        if (barcodes.length > 0) {
+                            const cleanCode = barcodes[0].rawValue.trim().toUpperCase();
+                            setInputCode(cleanCode);
+                            setSearchedCode(cleanCode);
+                            toast.success(`Scanned: ${cleanCode}`);
+                            setIsCameraActive(false);
+                            return; // stop scanning
+                        }
+                    } catch {
+                        // frame error — keep scanning
+                    }
+                    animFrameRef.current = requestAnimationFrame(scan);
+                };
+
+                animFrameRef.current = requestAnimationFrame(scan);
+            } catch (err: any) {
+                if (!cancelled) {
                     console.error("Camera scanner error:", err);
                     setScannerError("Camera permission denied or camera not available.");
                     setIsCameraActive(false);
-                });
-            }).catch((err) => {
-                console.error("Failed to load scanner library:", err);
-            });
-        }
-
-        return () => {
-            if (scannerRef.current) {
-                scannerRef.current.stop().catch(() => {}).then(() => {
-                    scannerRef.current = null;
-                });
+                }
             }
         };
-    }, [isCameraActive]);
+
+        startScanner();
+
+        return () => {
+            cancelled = true;
+            stopCamera();
+        };
+    }, [isCameraActive, stopCamera]);
 
     // Handle Point Adjustment
     const handleProcessPoints = async (e: React.FormEvent) => {
@@ -196,7 +243,15 @@ export default function BaristaScanPage() {
                         </button>
                     </div>
 
-                    <div id="barista-qr-reader" className="w-full max-w-sm rounded-2xl overflow-hidden border-2 border-[#C07C4A]/50 bg-black min-h-[260px] flex items-center justify-center text-xs text-white/50" />
+                    <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full max-w-sm rounded-2xl overflow-hidden border-2 border-[#C07C4A]/50 bg-black min-h-[260px] object-cover"
+                        style={{ display: isCameraActive ? "block" : "none" }}
+                    />
+                    <canvas ref={canvasRef} className="hidden" />
 
                     {scannerError && (
                         <p className="text-xs text-red-400 font-semibold">{scannerError}</p>
